@@ -33,7 +33,7 @@ interface Task {
   priority: string;
   status: string;
   goalId: string | null;
-  goal: {
+  Goal: {
     id: string;
     title: string;
     color: string;

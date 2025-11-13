@@ -10,7 +10,8 @@ interface Task {
   scheduledDate: Date | null;
   priority: string;
   status: string;
-  goal: {
+  goalId: string | null;
+  Goal: {
     id: string;
     title: string;
     color: string;
@@ -203,12 +204,12 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
                     </span>
 
                     {/* 목표 */}
-                    {task.goal && (
+                    {task.Goal && (
                       <span
                         className="px-2 py-0.5 rounded text-white"
-                        style={{ backgroundColor: task.goal.color }}
+                        style={{ backgroundColor: task.Goal.color }}
                       >
-                        {task.goal.title}
+                        {task.Goal.title}
                       </span>
                     )}
 
