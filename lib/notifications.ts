@@ -9,7 +9,7 @@ export type NotificationPermission = 'granted' | 'denied' | 'default';
  * 알림 권한 상태 확인
  */
 export function getNotificationPermission(): NotificationPermission {
-  if (!('Notification' in window)) {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
     return 'denied';
   }
   return Notification.permission as NotificationPermission;
@@ -19,7 +19,7 @@ export function getNotificationPermission(): NotificationPermission {
  * 알림 권한 요청
  */
 export async function requestNotificationPermission(): Promise<NotificationPermission> {
-  if (!('Notification' in window)) {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
     console.warn('This browser does not support notifications');
     return 'denied';
   }
@@ -40,7 +40,7 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
  * 알림 표시
  */
 export function showNotification(title: string, options?: NotificationOptions): Notification | null {
-  if (!('Notification' in window)) {
+  if (typeof window === 'undefined' || !('Notification' in window)) {
     console.warn('This browser does not support notifications');
     return null;
   }

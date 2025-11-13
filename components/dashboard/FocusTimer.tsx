@@ -197,7 +197,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
   };
 
   const requestNotificationPermission = async () => {
-    if ('Notification' in window && Notification.permission === 'default') {
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
       const permission = await Notification.requestPermission();
       if (permission === 'granted') {
         console.log('Notification permission granted');
@@ -217,7 +217,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">포커스 타이머</h2>
-        {Notification.permission === 'default' && (
+        {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
           <button
             onClick={requestNotificationPermission}
             className="text-xs text-blue-600 hover:text-blue-700"
