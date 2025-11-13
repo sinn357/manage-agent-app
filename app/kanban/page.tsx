@@ -50,13 +50,21 @@ export default function KanbanPage() {
 
   const fetchTasks = async () => {
     try {
+      console.log('fetchTasks: Starting to fetch tasks...');
       const response = await fetch('/api/tasks');
+      console.log('fetchTasks: Response status:', response.status, response.ok);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('fetchTasks: Received data:', data);
+        console.log('fetchTasks: Number of tasks:', data.data?.length || 0);
         setTasks(data.data || []);
+        console.log('fetchTasks: State updated with tasks');
+      } else {
+        console.error('fetchTasks: Response not OK:', response.status, response.statusText);
       }
     } catch (error) {
-      console.error('Failed to fetch tasks:', error);
+      console.error('fetchTasks: Error caught:', error);
     } finally {
       setLoading(false);
     }
