@@ -106,6 +106,7 @@ export default function KanbanPage() {
   };
 
   const handleTaskSaved = () => {
+    console.log('handleTaskSaved called, refetching tasks...');
     fetchTasks();
     setIsTaskModalOpen(false);
     setSelectedTask(null);
