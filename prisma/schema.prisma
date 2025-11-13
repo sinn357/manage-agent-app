@@ -7,41 +7,87 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Work {
-  id           String    @id @default(cuid())
-  title        String
-  content      String
-  category     String    @default("product") // "product", "media", "photography"
-  techStack    String[]
-  githubUrl    String?
-  demoUrl      String?
-  youtubeUrl   String?
-  instagramUrl String?
-  imageUrl     String?
-  fileUrl      String?
-  status       String    @default("completed") // "completed", "in-progress", "planned"
-  duration     String?
-  createdAt    DateTime  @default(now())
+model FocusSession {
+  id          String    @id @default(cuid())
+  duration    Int
+  actualTime  Int       @default(0)
+  startedAt   DateTime
+  endedAt     DateTime?
+  completed   Boolean   @default(false)
+  interrupted Boolean   @default(false)
+  taskId      String?
+  userId      String
+  createdAt   DateTime  @default(now())
+  Task        Task?     @relation(fields: [taskId], references: [id])
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId, startedAt])
 }
 
-model Archive {
-  id        String    @id @default(cuid())
-  title     String
-  content   String
-  category  String    // "writing", "essay", "review:movie", "review:book", "review:music", "travel", etc.
-  tags      String[]  // Optional tags for additional filtering
-  imageUrl  String?   // Optional image for the post
-  fileUrl   String?   // Optional file attachment
-  createdAt DateTime  @default(now())
+model Goal {
+  id          String      @id
+  title       String
+  description String?
+  targetDate  DateTime?
+  status      String      @default("active")
+  color       String      @default("#3B82F6")
+  order       Int         @default(0)
+  userId      String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime
+  User        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Milestone   Milestone[]
+  Task        Task[]
+
+  @@index([userId, status])
 }
 
-model PageContent {
-  id        String    @id @default(cuid())
-  page      String    @unique // "home", "about", "work", "archive"
-  title     String
-  subtitle  String?   // Optional subtitle
-  content   String    // Main content/description
-  sections  Json?     // Additional sections data (skills, interests, contact info, etc.)
-  updatedAt DateTime  @updatedAt
-  createdAt DateTime  @default(now())
+model Milestone {
+  id          String    @id
+  title       String
+  targetDate  DateTime
+  completed   Boolean   @default(false)
+  order       Int       @default(0)
+  goalId      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  completedAt DateTime?
+  Goal        Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+}
+
+model Task {
+  id            String         @id
+  title         String
+  description   String?
+  scheduledDate DateTime?
+  priority      String         @default("mid")
+  status        String         @default("todo")
+  order         Int            @default(0)
+  userId        String
+  goalId        String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime
+  completedAt   DateTime?
+  FocusSession  FocusSession[]
+  Goal          Goal?          @relation(fields: [goalId], references: [id])
+  User          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+  @@index([userId, status, scheduledDate])
+}
+
+model User {
+  id           String         @id
+  email        String         @unique
+  username     String         @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  FocusSession FocusSession[]
+  Goal         Goal[]
+  Task         Task[]
 }

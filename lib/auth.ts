@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { cookies } from 'next/headers';
+import prisma from '@/lib/prisma';
 
-const SALT_ROUNDS = 12; // 높은 보안을 위한 강력한 해싱
+const SALT_ROUNDS = 12;
 
 /**
  * 비밀번호를 해시화합니다
@@ -14,19 +15,11 @@ export async function hashPassword(password: string): Promise<string> {
 /**
  * 입력된 비밀번호와 해시된 비밀번호를 비교합니다
  */
-export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hashedPassword: string
+): Promise<boolean> {
   return await bcrypt.compare(password, hashedPassword);
-}
-
-/**
- * 환경변수에서 해시된 관리자 비밀번호를 가져옵니다
- */
-export function getAdminPasswordHash(): string {
-  const hash = process.env.ADMIN_PASSWORD_HASH;
-  if (!hash) {
-    throw new Error('ADMIN_PASSWORD_HASH environment variable is not set');
-  }
-  return hash;
 }
 
 /**
@@ -41,24 +34,24 @@ function getJWTSecret(): string {
 }
 
 /**
- * 관리자 JWT 토큰을 생성합니다
+ * 사용자 JWT 토큰을 생성합니다
  */
-export function generateAdminToken(): string {
+export function generateUserToken(userId: string): string {
   const payload = {
-    role: 'admin',
+    userId,
     iat: Math.floor(Date.now() / 1000),
   };
-  
+
   return jwt.sign(payload, getJWTSecret(), {
-    expiresIn: '24h', // 24시간 유효
+    expiresIn: '7d', // 7일 유효
   });
 }
 
 /**
  * JWT payload 타입 정의
  */
-interface JWTPayload {
-  role: string;
+interface TokenPayload {
+  userId: string;
   iat: number;
   exp: number;
 }
@@ -66,10 +59,10 @@ interface JWTPayload {
 /**
  * JWT 토큰을 검증하고 payload를 반환합니다
  */
-export function verifyToken(token: string): { role: string; iat: number } | null {
+export function verifyToken(token: string): TokenPayload | null {
   try {
-    const decoded = jwt.verify(token, getJWTSecret()) as JWTPayload;
-    return { role: decoded.role, iat: decoded.iat };
+    const decoded = jwt.verify(token, getJWTSecret()) as TokenPayload;
+    return decoded;
   } catch (error) {
     console.error('Token verification failed:', error);
     return null;
@@ -77,19 +70,75 @@ export function verifyToken(token: string): { role: string; iat: number } | null
 }
 
 /**
- * 현재 요청에서 관리자 인증 상태를 확인합니다
+ * 현재 요청에서 사용자 ID를 가져옵니다
  */
-export async function isAdminAuthenticated(): Promise<boolean> {
+export async function getCurrentUserId(): Promise<string | null> {
   try {
     const cookieStore = await cookies();
-    const token = cookieStore.get('admin-token');
-    
-    if (!token) return false;
-    
+    const token = cookieStore.get('auth-token');
+
+    if (!token) return null;
+
     const decoded = verifyToken(token.value);
-    return decoded?.role === 'admin';
+    return decoded?.userId || null;
   } catch (error) {
-    console.error('Admin auth check failed:', error);
-    return false;
+    console.error('Get current user ID failed:', error);
+    return null;
   }
+}
+
+/**
+ * 현재 인증된 사용자 정보를 가져옵니다
+ */
+export async function getCurrentUser() {
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        name: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
+  } catch (error) {
+    console.error('Get current user failed:', error);
+    return null;
+  }
+}
+
+/**
+ * 사용자가 인증되어 있는지 확인합니다
+ */
+export async function isAuthenticated(): Promise<boolean> {
+  const userId = await getCurrentUserId();
+  return userId !== null;
+}
+
+/**
+ * 인증 토큰을 쿠키에 설정합니다
+ */
+export async function setAuthCookie(token: string): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set('auth-token', token, {
+    httpOnly: true, // XSS 공격 방지
+    secure: process.env.NODE_ENV === 'production', // HTTPS에서만 전송
+    sameSite: 'strict', // CSRF 공격 방지
+    maxAge: 7 * 24 * 60 * 60, // 7일 (초 단위)
+    path: '/',
+  });
+}
+
+/**
+ * 인증 토큰 쿠키를 삭제합니다
+ */
+export async function removeAuthCookie(): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete('auth-token');
 }
