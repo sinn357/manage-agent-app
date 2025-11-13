@@ -21,11 +21,11 @@ const localizer = dateFnsLocalizer({
 interface Task {
   id: string;
   title: string;
-  description?: string;
-  scheduledDate?: string;
+  description?: string | null;
+  scheduledDate?: string | null;
   priority: string;
   status: string;
-  goalId?: string;
+  goalId?: string | null;
   Goal?: {
     title: string;
     color: string;

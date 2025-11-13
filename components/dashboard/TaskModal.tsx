@@ -6,11 +6,11 @@ import { cn } from '@/lib/utils';
 interface Task {
   id?: string;
   title: string;
-  description: string | null;
-  scheduledDate: Date | null;
+  description?: string | null;
+  scheduledDate?: Date | string | null;
   priority: string;
   status: string;
-  goalId: string | null;
+  goalId?: string | null;
 }
 
 interface Goal {
