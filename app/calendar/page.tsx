@@ -54,7 +54,7 @@ export default function CalendarPage() {
       const response = await fetch('/api/tasks');
       if (response.ok) {
         const data = await response.json();
-        setTasks(data.data || []);
+        setTasks(data.tasks || []);
       }
     } catch (error) {
       console.error('Failed to fetch tasks:', error);

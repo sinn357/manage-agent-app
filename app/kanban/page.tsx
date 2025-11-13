@@ -57,8 +57,8 @@ export default function KanbanPage() {
       if (response.ok) {
         const data = await response.json();
         console.log('fetchTasks: Received data:', data);
-        console.log('fetchTasks: Number of tasks:', data.data?.length || 0);
-        setTasks(data.data || []);
+        console.log('fetchTasks: Number of tasks:', data.tasks?.length || 0);
+        setTasks(data.tasks || []);
         console.log('fetchTasks: State updated with tasks');
       } else {
         console.error('fetchTasks: Response not OK:', response.status, response.statusText);
