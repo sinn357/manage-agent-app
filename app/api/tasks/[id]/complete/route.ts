@@ -54,7 +54,7 @@ export async function PATCH(
         },
         _count: {
           select: {
-            focusSessions: true,
+            FocusSession: true,
           },
         },
       },

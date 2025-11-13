@@ -16,7 +16,7 @@ interface Task {
     color: string;
   } | null;
   _count: {
-    focusSessions: number;
+    FocusSession: number;
   };
 }
 
@@ -220,9 +220,9 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
                     )}
 
                     {/* 포커스 세션 */}
-                    {task._count.focusSessions > 0 && (
+                    {task._count.FocusSession > 0 && (
                       <span className="text-gray-500">
-                        🔥 {task._count.focusSessions}
+                        🔥 {task._count.FocusSession}
                       </span>
                     )}
                   </div>
