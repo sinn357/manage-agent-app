@@ -53,7 +53,6 @@ export function showNotification(title: string, options?: NotificationOptions): 
   const defaultOptions: NotificationOptions = {
     icon: '/icon.png',
     badge: '/badge.png',
-    vibrate: [200, 100, 200],
     ...options,
   };
 
