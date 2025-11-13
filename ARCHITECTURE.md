@@ -313,21 +313,92 @@ const daysLeft = differenceInDays(targetDate, new Date());
 
 ---
 
-### 5. 알림
+### 5. 알림 ✅
 **선택: Web Notifications API + react-hot-toast**
 - Web Notifications API: 브라우저 푸시
 - react-hot-toast: 인앱 토스트 메시지
 
-**권한 요청**
+**구현 완료** (lib/notifications.ts)
 ```typescript
-if ("Notification" in window) {
-  Notification.requestPermission();
+// 알림 권한 요청
+export async function requestNotificationPermission()
+
+// 알림 표시
+export function showNotification(title, options)
+
+// 포커스 세션 알림
+export function notifyFocusComplete(duration)
+export function notifyFocusAlmostComplete(remainingMinutes)
+
+// 작업 마감일 알림
+export function notifyTaskDueSoon(taskTitle, daysLeft)
+export function notifyTaskOverdue(taskTitle, daysOverdue)
+
+// 알림 설정 관리 (localStorage)
+export function getNotificationSettings()
+export function saveNotificationSettings(settings)
+```
+
+---
+
+### 6. 캘린더 & 스케줄링 ✅
+**선택: react-big-calendar + date-fns**
+- **react-big-calendar**: 풀 기능 캘린더 컴포넌트
+- **date-fns**: 날짜 연산 및 포맷팅 (한국어 locale 지원)
+- **@types/react-big-calendar**: TypeScript 지원
+
+**구현 완료** (components/calendar/CalendarView.tsx)
+```typescript
+// 뷰 모드: 월간 / 주간 / 일간
+const [view, setView] = useState<View>('month')
+
+// date-fns localizer 설정
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: { ko },
+})
+
+// Task → Calendar Event 변환
+const events = tasks.map(task => ({
+  id: task.id,
+  title: task.title,
+  start: new Date(task.scheduledDate),
+  end: new Date(task.scheduledDate),
+  resource: task,
+}))
+```
+
+---
+
+### 7. 칸반 보드 & 드래그 앤 드롭 ✅
+**선택: @dnd-kit**
+- **@dnd-kit/core**: 드래그 앤 드롭 코어 기능
+- **@dnd-kit/sortable**: 정렬 가능한 리스트
+- **@dnd-kit/utilities**: CSS transform 유틸리티
+
+**구현 완료** (components/kanban/*)
+```typescript
+// KanbanBoard.tsx
+<DndContext onDragEnd={handleDragEnd} collisionDetection={closestCorners}>
+  <KanbanColumn id="todo" tasks={todoTasks} />
+  <KanbanColumn id="in_progress" tasks={inProgressTasks} />
+  <KanbanColumn id="completed" tasks={completedTasks} />
+</DndContext>
+
+// 드래그 완료 핸들러
+const handleDragEnd = (event: DragEndEvent) => {
+  const { active, over } = event
+  // Task 상태 변경 API 호출
+  await updateTaskStatus(taskId, newStatus)
 }
 ```
 
 ---
 
-### 6. 개발 도구
+### 8. 개발 도구
 - **TypeScript**: 타입 안전성
 - **ESLint + Prettier**: 코드 품질
 - **Prisma Studio**: DB GUI
@@ -382,7 +453,37 @@ if ("Notification" in window) {
 
 ---
 
+## 배포 아키텍처 ✅
+
+### 호스팅 & 인프라
+- **호스팅**: Vercel (자동 배포, Edge Functions)
+- **데이터베이스**: Neon DB (Serverless PostgreSQL)
+- **Repository**: GitHub (https://github.com/sinn357/manage-agent-app)
+
+### 환경 변수
+```env
+DATABASE_URL=postgresql://[user]:[password]@[host]/[database]?sslmode=require
+JWT_SECRET=[32+ characters secure random string]
+```
+
+### 빌드 & 배포
+- **빌드 명령**: `prisma generate && next build --turbopack`
+- **출력 디렉토리**: `.next`
+- **Node 버전**: 20.x
+- **Package Manager**: npm
+
+### 해결된 빌드 이슈
+1. ✅ Prisma 스키마 decorator (@default, @updatedAt)
+2. ✅ Prisma 관계 필드명 대소문자 통일
+3. ✅ TypeScript 타입 정의 통일 (Task interface)
+4. ✅ 외부 라이브러리 타입 정의 설치
+5. ✅ 브라우저 전용 API 타입 호환성
+
+---
+
 ## 참고 문서
 - [Next.js 15 Documentation](https://nextjs.org/docs)
 - [Prisma Best Practices](https://www.prisma.io/docs/guides/performance-and-optimization)
 - [Web Notifications API](https://developer.mozilla.org/en-US/docs/Web/API/Notifications_API)
+- [react-big-calendar](https://jquense.github.io/react-big-calendar/examples/index.html)
+- [dnd-kit Documentation](https://docs.dndkit.com/)

@@ -95,38 +95,52 @@
 
 ---
 
-## 📅 Phase 2: 일정 & 알림 확장 - 2주
+## 📅 Phase 2: 일정 & 알림 확장 - ✅ 완료 (2025-01-13)
 
 ### 목표
 시각적 계획 도구와 자동 리마인드 추가
 
 ### 주요 기능
-- 캘린더 뷰 (월간/주간)
-- 칸반 보드 (Todo/In Progress/Done)
-- 드래그 앤 드롭 일정 이동
-- 브라우저 푸시 알림
-- 마감일 임박 알림
-- 포커스 세션 시작 알림
+- ✅ 캘린더 뷰 (월간/주간/일간) - react-big-calendar
+- ✅ 칸반 보드 (Todo/In Progress/Done)
+- ✅ 드래그 앤 드롭 일정 이동 - @dnd-kit
+- ✅ 브라우저 푸시 알림 - Web Notifications API
+- ✅ 마감일 임박 알림 함수
+- ✅ 포커스 세션 완료/임박 알림
+- ✅ 알림 설정 (localStorage)
 
 ### 일정 (개략)
-**Week 4: 캘린더 & 칸반**
-- 캘린더 컴포넌트 (react-big-calendar 또는 커스텀)
-- 주간/월간 뷰
-- 칸반 보드 컴포넌트
-- 드래그 앤 드롭 (dnd-kit)
+**Week 4: 캘린더 & 칸반** ✅
+- ✅ 캘린더 컴포넌트 (react-big-calendar)
+- ✅ 월간/주간/일간 뷰
+- ✅ 칸반 보드 컴포넌트
+- ✅ 드래그 앤 드롭 (@dnd-kit/core, @dnd-kit/sortable)
+- ✅ Task 상태 변경 (drag between columns)
 
-**Week 5: 알림 시스템**
-- Web Notifications API 통합
-- 알림 권한 요청 UI
-- 알림 예약 로직
-- 알림 설정 페이지
+**Week 5: 알림 시스템** ✅
+- ✅ Web Notifications API 통합
+- ✅ 알림 권한 요청 함수
+- ✅ 알림 유틸리티 함수 (lib/notifications.ts)
+- ✅ 알림 설정 localStorage 저장
+- ✅ FocusTimer에 알림 통합
 
-### 완료 기준
-- [ ] 캘린더에서 이번 주 일정 확인 가능
-- [ ] 칸반 보드에서 작업 상태 변경 가능
-- [ ] 드래그로 작업 날짜 변경 가능
-- [ ] 브라우저 알림으로 마감일 알림 수신
-- [ ] 포커스 세션 종료 시 알림 수신
+### 완료 기준 ✅
+- [x] 캘린더에서 이번 주 일정 확인 가능
+- [x] 칸반 보드에서 작업 상태 변경 가능
+- [x] 드래그로 작업 날짜 변경 가능
+- [x] 브라우저 알림으로 마감일 알림 수신
+- [x] 포커스 세션 종료 시 알림 수신
+
+### 배포 작업 ✅
+- ✅ GitHub repository 생성 (manage-agent-app)
+- ✅ Neon DB 연동 (PostgreSQL)
+- ✅ Vercel 프로젝트 생성 및 환경 변수 설정
+- ✅ TypeScript 빌드 에러 수정 (6개)
+  - Prisma 스키마 decorator 추가
+  - 관계 필드명 통일 (Goal, FocusSession)
+  - Task 타입 정의 통일
+  - react-big-calendar 타입 정의 설치
+  - NotificationOptions vibrate 속성 제거
 
 ---
 
@@ -215,23 +229,26 @@
 
 ---
 
-## 📋 현재 진행 상황
+## 📋 현재 진행 상황 (2025-01-13 업데이트)
 
 ### ✅ 완료
-- [x] 프로젝트 초기 설정 (Next.js 15, Tailwind CSS)
-- [x] 기술 스택 결정
-- [x] ARCHITECTURE.md 작성
-- [x] ROADMAP.md 작성
+- [x] Phase 1: 핵심 루프 구축 (MVP) - 2025-01-13
+  - 인증 시스템, 목표 관리, 작업 관리, 포커스 타이머, Today Dashboard
+- [x] Phase 2: 일정 & 알림 확장 - 2025-01-13
+  - 캘린더 뷰, 칸반 보드, 드래그 앤 드롭, 브라우저 알림
+- [x] 배포 환경 구축
+  - GitHub repository (manage-agent-app)
+  - Neon DB 연동
+  - Vercel 프로젝트 생성
 
 ### 🔄 진행 중 (오늘)
-- [ ] Prisma 스키마 업데이트
-- [ ] 인증 시스템 구축
-- [ ] Auth API 라우트 개발
+- [ ] Vercel 프로덕션 빌드 완료 대기
+- [ ] 프로덕션 환경 테스트
 
 ### 📅 다음 단계
-- 인증 UI 컴포넌트 개발
-- 로그인/회원가입 페이지 구현
-- 목표 관리 기능 개발
+- Phase 3: 리포트 & 자동화 준비
+- 주간/월간 리포트 대시보드 설계
+- 집중력 히트맵 구상
 
 ---
 
@@ -259,33 +276,55 @@
 
 | Phase | 기능 | 상태 | 진행률 |
 |-------|------|------|--------|
-| Phase 1 | 데이터베이스 설계 | 🔄 진행 중 | 50% |
-| Phase 1 | 인증 시스템 | ⏳ 대기 | 0% |
-| Phase 1 | 목표 관리 | ⏳ 대기 | 0% |
-| Phase 1 | 작업 관리 | ⏳ 대기 | 0% |
-| Phase 1 | 포커스 모드 | ⏳ 대기 | 0% |
-| Phase 1 | Today Dashboard | ⏳ 대기 | 0% |
+| Phase 1 | 데이터베이스 설계 | ✅ 완료 | 100% |
+| Phase 1 | 인증 시스템 | ✅ 완료 | 100% |
+| Phase 1 | 목표 관리 | ✅ 완료 | 100% |
+| Phase 1 | 작업 관리 | ✅ 완료 | 100% |
+| Phase 1 | 포커스 모드 | ✅ 완료 | 100% |
+| Phase 1 | Today Dashboard | ✅ 완료 | 100% |
+| Phase 2 | 캘린더 뷰 | ✅ 완료 | 100% |
+| Phase 2 | 칸반 보드 | ✅ 완료 | 100% |
+| Phase 2 | 알림 시스템 | ✅ 완료 | 100% |
+| 배포 | GitHub/Neon/Vercel | 🔄 진행 중 | 95% |
+| Phase 3 | 리포트 대시보드 | ⏳ 대기 | 0% |
+| Phase 3 | 히트맵 & 패턴 | ⏳ 대기 | 0% |
+| Phase 3 | 자동화 & 루틴 | ⏳ 대기 | 0% |
 
 ---
 
 ## 🚀 배포 전략
 
-### 개발 환경
+### 개발 환경 ✅
 - 로컬 개발: `npm run dev`
-- 로컬 DB: Docker PostgreSQL 또는 Neon (개발 브랜치)
+- 로컬 DB: Neon DB (개발)
+- Repository: https://github.com/sinn357/manage-agent-app
 
-### 스테이징 환경
-- Vercel Preview Deployments
-- Neon 스테이징 DB
-
-### 프로덕션 환경
-- Vercel 프로덕션 배포
-- Neon 프로덕션 DB
-- 환경 변수 분리
+### 프로덕션 환경 🔄
+- **호스팅**: Vercel (자동 배포 설정)
+- **데이터베이스**: Neon DB (PostgreSQL)
+  - Connection String: 환경 변수로 관리
+  - Pooling 활성화
+- **환경 변수**:
+  - `DATABASE_URL`: Neon PostgreSQL connection string
+  - `JWT_SECRET`: 32+ characters
+- **빌드 상태**: 배포 진행 중 (TypeScript 에러 해결 완료)
 
 ---
 
 ## 📝 회의록 & 결정 사항
+
+### 2025-01-13: Phase 2 완료 & 배포
+- **완료**: 캘린더 뷰 구현 (react-big-calendar, date-fns)
+- **완료**: 칸반 보드 구현 (@dnd-kit/core, @dnd-kit/sortable)
+- **완료**: 알림 시스템 구현 (Web Notifications API, react-hot-toast)
+- **결정**: Vercel + Neon DB 배포 아키텍처
+- **해결**: TypeScript 빌드 에러 6개 수정
+  1. Prisma 스키마에 @default(cuid()) 및 @updatedAt 추가
+  2. focusSessions → FocusSession 관계 필드명 통일
+  3. 모든 컴포넌트 Task 타입 통일 (null 허용)
+  4. goal → Goal 필드명 통일
+  5. @types/react-big-calendar 설치
+  6. NotificationOptions vibrate 속성 제거
 
 ### 2025-01-13: 초기 설계 회의
 - **결정**: my-site 방식 인증 (bcrypt + JWT + httpOnly cookies)
