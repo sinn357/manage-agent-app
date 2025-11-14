@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
           if (!existingTask) {
             // 시간 설정
-            let scheduledDateTime = new Date(currentDate);
+            const scheduledDateTime = new Date(currentDate);
             if (routine.timeOfDay) {
               const [hour, minute] = routine.timeOfDay.split(':');
               scheduledDateTime.setHours(parseInt(hour), parseInt(minute), 0, 0);
