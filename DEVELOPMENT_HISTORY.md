@@ -421,6 +421,70 @@ manage-agent-app/
 
 ---
 
+## 🐛 버그 수정 (2025-11-15)
+
+Phase 1-3 완료 후, 사용자 피드백을 바탕으로 3가지 주요 버그를 수정했습니다.
+
+### 1. 포커스 히스토리 삭제 기능 추가
+**문제**: 포커스 세션 기록을 삭제할 수 있는 기능이 없었음
+
+**해결**:
+- `/app/api/focus-sessions/route.ts`: DELETE 엔드포인트 추가
+  - 세션 소유권 확인 후 삭제
+  - 인증 및 권한 검증
+- `components/dashboard/FocusHistory.tsx`: 삭제 버튼 UI 추가
+  - 호버 시 삭제 버튼 표시 (`group-hover` 활용)
+  - 삭제 확인 다이얼로그
+  - 삭제 후 목록 자동 새로고침
+
+### 2. 칸반 보드 '할 일' 컬럼 드래그 버그 수정
+**문제**: 칸반 보드에서 '진행 중', '완료' → '할 일' 컬럼으로 작업 이동 불가
+
+**원인**:
+- 기존 로직이 컬럼 ID만 확인
+- 작업 카드 위에 드롭 시 `over.id`가 작업 ID가 되어 컬럼 ID 매칭 실패
+
+**해결** (`components/kanban/KanbanBoard.tsx:90-99`):
+```typescript
+// 컬럼 ID 확인
+let targetStatus = COLUMNS.find(col => col.id === over.id)?.id;
+
+// 컬럼 ID가 아니면 작업 위에 드롭한 것으로 간주
+if (!targetStatus) {
+  const targetTask = tasks.find(t => t.id === over.id);
+  if (targetTask) targetStatus = targetTask.status;
+}
+```
+
+### 3. 모바일 터치 인식 개선
+**문제**: 모바일 환경에서 칸반 보드 드래그 앤 드롭 조작이 매끄럽지 않음
+
+**해결** (`components/kanban/KanbanBoard.tsx:50-67`):
+- **PointerSensor**: 8px 이동 후 드래그 시작
+- **TouchSensor**: 200ms 롱프레스 + 8px tolerance
+- **MouseSensor**: 8px 이동 후 드래그 시작
+
+```typescript
+const sensors = useSensors(
+  useSensor(PointerSensor, {
+    activationConstraint: { distance: 8 }
+  }),
+  useSensor(TouchSensor, {
+    activationConstraint: { delay: 200, tolerance: 8 }
+  }),
+  useSensor(MouseSensor, {
+    activationConstraint: { distance: 8 }
+  })
+);
+```
+
+### 영향
+- ✅ 사용자 경험 개선 (데스크톱/모바일)
+- ✅ 데이터 관리 유연성 향상
+- ✅ 칸반 보드 사용성 개선
+
+---
+
 ## 📝 교훈 & 인사이트
 
 ### 개발 프로세스
