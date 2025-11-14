@@ -132,3 +132,60 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+// DELETE /api/focus-sessions - 포커스 세션 삭제
+export async function DELETE(request: NextRequest) {
+  try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get('id');
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { success: false, error: 'Session ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // 세션 소유권 확인
+    const session = await prisma.focusSession.findFirst({
+      where: {
+        id: sessionId,
+        userId,
+      },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: 'Session not found' },
+        { status: 404 }
+      );
+    }
+
+    // 세션 삭제
+    await prisma.focusSession.delete({
+      where: {
+        id: sessionId,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Session deleted',
+    });
+  } catch (error) {
+    console.error('Delete focus session error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
