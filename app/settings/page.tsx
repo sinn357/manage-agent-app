@@ -12,10 +12,12 @@ import {
   type NotificationSettings,
 } from '@/lib/notifications';
 import toast from 'react-hot-toast';
+import RoutineList from '@/components/routines/RoutineList';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
+  const [activeTab, setActiveTab] = useState<'notifications' | 'routines'>('notifications');
   const [permission, setPermission] = useState<'granted' | 'denied' | 'default'>('default');
   const [settings, setSettings] = useState<NotificationSettings>(getNotificationSettings());
   const [saving, setSaving] = useState(false);
@@ -79,12 +81,12 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* 헤더 */}
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-800">설정</h1>
-            <p className="text-gray-600 mt-1">알림 및 환경 설정을 관리하세요</p>
+            <p className="text-gray-600 mt-1">알림, 루틴 및 환경 설정을 관리하세요</p>
           </div>
           <button
             onClick={() => router.push('/dashboard')}
@@ -94,8 +96,37 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {/* 알림 권한 */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        {/* Tabs */}
+        <div className="mb-6 border-b border-gray-200">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className={`pb-4 px-2 border-b-2 font-medium transition-colors ${
+                activeTab === 'notifications'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              🔔 알림 설정
+            </button>
+            <button
+              onClick={() => setActiveTab('routines')}
+              className={`pb-4 px-2 border-b-2 font-medium transition-colors ${
+                activeTab === 'routines'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              🔁 루틴 관리
+            </button>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'notifications' && (
+          <div>
+            {/* 알림 권한 */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">알림 권한</h2>
           <div className="flex items-center justify-between">
             <div>
@@ -234,15 +265,23 @@ export default function SettingsPage() {
             </label>
           </div>
 
-          {/* 저장 버튼 */}
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
-          >
-            {saving ? '저장 중...' : '설정 저장'}
-          </button>
-        </div>
+              {/* 저장 버튼 */}
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+              >
+                {saving ? '저장 중...' : '설정 저장'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'routines' && (
+          <div>
+            <RoutineList />
+          </div>
+        )}
       </div>
     </div>
   );

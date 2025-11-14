@@ -79,6 +79,24 @@ model Task {
   @@index([userId, status, scheduledDate])
 }
 
+model Routine {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  recurrenceType String   @default("daily") // daily, weekly, monthly
+  recurrenceDays String?  // JSON array: "[0,1,2,3,4,5,6]" for days of week
+  timeOfDay      String?  // "09:00" format
+  duration       Int?     // minutes
+  priority       String   @default("mid")
+  active         Boolean  @default(true)
+  userId         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, active])
+}
+
 model User {
   id           String         @id @default(cuid())
   email        String         @unique
@@ -90,4 +108,5 @@ model User {
   FocusSession FocusSession[]
   Goal         Goal[]
   Task         Task[]
+  Routine      Routine[]
 }
