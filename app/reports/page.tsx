@@ -6,6 +6,9 @@ import { useEffect, useState } from 'react';
 import StatsOverview from '@/components/reports/StatsOverview';
 import GoalProgressChart from '@/components/reports/GoalProgressChart';
 import FocusTimeChart from '@/components/reports/FocusTimeChart';
+import ProductivityHeatmap from '@/components/reports/ProductivityHeatmap';
+import WeeklyProductivity from '@/components/reports/WeeklyProductivity';
+import ProductivityInsights from '@/components/reports/ProductivityInsights';
 
 interface ReportData {
   period: {
@@ -41,11 +44,40 @@ interface ReportData {
   };
 }
 
+interface HeatmapData {
+  heatmap: Array<{
+    day: number;
+    hour: number;
+    minutes: number;
+    hours: number;
+  }>;
+  dailyTotals: Array<{
+    day: number;
+    dayName: string;
+    minutes: number;
+    hours: number;
+  }>;
+  hourlyTotals: Array<{
+    hour: number;
+    minutes: number;
+    hours: number;
+  }>;
+  insights: {
+    bestHour: number;
+    bestHourText: string;
+    bestDay: number;
+    bestDayText: string;
+    totalSessions: number;
+  };
+}
+
 export default function ReportsPage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const [tabType, setTabType] = useState<'report' | 'analysis'>('report');
   const [viewType, setViewType] = useState<'week' | 'month'>('week');
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [heatmapData, setHeatmapData] = useState<HeatmapData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
@@ -56,9 +88,13 @@ export default function ReportsPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchReportData();
+      if (tabType === 'report') {
+        fetchReportData();
+      } else {
+        fetchHeatmapData();
+      }
     }
-  }, [isAuthenticated, viewType]);
+  }, [isAuthenticated, viewType, tabType]);
 
   const fetchReportData = async () => {
     setIsLoadingData(true);
@@ -70,6 +106,22 @@ export default function ReportsPage() {
       }
     } catch (error) {
       console.error('Failed to fetch report data:', error);
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  const fetchHeatmapData = async () => {
+    setIsLoadingData(true);
+    try {
+      const weeks = viewType === 'week' ? 4 : 12;
+      const response = await fetch(`/api/analytics/heatmap?weeks=${weeks}`);
+      const result = await response.json();
+      if (result.success) {
+        setHeatmapData(result.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch heatmap data:', error);
     } finally {
       setIsLoadingData(false);
     }
@@ -141,8 +193,31 @@ export default function ReportsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* View Type Selector */}
-        <div className="mb-6 flex justify-center">
+        {/* Tab Selector */}
+        <div className="mb-6 flex justify-center gap-4">
+          <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
+            <button
+              onClick={() => setTabType('report')}
+              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+                tabType === 'report'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:text-gray-900'
+              }`}
+            >
+              📊 리포트
+            </button>
+            <button
+              onClick={() => setTabType('analysis')}
+              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+                tabType === 'analysis'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:text-gray-900'
+              }`}
+            >
+              🔥 패턴 분석
+            </button>
+          </div>
+
           <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
             <button
               onClick={() => setViewType('week')}
@@ -152,7 +227,7 @@ export default function ReportsPage() {
                   : 'text-gray-700 hover:text-gray-900'
               }`}
             >
-              주간 리포트
+              주간
             </button>
             <button
               onClick={() => setViewType('month')}
@@ -162,20 +237,20 @@ export default function ReportsPage() {
                   : 'text-gray-700 hover:text-gray-900'
               }`}
             >
-              월간 리포트
+              월간
             </button>
           </div>
         </div>
 
-        {/* Report Content */}
+        {/* Content */}
         {isLoadingData ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">리포트 로딩 중...</p>
+              <p className="text-gray-600">데이터 로딩 중...</p>
             </div>
           </div>
-        ) : reportData ? (
+        ) : tabType === 'report' && reportData ? (
           <div className="space-y-6">
             {/* Stats Overview */}
             <StatsOverview tasks={reportData.tasks} focus={reportData.focus} />
@@ -203,6 +278,20 @@ export default function ReportsPage() {
                   <p className="text-sm text-gray-600 mt-1">완료</p>
                 </div>
               </div>
+            </div>
+          </div>
+        ) : tabType === 'analysis' && heatmapData ? (
+          <div className="space-y-6">
+            {/* Heatmap */}
+            <ProductivityHeatmap heatmap={heatmapData.heatmap} />
+
+            {/* Weekly Productivity & Insights */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <WeeklyProductivity dailyTotals={heatmapData.dailyTotals} />
+              <ProductivityInsights
+                insights={heatmapData.insights}
+                hourlyTotals={heatmapData.hourlyTotals}
+              />
             </div>
           </div>
         ) : (
