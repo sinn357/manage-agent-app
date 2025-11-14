@@ -157,6 +157,12 @@ export default function DashboardPage() {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => router.push('/reports')}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              📊 리포트
+            </button>
+            <button
               onClick={() => router.push('/calendar')}
               className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
             >
