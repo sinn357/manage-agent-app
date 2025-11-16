@@ -84,7 +84,10 @@ export default function SettingsPage() {
       <div className="max-w-6xl mx-auto">
         {/* 헤더 */}
         <div className="mb-6 flex items-center justify-between">
-          <div>
+          <div
+            onClick={() => router.push('/dashboard')}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <h1 className="text-3xl font-bold text-gray-800">설정</h1>
             <p className="text-gray-600 mt-1">알림, 루틴 및 환경 설정을 관리하세요</p>
           </div>

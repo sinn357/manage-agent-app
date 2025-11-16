@@ -152,7 +152,10 @@ export default function ReportsPage() {
       {/* Header */}
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
+          <div
+            onClick={() => router.push('/dashboard')}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <h1 className="text-2xl font-bold text-gray-900">리포트</h1>
             <p className="text-sm text-gray-600">생산성 분석 및 통계</p>
           </div>

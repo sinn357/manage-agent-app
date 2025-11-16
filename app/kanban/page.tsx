@@ -138,7 +138,10 @@ export default function KanbanPage() {
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
         <div className="mb-6 flex items-center justify-between">
-          <div>
+          <div
+            onClick={() => router.push('/dashboard')}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <h1 className="text-3xl font-bold text-gray-800">칸반 보드</h1>
             <p className="text-gray-600 mt-1">작업 상태를 드래그하여 변경하세요</p>
           </div>
