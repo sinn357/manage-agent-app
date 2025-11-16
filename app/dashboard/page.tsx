@@ -91,21 +91,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
+  // 모든 hook을 early return 이전에 호출
   const handleLogout = useCallback(async () => {
     await logout();
     router.push('/login');
@@ -154,6 +140,21 @@ export default function DashboardPage() {
     // 목표 진행률도 업데이트되므로 GoalPanel도 리프레시
     setGoalKey((prev) => prev + 1);
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">로딩 중...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400">
