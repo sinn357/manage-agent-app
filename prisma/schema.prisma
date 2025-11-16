@@ -63,20 +63,21 @@ model Milestone {
 }
 
 model Task {
-  id            String         @id @default(cuid())
-  title         String
-  description   String?
-  scheduledDate DateTime?
-  scheduledTime String?        // "09:30" 형식
-  priority      String         @default("mid")
-  status        String         @default("todo")
-  order         Int            @default(0)
-  userId        String
-  goalId        String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  completedAt   DateTime?
-  FocusSession  FocusSession[]
+  id               String         @id @default(cuid())
+  title            String
+  description      String?
+  scheduledDate    DateTime?
+  scheduledTime    String?        // "09:30" 형식
+  scheduledEndTime String?        // "11:00" 형식
+  priority         String         @default("mid")
+  status           String         @default("todo")
+  order            Int            @default(0)
+  userId           String
+  goalId           String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  completedAt      DateTime?
+  FocusSession     FocusSession[]
   Goal          Goal?          @relation(fields: [goalId], references: [id])
   User          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 

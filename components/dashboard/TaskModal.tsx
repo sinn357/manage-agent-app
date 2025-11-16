@@ -9,6 +9,7 @@ interface Task {
   description?: string | null;
   scheduledDate?: Date | string | null;
   scheduledTime?: string | null;
+  scheduledEndTime?: string | null;
   priority: string;
   status: string;
   goalId?: string | null;
@@ -35,6 +36,7 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
     description: '',
     scheduledDate: '',
     scheduledTime: '',
+    scheduledEndTime: '',
     priority: 'mid',
     goalId: '',
   });
@@ -60,6 +62,7 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
             ? new Date(task.scheduledDate).toISOString().split('T')[0]
             : '',
           scheduledTime: task.scheduledTime || '',
+          scheduledEndTime: task.scheduledEndTime || '',
           priority: task.priority,
           goalId: task.goalId || '',
         });
@@ -73,6 +76,7 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
           description: '',
           scheduledDate: dateValue,
           scheduledTime: '',
+          scheduledEndTime: '',
           priority: 'mid',
           goalId: '',
         });
@@ -118,6 +122,7 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
           description: formData.description || null,
           scheduledDate: formData.scheduledDate || null,
           scheduledTime: formData.scheduledTime || null,
+          scheduledEndTime: formData.scheduledEndTime || null,
           priority: formData.priority,
           goalId: formData.goalId || null,
         }),
@@ -232,21 +237,22 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
             />
           </div>
 
-          {/* 날짜 & 시간 */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 mb-1">
-                날짜
-              </label>
-              <input
-                id="scheduledDate"
-                type="date"
-                value={formData.scheduledDate}
-                onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          {/* 날짜 */}
+          <div>
+            <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 mb-1">
+              날짜
+            </label>
+            <input
+              id="scheduledDate"
+              type="date"
+              value={formData.scheduledDate}
+              onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
 
+          {/* 시작 시간 & 종료 시간 */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="scheduledTime" className="block text-sm font-medium text-gray-700 mb-1">
                 시작 시간
@@ -258,6 +264,20 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
                 onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="09:00"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="scheduledEndTime" className="block text-sm font-medium text-gray-700 mb-1">
+                종료 시간
+              </label>
+              <input
+                id="scheduledEndTime"
+                type="time"
+                value={formData.scheduledEndTime}
+                onChange={(e) => setFormData({ ...formData, scheduledEndTime: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="11:00"
               />
             </div>
           </div>
