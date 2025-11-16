@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { title, description, scheduledDate, scheduledTime, priority, goalId } = body;
+    const { title, description, scheduledDate, scheduledTime, scheduledEndTime, priority, goalId } = body;
 
     // 입력 유효성 검사
     if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -149,6 +149,7 @@ export async function POST(request: NextRequest) {
         description: description?.trim() || null,
         scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
         scheduledTime: scheduledTime || null,
+        scheduledEndTime: scheduledEndTime || null,
         priority: taskPriority,
         order: newOrder,
         userId,

@@ -24,6 +24,7 @@ interface Task {
   description?: string | null;
   scheduledDate?: string | null;
   scheduledTime?: string | null;
+  scheduledEndTime?: string | null;
   priority: string;
   status: string;
   goalId?: string | null;
@@ -59,16 +60,22 @@ export default function CalendarView({ tasks, onSelectEvent, onSelectSlot }: Cal
         const start = new Date(task.scheduledDate!);
         const end = new Date(task.scheduledDate!);
 
-        // scheduledTime이 있으면 시간 설정
-        if (task.scheduledTime) {
+        // 시간 정보 처리
+        if (task.scheduledTime && task.scheduledEndTime) {
+          // 시작 시간과 종료 시간이 모두 있는 경우
+          const [startHours, startMinutes] = task.scheduledTime.split(':').map(Number);
+          const [endHours, endMinutes] = task.scheduledEndTime.split(':').map(Number);
+          start.setHours(startHours, startMinutes, 0, 0);
+          end.setHours(endHours, endMinutes, 0, 0);
+        } else if (task.scheduledTime) {
+          // 시작 시간만 있는 경우 (1시간 duration)
           const [hours, minutes] = task.scheduledTime.split(':').map(Number);
           start.setHours(hours, minutes, 0, 0);
-          // 기본 1시간 duration
           end.setHours(hours + 1, minutes, 0, 0);
         } else {
-          // 시간 정보가 없으면 하루 종일 이벤트로 표시
-          start.setHours(0, 0, 0, 0);
-          end.setHours(23, 59, 59, 999);
+          // 시간 정보가 없으면 디폴트 9:00-11:59
+          start.setHours(9, 0, 0, 0);
+          end.setHours(11, 59, 59, 999);
         }
 
         return {
