@@ -2,14 +2,22 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import GoalPanel from '@/components/dashboard/GoalPanel';
-import GoalModal from '@/components/dashboard/GoalModal';
 import TaskList from '@/components/dashboard/TaskList';
-import TaskModal from '@/components/dashboard/TaskModal';
 import FocusTimer from '@/components/dashboard/FocusTimer';
 import FocusHistory from '@/components/dashboard/FocusHistory';
+
+// 모달 컴포넌트는 필요할 때만 로드
+const GoalModal = dynamic(() => import('@/components/dashboard/GoalModal'), {
+  ssr: false,
+});
+
+const TaskModal = dynamic(() => import('@/components/dashboard/TaskModal'), {
+  ssr: false,
+});
 
 interface Goal {
   id: string;
@@ -98,54 +106,54 @@ export default function DashboardPage() {
     return null;
   }
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await logout();
     router.push('/login');
-  };
+  }, [logout, router]);
 
-  const handleAddGoal = () => {
+  const handleAddGoal = useCallback(() => {
     setSelectedGoal(null);
     setIsGoalModalOpen(true);
-  };
+  }, []);
 
-  const handleGoalClick = (goal: Goal) => {
+  const handleGoalClick = useCallback((goal: Goal) => {
     setSelectedGoal(goal);
     setIsGoalModalOpen(true);
-  };
+  }, []);
 
-  const handleGoalModalClose = () => {
+  const handleGoalModalClose = useCallback(() => {
     setIsGoalModalOpen(false);
     setSelectedGoal(null);
-  };
+  }, []);
 
-  const handleGoalSuccess = () => {
+  const handleGoalSuccess = useCallback(() => {
     // GoalPanel을 리프레시하기 위해 key를 변경
     setGoalKey((prev) => prev + 1);
     // Task 목록도 리프레시 (목표 진행률 업데이트 때문에)
     setTaskKey((prev) => prev + 1);
-  };
+  }, []);
 
-  const handleAddTask = () => {
+  const handleAddTask = useCallback(() => {
     setSelectedTask(null);
     setIsTaskModalOpen(true);
-  };
+  }, []);
 
-  const handleTaskClick = (task: Task) => {
+  const handleTaskClick = useCallback((task: Task) => {
     setSelectedTask(task);
     setIsTaskModalOpen(true);
-  };
+  }, []);
 
-  const handleTaskModalClose = () => {
+  const handleTaskModalClose = useCallback(() => {
     setIsTaskModalOpen(false);
     setSelectedTask(null);
-  };
+  }, []);
 
-  const handleTaskSuccess = () => {
+  const handleTaskSuccess = useCallback(() => {
     // TaskList를 리프레시하기 위해 key를 변경
     setTaskKey((prev) => prev + 1);
     // 목표 진행률도 업데이트되므로 GoalPanel도 리프레시
     setGoalKey((prev) => prev + 1);
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400">

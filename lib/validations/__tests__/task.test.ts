@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { taskFormSchema } from '../task';
+import { taskSchema } from '../task';
 
-describe('taskFormSchema', () => {
+describe('taskSchema', () => {
   it('should validate valid task data', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '테스트 작업',
       description: '작업 설명',
       scheduledDate: '2025-11-16',
@@ -17,7 +17,7 @@ describe('taskFormSchema', () => {
   });
 
   it('should reject empty title', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '',
       priority: 'mid',
     });
@@ -30,7 +30,7 @@ describe('taskFormSchema', () => {
 
   it('should reject title longer than 200 characters', () => {
     const longTitle = 'a'.repeat(201);
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: longTitle,
     });
 
@@ -41,7 +41,7 @@ describe('taskFormSchema', () => {
   });
 
   it('should reject invalid time format', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '작업',
       scheduledTime: '25:00', // invalid hour
       scheduledEndTime: '14:00',
@@ -51,7 +51,7 @@ describe('taskFormSchema', () => {
   });
 
   it('should reject end time before start time', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '작업',
       scheduledTime: '14:00',
       scheduledEndTime: '13:00', // before start
@@ -59,14 +59,14 @@ describe('taskFormSchema', () => {
 
     expect(result.success).toBe(false);
     if (!result.success) {
-      const endTimeError = result.error.issues.find(issue => issue.message.includes('종료 시간'));
+      const endTimeError = result.error.issues.find((issue: { message: string }) => issue.message.includes('종료 시간'));
       expect(endTimeError).toBeDefined();
       expect(endTimeError?.message).toBe('종료 시간은 시작 시간보다 늦어야 합니다');
     }
   });
 
   it('should accept null values for optional fields', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '작업',
       description: null,
       scheduledDate: null,
@@ -82,7 +82,7 @@ describe('taskFormSchema', () => {
     const priorities = ['low', 'mid', 'high'];
 
     priorities.forEach(priority => {
-      const result = taskFormSchema.safeParse({
+      const result = taskSchema.safeParse({
         title: '작업',
         priority,
       });
@@ -91,7 +91,7 @@ describe('taskFormSchema', () => {
   });
 
   it('should reject invalid priority values', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '작업',
       priority: 'invalid',
     });
@@ -100,7 +100,7 @@ describe('taskFormSchema', () => {
   });
 
   it('should handle scheduledTime without scheduledEndTime', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '작업',
       scheduledTime: '14:00',
       scheduledEndTime: '',
@@ -111,7 +111,7 @@ describe('taskFormSchema', () => {
   });
 
   it('should allow same day start and end time crossing midnight', () => {
-    const result = taskFormSchema.safeParse({
+    const result = taskSchema.safeParse({
       title: '야간 작업',
       scheduledTime: '23:00',
       scheduledEndTime: '23:30',

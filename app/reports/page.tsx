@@ -3,12 +3,32 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import StatsOverview from '@/components/reports/StatsOverview';
-import GoalProgressChart from '@/components/reports/GoalProgressChart';
-import FocusTimeChart from '@/components/reports/FocusTimeChart';
-import ProductivityHeatmap from '@/components/reports/ProductivityHeatmap';
-import WeeklyProductivity from '@/components/reports/WeeklyProductivity';
-import ProductivityInsights from '@/components/reports/ProductivityInsights';
+import dynamic from 'next/dynamic';
+
+// 차트 컴포넌트들은 lazy load (recharts 번들이 크기 때문)
+const StatsOverview = dynamic(() => import('@/components/reports/StatsOverview'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-48" />,
+});
+
+const GoalProgressChart = dynamic(() => import('@/components/reports/GoalProgressChart'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+});
+
+const FocusTimeChart = dynamic(() => import('@/components/reports/FocusTimeChart'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+});
+
+const ProductivityHeatmap = dynamic(() => import('@/components/reports/ProductivityHeatmap'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+});
+
+const WeeklyProductivity = dynamic(() => import('@/components/reports/WeeklyProductivity'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+});
+
+const ProductivityInsights = dynamic(() => import('@/components/reports/ProductivityInsights'), {
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-48" />,
+});
 
 interface ReportData {
   period: {

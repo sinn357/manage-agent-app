@@ -3,8 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import KanbanBoard from '@/components/kanban/KanbanBoard';
-import TaskModal from '@/components/dashboard/TaskModal';
+import dynamic from 'next/dynamic';
+
+// KanbanBoard는 드래그앤드롭 라이브러리(@dnd-kit)를 포함하므로 lazy load
+const KanbanBoard = dynamic(() => import('@/components/kanban/KanbanBoard'), {
+  loading: () => (
+    <div className="animate-pulse bg-gray-200 rounded-lg h-[600px] flex items-center justify-center">
+      <p className="text-gray-500">칸반 보드 로딩 중...</p>
+    </div>
+  ),
+  ssr: false,
+});
+
+const TaskModal = dynamic(() => import('@/components/dashboard/TaskModal'), {
+  ssr: false,
+});
 
 interface Task {
   id: string;

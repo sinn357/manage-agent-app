@@ -3,8 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import CalendarView from '@/components/calendar/CalendarView';
-import TaskModal from '@/components/dashboard/TaskModal';
+import dynamic from 'next/dynamic';
+
+// CalendarView는 react-big-calendar를 포함하므로 lazy load
+const CalendarView = dynamic(() => import('@/components/calendar/CalendarView'), {
+  loading: () => (
+    <div className="animate-pulse bg-gray-200 rounded-lg h-[600px] flex items-center justify-center">
+      <p className="text-gray-500">캘린더 로딩 중...</p>
+    </div>
+  ),
+  ssr: false,
+});
+
+const TaskModal = dynamic(() => import('@/components/dashboard/TaskModal'), {
+  ssr: false,
+});
 
 interface Task {
   id: string;

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { goalFormSchema } from '../goal';
+import { goalSchema } from '../goal';
 
-describe('goalFormSchema', () => {
+describe('goalSchema', () => {
   it('should validate valid goal data', () => {
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: '목표 제목',
       description: '목표 설명',
       targetDate: '2025-12-31',
@@ -14,7 +14,7 @@ describe('goalFormSchema', () => {
   });
 
   it('should reject empty title', () => {
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: '',
     });
 
@@ -26,7 +26,7 @@ describe('goalFormSchema', () => {
 
   it('should reject title longer than 100 characters', () => {
     const longTitle = 'a'.repeat(101);
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: longTitle,
     });
 
@@ -38,7 +38,7 @@ describe('goalFormSchema', () => {
 
   it('should reject description longer than 500 characters', () => {
     const longDescription = 'a'.repeat(501);
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: '목표',
       description: longDescription,
     });
@@ -50,7 +50,7 @@ describe('goalFormSchema', () => {
   });
 
   it('should accept null values for optional fields', () => {
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: '목표',
       description: null,
       targetDate: null,
@@ -64,7 +64,7 @@ describe('goalFormSchema', () => {
     const validColors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
 
     validColors.forEach(color => {
-      const result = goalFormSchema.safeParse({
+      const result = goalSchema.safeParse({
         title: '목표',
         color,
       });
@@ -76,7 +76,7 @@ describe('goalFormSchema', () => {
     const invalidColors = ['red', 'rgb(255,0,0)', '#fff', '#12345', 'not-a-color'];
 
     invalidColors.forEach(color => {
-      const result = goalFormSchema.safeParse({
+      const result = goalSchema.safeParse({
         title: '목표',
         color,
       });
@@ -85,7 +85,7 @@ describe('goalFormSchema', () => {
   });
 
   it('should validate ISO date format for targetDate', () => {
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: '목표',
       targetDate: '2025-12-31',
     });
@@ -94,7 +94,7 @@ describe('goalFormSchema', () => {
   });
 
   it('should reject invalid date format', () => {
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: '목표',
       targetDate: '31/12/2025', // wrong format
     });
@@ -103,7 +103,7 @@ describe('goalFormSchema', () => {
   });
 
   it('should use default color if not provided', () => {
-    const result = goalFormSchema.safeParse({
+    const result = goalSchema.safeParse({
       title: '목표',
     });
 
