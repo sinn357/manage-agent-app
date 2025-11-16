@@ -38,7 +38,7 @@ export default function WeeklyProductivity({ dailyTotals }: WeeklyProductivityPr
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">요일별 생산성</h2>
         <div className="text-sm text-gray-600">
-          평균 <span className="font-semibold text-blue-600">{avgHours.toFixed(1)}h/일</span>
+          평균 <span className="font-semibold text-blue-500">{avgHours.toFixed(1)}h/일</span>
         </div>
       </div>
 

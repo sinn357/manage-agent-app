@@ -33,7 +33,7 @@ export default function FocusTimeChart({ dailyFocus }: FocusTimeChartProps) {
         <h2 className="text-lg font-semibold text-gray-900">일별 집중 시간</h2>
         <div className="flex gap-4 text-sm">
           <span className="text-gray-600">
-            총 <span className="font-semibold text-blue-600">{totalHours.toFixed(1)}h</span>
+            총 <span className="font-semibold text-blue-500">{totalHours.toFixed(1)}h</span>
           </span>
           <span className="text-gray-600">
             평균 <span className="font-semibold text-green-600">{avgHours.toFixed(1)}h</span>

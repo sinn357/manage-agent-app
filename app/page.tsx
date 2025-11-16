@@ -19,7 +19,7 @@ export default function Home() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
           <p className="text-gray-600">로딩 중...</p>
         </div>
       </div>
@@ -42,13 +42,13 @@ export default function Home() {
         <div className="flex gap-4 justify-center">
           <Link
             href="/login"
-            className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors"
           >
             로그인
           </Link>
           <Link
             href="/register"
-            className="px-6 py-3 bg-white text-blue-600 font-medium rounded-lg border-2 border-blue-600 hover:bg-blue-50 transition-colors"
+            className="px-6 py-3 bg-white text-violet-500 font-medium rounded-lg border-2 border-violet-500 hover:bg-violet-50 transition-colors"
           >
             회원가입
           </Link>

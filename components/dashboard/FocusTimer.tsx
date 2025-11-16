@@ -220,7 +220,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
           <button
             onClick={requestNotificationPermission}
-            className="text-xs text-blue-600 hover:text-blue-700"
+            className="text-xs text-violet-500 hover:text-violet-600"
           >
             알림 허용
           </button>
@@ -244,7 +244,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         {timerState !== 'idle' && (
           <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-600 transition-all duration-1000 ease-linear"
+              className="h-full bg-blue-500 transition-all duration-1000 ease-linear"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -262,7 +262,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
                 className={cn(
                   'flex-1 py-2 px-3 text-sm font-medium rounded-md border transition-colors',
                   selectedMinutes === preset.minutes && !customMinutes
-                    ? 'bg-blue-600 text-white border-blue-600'
+                    ? 'bg-blue-500 text-white border-blue-500'
                     : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
                 )}
               >
@@ -315,7 +315,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         {timerState === 'idle' && (
           <button
             onClick={handleStart}
-            className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
+            className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition-colors"
           >
             시작
           </button>
@@ -342,7 +342,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           <>
             <button
               onClick={handlePause}
-              className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors"
+              className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition-colors"
             >
               재개
             </button>

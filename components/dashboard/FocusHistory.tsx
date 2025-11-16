@@ -122,7 +122,7 @@ export default function FocusHistory({ refreshKey = 0 }: FocusHistoryProps) {
           </div>
           <div>
             <span className="text-gray-600">총 시간:</span>{' '}
-            <span className="font-medium text-blue-600">{formatDuration(stats.totalMinutes)}</span>
+            <span className="font-medium text-violet-500">{formatDuration(stats.totalMinutes)}</span>
           </div>
         </div>
       </div>

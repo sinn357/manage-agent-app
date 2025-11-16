@@ -48,7 +48,7 @@ export default function ProductivityInsights({ insights, hourlyTotals }: Product
             <span className="text-3xl">🎯</span>
             <div>
               <p className="text-sm text-gray-600">최고 집중 시간대</p>
-              <p className="text-2xl font-bold text-blue-600">{insights.bestHourText}</p>
+              <p className="text-2xl font-bold text-blue-500">{insights.bestHourText}</p>
             </div>
           </div>
           <p className="text-sm text-gray-700 mt-2">

@@ -27,7 +27,7 @@ export default function ProductivityHeatmap({ heatmap }: ProductivityHeatmapProp
     if (intensity < 0.4) return 'bg-blue-300';
     if (intensity < 0.6) return 'bg-blue-400';
     if (intensity < 0.8) return 'bg-blue-500';
-    return 'bg-blue-600';
+    return 'bg-blue-500';
   };
 
   // 툴팁 텍스트
@@ -93,7 +93,7 @@ export default function ProductivityHeatmap({ heatmap }: ProductivityHeatmapProp
           <div className="w-4 h-4 bg-blue-300 rounded"></div>
           <div className="w-4 h-4 bg-blue-400 rounded"></div>
           <div className="w-4 h-4 bg-blue-500 rounded"></div>
-          <div className="w-4 h-4 bg-blue-600 rounded"></div>
+          <div className="w-4 h-4 bg-blue-500 rounded"></div>
         </div>
         <span>많음</span>
       </div>
