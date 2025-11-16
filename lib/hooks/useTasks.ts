@@ -123,7 +123,7 @@ export function useUpdateTask() {
       await queryClient.cancelQueries({ queryKey: ['tasks'] });
 
       // 이전 값 백업
-      const previousTasks = queryClient.getQueryData(['tasks']);
+      const previousTasks = queryClient.getQueryData<Task[]>(['tasks']);
 
       // 낙관적 업데이트
       queryClient.setQueryData(['tasks'], (old: Task[] | undefined) => {
