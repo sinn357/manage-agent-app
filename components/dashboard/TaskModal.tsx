@@ -68,9 +68,20 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
         });
       } else {
         // 생성 모드 - initialDate 또는 오늘 날짜 기본값
-        const dateValue = initialDate
-          ? new Date(initialDate).toISOString().split('T')[0]
-          : new Date().toISOString().split('T')[0];
+        let dateValue = '';
+        if (initialDate) {
+          const d = new Date(initialDate);
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          dateValue = `${year}-${month}-${day}`;
+        } else {
+          const d = new Date();
+          const year = d.getFullYear();
+          const month = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          dateValue = `${year}-${month}-${day}`;
+        }
         setFormData({
           title: '',
           description: '',
