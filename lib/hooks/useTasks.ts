@@ -106,7 +106,7 @@ export function useCreateTask() {
 export function useUpdateTask() {
   const queryClient = useQueryClient();
 
-  return useMutation<Task, Error, { id: string } & UpdateTaskInput>({
+  return useMutation<Task, Error, { id: string } & UpdateTaskInput, { previousTasks?: Task[] }>({
     mutationFn: async ({ id, ...input }) => {
       const response = await fetch(`/api/tasks/${id}`, {
         method: 'PATCH',
