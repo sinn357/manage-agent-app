@@ -75,14 +75,24 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     try {
       console.log('TaskList: Fetching tasks...');
       setLoading(true);
-      const response = await fetch('/api/tasks/today?includeUnscheduled=true');
+      // 모든 작업을 가져와서 클라이언트에서 분류
+      const response = await fetch('/api/tasks');
       const data = await response.json();
       console.log('TaskList: Received tasks:', data);
 
       if (data.success) {
         console.log('TaskList: Setting', data.tasks.length, 'tasks');
-        setTasks(data.tasks);
-        setStats(data.stats);
+        const allTasks = data.tasks || [];
+        // 완료되지 않은 작업만 필터링
+        const incompleteTasks = allTasks.filter((t: any) => t.status !== 'completed');
+        setTasks(incompleteTasks);
+
+        // stats 계산
+        const total = allTasks.length;
+        const completed = allTasks.filter((t: any) => t.status === 'completed').length;
+        const inProgress = allTasks.filter((t: any) => t.status === 'in_progress').length;
+        const todo = allTasks.filter((t: any) => t.status === 'todo').length;
+        setStats({ total, completed, inProgress, todo });
       } else {
         setError(data.error || 'Failed to fetch tasks');
       }
