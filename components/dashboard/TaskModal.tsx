@@ -1,7 +1,81 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+
+// Task 형식 스키마
+const taskFormSchema = z.object({
+  title: z.string()
+    .min(1, '작업 제목을 입력하세요')
+    .max(200, '작업 제목은 200자 이하여야 합니다'),
+  description: z.string()
+    .max(1000, '설명은 1000자 이하여야 합니다')
+    .optional(),
+  scheduledDate: z.string()
+    .optional(),
+  scheduledTime: z.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$|^$/, '유효한 시간 형식이 아닙니다 (HH:MM)')
+    .optional(),
+  scheduledEndTime: z.string()
+    .regex(/^([01]\d|2[0-3]):([0-5]\d)$|^$/, '유효한 시간 형식이 아닙니다 (HH:MM)')
+    .optional(),
+  priority: z.enum(['low', 'mid', 'high']),
+  goalId: z.string().optional(),
+})
+.refine((data) => {
+  // 시작 시간이 있으면 종료 시간도 있어야 함
+  if (data.scheduledTime && data.scheduledTime !== '' && (!data.scheduledEndTime || data.scheduledEndTime === '')) {
+    return false;
+  }
+  return true;
+}, {
+  message: '종료 시간을 입력하세요',
+  path: ['scheduledEndTime'],
+})
+.refine((data) => {
+  // 종료 시간이 시작 시간보다 늦어야 함
+  if (data.scheduledTime && data.scheduledEndTime && data.scheduledTime !== '' && data.scheduledEndTime !== '') {
+    const [startHour, startMin] = data.scheduledTime.split(':').map(Number);
+    const [endHour, endMin] = data.scheduledEndTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    return endMinutes > startMinutes;
+  }
+  return true;
+}, {
+  message: '종료 시간은 시작 시간보다 늦어야 합니다',
+  path: ['scheduledEndTime'],
+});
+
+type TaskFormValues = z.infer<typeof taskFormSchema>;
 
 interface Task {
   id?: string;
@@ -30,20 +104,49 @@ interface TaskModalProps {
   initialDate?: Date | null;
 }
 
-export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: externalGoals, initialDate }: TaskModalProps) {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    scheduledDate: '',
-    scheduledTime: '',
-    scheduledEndTime: '',
-    priority: 'mid',
-    goalId: '',
-  });
+export default function TaskModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  task,
+  goals: externalGoals,
+  initialDate
+}: TaskModalProps) {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
+  const formatDateForInput = (date: Date | string | null | undefined): string => {
+    if (!date) {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const form = useForm<TaskFormValues>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      scheduledDate: formatDateForInput(initialDate),
+      scheduledTime: '',
+      scheduledEndTime: '',
+      priority: 'mid',
+      goalId: '',
+    },
+  });
+
+  // Modal이 열릴 때마다 폼 리셋 및 초기값 설정
   useEffect(() => {
     if (isOpen) {
       // 외부에서 goals를 전달하지 않은 경우만 fetch
@@ -55,46 +158,31 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
 
       if (task) {
         // 수정 모드
-        setFormData({
+        form.reset({
           title: task.title,
           description: task.description || '',
-          scheduledDate: task.scheduledDate
-            ? new Date(task.scheduledDate).toISOString().split('T')[0]
-            : '',
+          scheduledDate: formatDateForInput(task.scheduledDate),
           scheduledTime: task.scheduledTime || '',
           scheduledEndTime: task.scheduledEndTime || '',
-          priority: task.priority,
+          priority: task.priority as 'low' | 'mid' | 'high',
           goalId: task.goalId || '',
         });
       } else {
-        // 생성 모드 - initialDate 또는 오늘 날짜 기본값
-        let dateValue = '';
-        if (initialDate) {
-          const d = new Date(initialDate);
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          dateValue = `${year}-${month}-${day}`;
-        } else {
-          const d = new Date();
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          dateValue = `${year}-${month}-${day}`;
-        }
-        setFormData({
+        // 생성 모드
+        form.reset({
           title: '',
           description: '',
-          scheduledDate: dateValue,
+          scheduledDate: formatDateForInput(initialDate),
           scheduledTime: '',
           scheduledEndTime: '',
           priority: 'mid',
           goalId: '',
         });
       }
+
+      setError('');
     }
-    setError('');
-  }, [isOpen, task, initialDate, externalGoals]);
+  }, [isOpen, task, initialDate, externalGoals, form]);
 
   const fetchGoals = async () => {
     try {
@@ -109,8 +197,7 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (values: TaskFormValues) => {
     setLoading(true);
     setError('');
 
@@ -118,24 +205,19 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
       const url = task?.id ? `/api/tasks/${task.id}` : '/api/tasks';
       const method = task?.id ? 'PATCH' : 'POST';
 
-      console.log('Submitting task:', {
-        title: formData.title,
-        scheduledDate: formData.scheduledDate,
-        priority: formData.priority,
-        goalId: formData.goalId,
-      });
+      console.log('Submitting task:', values);
 
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: formData.title,
-          description: formData.description || null,
-          scheduledDate: formData.scheduledDate || null,
-          scheduledTime: formData.scheduledTime || null,
-          scheduledEndTime: formData.scheduledEndTime || null,
-          priority: formData.priority,
-          goalId: formData.goalId || null,
+          title: values.title,
+          description: values.description || null,
+          scheduledDate: values.scheduledDate || null,
+          scheduledTime: values.scheduledTime || null,
+          scheduledEndTime: values.scheduledEndTime || null,
+          priority: values.priority,
+          goalId: values.goalId || null,
         }),
       });
 
@@ -143,7 +225,7 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
       console.log('Task response:', data);
 
       if (data.success) {
-        console.log('Task created successfully, calling onSuccess');
+        console.log('Task saved successfully, calling onSuccess');
         onSuccess();
         onClose();
       } else {
@@ -185,187 +267,208 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {task?.id ? '작업 수정' : '새 작업'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{task?.id ? '작업 수정' : '새 작업'}</DialogTitle>
+          <DialogDescription>
+            {task?.id ? '작업 정보를 수정하세요' : '새로운 작업을 생성하세요'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* 제목 */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>제목 *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="예: 영어 단어 30개 외우기"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* 설명 */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>설명</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="작업에 대한 추가 설명 (선택)"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* 날짜 */}
+            <FormField
+              control={form.control}
+              name="scheduledDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>날짜</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* 시작 시간 & 종료 시간 */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="scheduledTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>시작 시간</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </svg>
-          </button>
-        </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* 제목 */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              제목 *
-            </label>
-            <input
-              id="title"
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="예: 영어 단어 30개 외우기"
-            />
-          </div>
-
-          {/* 설명 */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              설명
-            </label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="작업에 대한 추가 설명 (선택)"
-              rows={3}
-            />
-          </div>
-
-          {/* 날짜 */}
-          <div>
-            <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 mb-1">
-              날짜
-            </label>
-            <input
-              id="scheduledDate"
-              type="date"
-              value={formData.scheduledDate}
-              onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* 시작 시간 & 종료 시간 */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="scheduledTime" className="block text-sm font-medium text-gray-700 mb-1">
-                시작 시간
-              </label>
-              <input
-                id="scheduledTime"
-                type="time"
-                value={formData.scheduledTime}
-                onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="09:00"
+              <FormField
+                control={form.control}
+                name="scheduledEndTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>종료 시간</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="time"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div>
-              <label htmlFor="scheduledEndTime" className="block text-sm font-medium text-gray-700 mb-1">
-                종료 시간
-              </label>
-              <input
-                id="scheduledEndTime"
-                type="time"
-                value={formData.scheduledEndTime}
-                onChange={(e) => setFormData({ ...formData, scheduledEndTime: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="11:00"
-              />
-            </div>
-          </div>
+            {/* 우선순위 */}
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>우선순위</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="우선순위 선택" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="high">높음</SelectItem>
+                      <SelectItem value="mid">보통</SelectItem>
+                      <SelectItem value="low">낮음</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* 우선순위 */}
-          <div>
-            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
-              우선순위
-            </label>
-            <select
-              id="priority"
-              value={formData.priority}
-              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="high">높음</option>
-              <option value="mid">보통</option>
-              <option value="low">낮음</option>
-            </select>
-          </div>
+            {/* 목표 선택 */}
+            <FormField
+              control={form.control}
+              name="goalId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>목표</FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value === 'none' ? null : value);
+                    }}
+                    defaultValue={field.value || 'none'}
+                    value={field.value || 'none'}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="목표 선택 (선택사항)" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">목표 없음 (일회성 작업)</SelectItem>
+                      {goals.map((goal) => (
+                        <SelectItem key={goal.id} value={goal.id}>
+                          {goal.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* 목표 선택 */}
-          <div>
-            <label htmlFor="goalId" className="block text-sm font-medium text-gray-700 mb-1">
-              목표
-            </label>
-            <select
-              id="goalId"
-              value={formData.goalId}
-              onChange={(e) => setFormData({ ...formData, goalId: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">목표 없음 (일회성 작업)</option>
-              {goals.map((goal) => (
-                <option key={goal.id} value={goal.id}>
-                  {goal.title}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* 에러 메시지 */}
-          {error && (
-            <div className="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">{error}</div>
-          )}
-
-          {/* 버튼 */}
-          <div className="flex gap-2 pt-4">
-            {task?.id && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
-              >
-                삭제
-              </button>
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">
+                {error}
+              </div>
             )}
-            <div className="flex-1" />
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 disabled:opacity-50"
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md disabled:opacity-50 transition-colors"
-            >
-              {loading ? '저장 중...' : task?.id ? '수정' : '생성'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+            <DialogFooter className="gap-2">
+              {task?.id && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="mr-auto"
+                >
+                  삭제
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? '저장 중...' : task?.id ? '수정' : '생성'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }

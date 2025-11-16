@@ -2,13 +2,25 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useTheme } from 'next-themes';
+import dynamic from 'next/dynamic';
+import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import GoalPanel from '@/components/dashboard/GoalPanel';
-import GoalModal from '@/components/dashboard/GoalModal';
 import TaskList from '@/components/dashboard/TaskList';
-import TaskModal from '@/components/dashboard/TaskModal';
 import FocusTimer from '@/components/dashboard/FocusTimer';
 import FocusHistory from '@/components/dashboard/FocusHistory';
+
+// 모달 컴포넌트는 필요할 때만 로드
+const GoalModal = dynamic(() => import('@/components/dashboard/GoalModal'), {
+  ssr: false,
+});
+
+const TaskModal = dynamic(() => import('@/components/dashboard/TaskModal'), {
+  ssr: false,
+});
 
 interface Goal {
   id: string;
@@ -43,6 +55,8 @@ interface Task {
 export default function DashboardPage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const { setTheme, theme } = useTheme();
+
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [goalKey, setGoalKey] = useState(0);
@@ -53,6 +67,37 @@ export default function DashboardPage() {
 
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
   const [focusHistoryKey, setFocusHistoryKey] = useState(0);
+
+  // 키보드 단축키 설정
+  useKeyboardShortcuts([
+    {
+      key: 'n',
+      ctrl: true,
+      description: '새 작업 추가',
+      handler: () => {
+        setSelectedTask(null);
+        setIsTaskModalOpen(true);
+      },
+    },
+    {
+      key: 'n',
+      ctrl: true,
+      shift: true,
+      description: '새 목표 추가',
+      handler: () => {
+        setSelectedGoal(null);
+        setIsGoalModalOpen(true);
+      },
+    },
+    {
+      key: 'd',
+      ctrl: true,
+      description: '다크 모드 전환',
+      handler: () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+      },
+    },
+  ]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -82,6 +127,56 @@ export default function DashboardPage() {
     }
   };
 
+  // 모든 hook을 early return 이전에 호출
+  const handleLogout = useCallback(async () => {
+    await logout();
+    router.push('/login');
+  }, [logout, router]);
+
+  const handleAddGoal = useCallback(() => {
+    setSelectedGoal(null);
+    setIsGoalModalOpen(true);
+  }, []);
+
+  const handleGoalClick = useCallback((goal: Goal) => {
+    setSelectedGoal(goal);
+    setIsGoalModalOpen(true);
+  }, []);
+
+  const handleGoalModalClose = useCallback(() => {
+    setIsGoalModalOpen(false);
+    setSelectedGoal(null);
+  }, []);
+
+  const handleGoalSuccess = useCallback(() => {
+    // GoalPanel을 리프레시하기 위해 key를 변경
+    setGoalKey((prev) => prev + 1);
+    // Task 목록도 리프레시 (목표 진행률 업데이트 때문에)
+    setTaskKey((prev) => prev + 1);
+  }, []);
+
+  const handleAddTask = useCallback(() => {
+    setSelectedTask(null);
+    setIsTaskModalOpen(true);
+  }, []);
+
+  const handleTaskClick = useCallback((task: Task) => {
+    setSelectedTask(task);
+    setIsTaskModalOpen(true);
+  }, []);
+
+  const handleTaskModalClose = useCallback(() => {
+    setIsTaskModalOpen(false);
+    setSelectedTask(null);
+  }, []);
+
+  const handleTaskSuccess = useCallback(() => {
+    // TaskList를 리프레시하기 위해 key를 변경
+    setTaskKey((prev) => prev + 1);
+    // 목표 진행률도 업데이트되므로 GoalPanel도 리프레시
+    setGoalKey((prev) => prev + 1);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -97,59 +192,10 @@ export default function DashboardPage() {
     return null;
   }
 
-  const handleLogout = async () => {
-    await logout();
-    router.push('/login');
-  };
-
-  const handleAddGoal = () => {
-    setSelectedGoal(null);
-    setIsGoalModalOpen(true);
-  };
-
-  const handleGoalClick = (goal: Goal) => {
-    setSelectedGoal(goal);
-    setIsGoalModalOpen(true);
-  };
-
-  const handleGoalModalClose = () => {
-    setIsGoalModalOpen(false);
-    setSelectedGoal(null);
-  };
-
-  const handleGoalSuccess = () => {
-    // GoalPanel을 리프레시하기 위해 key를 변경
-    setGoalKey((prev) => prev + 1);
-    // Task 목록도 리프레시 (목표 진행률 업데이트 때문에)
-    setTaskKey((prev) => prev + 1);
-  };
-
-  const handleAddTask = () => {
-    setSelectedTask(null);
-    setIsTaskModalOpen(true);
-  };
-
-  const handleTaskClick = (task: Task) => {
-    setSelectedTask(task);
-    setIsTaskModalOpen(true);
-  };
-
-  const handleTaskModalClose = () => {
-    setIsTaskModalOpen(false);
-    setSelectedTask(null);
-  };
-
-  const handleTaskSuccess = () => {
-    // TaskList를 리프레시하기 위해 key를 변경
-    setTaskKey((prev) => prev + 1);
-    // 목표 진행률도 업데이트되므로 GoalPanel도 리프레시
-    setGoalKey((prev) => prev + 1);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-500 to-violet-500 shadow-lg">
+      <header className="bg-gradient-to-r from-blue-500 to-violet-500 dark:from-slate-800 dark:to-purple-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div
             onClick={() => router.push('/dashboard')}
@@ -159,36 +205,47 @@ export default function DashboardPage() {
             <p className="text-sm text-white/90">안녕하세요, {user.name || user.username}님!</p>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <ThemeToggle />
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/reports')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               📊 리포트
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/calendar')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               📅 캘린더
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/kanban')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               📋 칸반
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/settings')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               ⚙️ 설정
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               로그아웃
-            </button>
+            </Button>
           </div>
         </div>
       </header>

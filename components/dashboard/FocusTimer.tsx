@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import {
   notifyFocusComplete,
   notifyFocusAlmostComplete,
@@ -356,12 +357,14 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">포커스 타이머</h2>
         {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={requestNotificationPermission}
             className="text-xs text-violet-500 hover:text-violet-600"
           >
             알림 허용
-          </button>
+          </Button>
         )}
       </div>
 
@@ -394,18 +397,15 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         <div className="mb-6">
           <div className="flex gap-2 mb-3">
             {PRESETS.map((preset) => (
-              <button
+              <Button
                 key={preset.minutes}
+                variant={selectedMinutes === preset.minutes && !customMinutes ? "default" : "outline"}
+                size="sm"
                 onClick={() => handlePresetClick(preset.minutes)}
-                className={cn(
-                  'flex-1 py-2 px-3 text-sm font-medium rounded-md border transition-colors',
-                  selectedMinutes === preset.minutes && !customMinutes
-                    ? 'bg-blue-500 text-white border-blue-500'
-                    : 'bg-white text-gray-700 border-gray-300 hover:border-blue-500'
-                )}
+                className="flex-1"
               >
                 {preset.label}
-              </button>
+              </Button>
             ))}
           </div>
           <div>
@@ -451,45 +451,52 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       {/* 컨트롤 버튼 */}
       <div className="flex gap-2">
         {timerState === 'idle' && (
-          <button
+          <Button
             onClick={handleStart}
-            className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition-colors"
+            className="flex-1 py-6"
+            size="lg"
           >
             시작
-          </button>
+          </Button>
         )}
 
         {timerState === 'running' && (
           <>
-            <button
+            <Button
               onClick={handlePause}
-              className="flex-1 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-md transition-colors"
+              className="flex-1 py-6 bg-yellow-600 hover:bg-yellow-700"
+              size="lg"
             >
               일시정지
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleStop}
-              className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors"
+              className="flex-1 py-6"
+              variant="destructive"
+              size="lg"
             >
               중단
-            </button>
+            </Button>
           </>
         )}
 
         {timerState === 'paused' && (
           <>
-            <button
+            <Button
               onClick={handlePause}
-              className="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-md transition-colors"
+              className="flex-1 py-6"
+              size="lg"
             >
               재개
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleStop}
-              className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md transition-colors"
+              className="flex-1 py-6"
+              variant="destructive"
+              size="lg"
             >
               중단
-            </button>
+            </Button>
           </>
         )}
       </div>

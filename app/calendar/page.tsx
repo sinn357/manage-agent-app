@@ -3,8 +3,21 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import CalendarView from '@/components/calendar/CalendarView';
-import TaskModal from '@/components/dashboard/TaskModal';
+import dynamic from 'next/dynamic';
+
+// CalendarView는 react-big-calendar를 포함하므로 lazy load
+const CalendarView = dynamic(() => import('@/components/calendar/CalendarView'), {
+  loading: () => (
+    <div className="animate-pulse bg-gray-200 rounded-lg h-[600px] flex items-center justify-center">
+      <p className="text-gray-500">캘린더 로딩 중...</p>
+    </div>
+  ),
+  ssr: false,
+});
+
+const TaskModal = dynamic(() => import('@/components/dashboard/TaskModal'), {
+  ssr: false,
+});
 
 interface Task {
   id: string;
@@ -109,10 +122,10 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
-        <div className="mb-6 flex items-center justify-between bg-white/20 backdrop-blur-md rounded-lg p-6 border border-white/30">
+        <div className="mb-6 flex items-center justify-between bg-white/20 dark:bg-slate-800/50 backdrop-blur-md rounded-lg p-6 border border-white/30 dark:border-slate-700">
           <div
             onClick={() => router.push('/dashboard')}
             className="cursor-pointer hover:opacity-80 transition-opacity"

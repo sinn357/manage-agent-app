@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { getPriorityColor, getPriorityLabel, formatDate, cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useTasks, useToggleTaskComplete } from '@/lib/hooks/useTasks';
 
 interface Task {
   id: string;
@@ -27,16 +29,27 @@ interface TaskListProps {
 }
 
 export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState({ total: 0, completed: 0, inProgress: 0, todo: 0 });
   const [showOverdue, setShowOverdue] = useState(false);
   const [showUpcoming, setShowUpcoming] = useState(false);
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  // TanStack Query로 작업 가져오기
+  const { data: allTasks = [], isLoading, error } = useTasks();
+  const toggleComplete = useToggleTaskComplete();
+
+  // 완료되지 않은 작업만 필터링
+  const tasks = useMemo(() => {
+    return allTasks.filter(t => t.status !== 'completed');
+  }, [allTasks]);
+
+  // 통계 계산
+  const stats = useMemo(() => {
+    return {
+      total: allTasks.length,
+      completed: allTasks.filter(t => t.status === 'completed').length,
+      inProgress: allTasks.filter(t => t.status === 'in_progress').length,
+      todo: allTasks.filter(t => t.status === 'todo').length,
+    };
+  }, [allTasks]);
 
   // 작업을 오늘/밀린/예정으로 분류
   const categorizedTasks = useMemo(() => {
@@ -71,59 +84,12 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     return { todayTasks, overdueTasks, upcomingTasks };
   }, [tasks]);
 
-  const fetchTasks = async () => {
-    try {
-      console.log('TaskList: Fetching tasks...');
-      setLoading(true);
-      // 모든 작업을 가져와서 클라이언트에서 분류
-      const response = await fetch('/api/tasks');
-      const data = await response.json();
-      console.log('TaskList: Received tasks:', data);
-
-      if (data.success) {
-        console.log('TaskList: Setting', data.tasks.length, 'tasks');
-        const allTasks = data.tasks || [];
-        // 완료되지 않은 작업만 필터링
-        const incompleteTasks = allTasks.filter((t: any) => t.status !== 'completed');
-        setTasks(incompleteTasks);
-
-        // stats 계산
-        const total = allTasks.length;
-        const completed = allTasks.filter((t: any) => t.status === 'completed').length;
-        const inProgress = allTasks.filter((t: any) => t.status === 'in_progress').length;
-        const todo = allTasks.filter((t: any) => t.status === 'todo').length;
-        setStats({ total, completed, inProgress, todo });
-      } else {
-        setError(data.error || 'Failed to fetch tasks');
-      }
-    } catch (err) {
-      console.error('Fetch tasks error:', err);
-      setError('Network error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggleComplete = async (taskId: string, e: React.MouseEvent) => {
+  const handleToggleComplete = (taskId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // 부모 클릭 이벤트 방지
-
-    try {
-      const response = await fetch(`/api/tasks/${taskId}/complete`, {
-        method: 'PATCH',
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // 전체 목록 리프레시
-        fetchTasks();
-      }
-    } catch (err) {
-      console.error('Toggle complete error:', err);
-    }
+    toggleComplete.mutate(taskId); // TanStack Query 뮤테이션으로 자동 업데이트
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">오늘 할 일</h2>
@@ -146,7 +112,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">오늘 할 일</h2>
-        <p className="text-red-600 text-sm">{error}</p>
+        <p className="text-red-600 text-sm">{error.message}</p>
       </div>
     );
   }
@@ -160,8 +126,17 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
       <div
         key={task.id}
         onClick={() => onTaskClick?.(task)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onTaskClick?.(task);
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`작업: ${task.title}, 우선순위: ${getPriorityLabel(task.priority)}, ${isCompleted ? '완료됨' : '미완료'}`}
         className={cn(
-          'flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
+          'flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
           isCompleted
             ? 'bg-gray-50 border-gray-200'
             : 'bg-white border-gray-200 hover:border-gray-300'
@@ -170,6 +145,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
         {/* 체크박스 */}
         <button
           onClick={(e) => handleToggleComplete(task.id, e)}
+          aria-label={`${task.title} ${isCompleted ? '완료 취소' : '완료 처리'}`}
           className={cn(
             'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
             isCompleted
@@ -250,7 +226,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
   };
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
+    <section className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6" aria-label="작업 목록">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">작업 목록</h2>
@@ -258,23 +234,27 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
             {stats.completed}/{stats.total} 완료
           </p>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onAddClick}
-          className="text-sm text-violet-500 hover:text-violet-600 font-medium"
+          className="text-violet-500 hover:text-violet-600"
         >
           + 추가
-        </button>
+        </Button>
       </div>
 
       {tasks.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-sm mb-3">작업이 없습니다</p>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onAddClick}
-            className="text-violet-500 hover:text-violet-600 text-sm font-medium"
+            className="text-violet-500 hover:text-violet-600"
           >
             첫 작업을 추가해보세요
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
@@ -297,6 +277,8 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
             <div className="border-2 border-red-200 rounded-lg">
               <button
                 onClick={() => setShowOverdue(!showOverdue)}
+                aria-expanded={showOverdue}
+                aria-label={`밀린 작업 ${categorizedTasks.overdueTasks.length}개 ${showOverdue ? '접기' : '펼치기'}`}
                 className="w-full flex items-center justify-between p-3 bg-red-50 rounded-t-lg hover:bg-red-100 transition-colors"
               >
                 <h3 className="text-sm font-semibold text-red-900">
@@ -332,6 +314,8 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
             <div className="border border-gray-200 rounded-lg">
               <button
                 onClick={() => setShowUpcoming(!showUpcoming)}
+                aria-expanded={showUpcoming}
+                aria-label={`예정 작업 ${categorizedTasks.upcomingTasks.length}개 ${showUpcoming ? '접기' : '펼치기'}`}
                 className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-t-lg hover:bg-gray-100 transition-colors"
               >
                 <h3 className="text-sm font-medium text-gray-700">
@@ -363,6 +347,6 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
           )}
         </div>
       )}
-    </div>
+    </section>
   );
 }

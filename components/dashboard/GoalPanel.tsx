@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { calculateDDay, cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useGoals } from '@/lib/hooks/useGoals';
 
 interface Goal {
   id: string;
@@ -25,34 +26,10 @@ interface GoalPanelProps {
 }
 
 export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // TanStack Query로 목표 가져오기
+  const { data: goals = [], isLoading, error } = useGoals();
 
-  useEffect(() => {
-    fetchGoals();
-  }, []);
-
-  const fetchGoals = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/goals');
-      const data = await response.json();
-
-      if (data.success) {
-        setGoals(data.goals);
-      } else {
-        setError(data.error || 'Failed to fetch goals');
-      }
-    } catch (err) {
-      console.error('Fetch goals error:', err);
-      setError('Network error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">목표</h2>
@@ -72,7 +49,7 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">목표</h2>
-        <p className="text-red-600 text-sm">{error}</p>
+        <p className="text-red-600 text-sm">{error.message}</p>
       </div>
     );
   }
@@ -81,23 +58,27 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
     <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">목표</h2>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onAddClick}
-          className="text-sm text-violet-500 hover:text-violet-600 font-medium"
+          className="text-violet-500 hover:text-violet-600"
         >
           + 추가
-        </button>
+        </Button>
       </div>
 
       {goals.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-sm mb-3">아직 목표가 없습니다</p>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onAddClick}
-            className="text-violet-500 hover:text-violet-600 text-sm font-medium"
+            className="text-violet-500 hover:text-violet-600"
           >
             첫 목표를 추가해보세요
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">
