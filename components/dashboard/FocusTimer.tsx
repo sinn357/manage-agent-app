@@ -80,6 +80,15 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           setTimeLeft(actualTimeLeft);
           setTimerState((session.timerState as TimerState) || 'running');
 
+          // startTimeRef와 elapsedRef 초기화
+          if (session.timerState === 'running') {
+            startTimeRef.current = Date.now();
+            elapsedRef.current = 0;
+          } else {
+            startTimeRef.current = 0;
+            elapsedRef.current = 0;
+          }
+
           if (actualTimeLeft === 0) {
             // 타이머가 이미 끝난 경우
             handleComplete();
@@ -249,16 +258,24 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
   const handleStop = async () => {
     if (sessionId) {
-      const actualTime = elapsedRef.current + (timerState === 'running'
-        ? Math.floor((Date.now() - startTimeRef.current) / 1000)
-        : 0);
+      // 경과 시간 계산 (초 단위)
+      let actualTimeSeconds = elapsedRef.current;
+      if (timerState === 'running' && startTimeRef.current > 0) {
+        actualTimeSeconds += Math.floor((Date.now() - startTimeRef.current) / 1000);
+      }
+
+      // 비정상적으로 큰 값 방지 (최대 24시간)
+      const maxSeconds = 24 * 60 * 60;
+      if (actualTimeSeconds > maxSeconds) {
+        actualTimeSeconds = 0;
+      }
 
       // 세션 중단으로 기록
       await fetch(`/api/focus-sessions/${sessionId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          actualTime: Math.floor(actualTime / 60), // minutes
+          actualTime: Math.floor(actualTimeSeconds / 60), // minutes
           completed: false,
           interrupted: true,
         }),
