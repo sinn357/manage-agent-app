@@ -232,8 +232,8 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
             />
           </div>
 
-          {/* 날짜, 시간 & 우선순위 */}
-          <div className="grid grid-cols-3 gap-4">
+          {/* 날짜 & 시간 */}
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 mb-1">
                 날짜
@@ -249,7 +249,7 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
 
             <div>
               <label htmlFor="scheduledTime" className="block text-sm font-medium text-gray-700 mb-1">
-                시간
+                시작 시간
               </label>
               <input
                 id="scheduledTime"
@@ -260,22 +260,23 @@ export default function TaskModal({ isOpen, onClose, onSuccess, task, goals: ext
                 placeholder="09:00"
               />
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
-                우선순위
-              </label>
-              <select
-                id="priority"
-                value={formData.priority}
-                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="high">높음</option>
-                <option value="mid">보통</option>
-                <option value="low">낮음</option>
-              </select>
-            </div>
+          {/* 우선순위 */}
+          <div>
+            <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+              우선순위
+            </label>
+            <select
+              id="priority"
+              value={formData.priority}
+              onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="high">높음</option>
+              <option value="mid">보통</option>
+              <option value="low">낮음</option>
+            </select>
           </div>
 
           {/* 목표 선택 */}

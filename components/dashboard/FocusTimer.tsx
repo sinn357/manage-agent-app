@@ -40,6 +40,14 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
   const elapsedRef = useRef<number>(0);
   const fiveMinuteNotifiedRef = useRef<boolean>(false);
   const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const timeLeftRef = useRef<number>(timeLeft);
+  const timerStateRef = useRef<TimerState>(timerState);
+
+  // ref를 항상 최신 state로 동기화
+  useEffect(() => {
+    timeLeftRef.current = timeLeft;
+    timerStateRef.current = timerState;
+  }, [timeLeft, timerState]);
 
   // 컴포넌트 마운트 시 active 세션 복구
   useEffect(() => {
@@ -151,8 +159,8 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          timeLeft,
-          timerState,
+          timeLeft: timeLeftRef.current,
+          timerState: timerStateRef.current,
         }),
       });
     } catch (error) {
@@ -216,7 +224,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            timeLeft,
+            timeLeft: timeLeftRef.current,
             timerState: 'paused',
           }),
         });
@@ -231,7 +239,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            timeLeft,
+            timeLeft: timeLeftRef.current,
             timerState: 'running',
           }),
         });
