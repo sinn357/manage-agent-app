@@ -3,8 +3,11 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
+import { useTheme } from 'next-themes';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import GoalPanel from '@/components/dashboard/GoalPanel';
 import TaskList from '@/components/dashboard/TaskList';
 import FocusTimer from '@/components/dashboard/FocusTimer';
@@ -52,6 +55,8 @@ interface Task {
 export default function DashboardPage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
+  const { setTheme, theme } = useTheme();
+
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
   const [goalKey, setGoalKey] = useState(0);
@@ -62,6 +67,37 @@ export default function DashboardPage() {
 
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
   const [focusHistoryKey, setFocusHistoryKey] = useState(0);
+
+  // 키보드 단축키 설정
+  useKeyboardShortcuts([
+    {
+      key: 'n',
+      ctrl: true,
+      description: '새 작업 추가',
+      handler: () => {
+        setSelectedTask(null);
+        setIsTaskModalOpen(true);
+      },
+    },
+    {
+      key: 'n',
+      ctrl: true,
+      shift: true,
+      description: '새 목표 추가',
+      handler: () => {
+        setSelectedGoal(null);
+        setIsGoalModalOpen(true);
+      },
+    },
+    {
+      key: 'd',
+      ctrl: true,
+      description: '다크 모드 전환',
+      handler: () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+      },
+    },
+  ]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -157,9 +193,9 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-500 to-violet-500 shadow-lg">
+      <header className="bg-gradient-to-r from-blue-500 to-violet-500 dark:from-slate-800 dark:to-purple-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div
             onClick={() => router.push('/dashboard')}
@@ -169,6 +205,7 @@ export default function DashboardPage() {
             <p className="text-sm text-white/90">안녕하세요, {user.name || user.username}님!</p>
           </div>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
