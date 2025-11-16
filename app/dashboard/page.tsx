@@ -210,7 +210,7 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={() => router.push('/reports')}
-              className="text-white hover:bg-white/20 border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               📊 리포트
             </Button>
@@ -218,7 +218,7 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={() => router.push('/calendar')}
-              className="text-white hover:bg-white/20 border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               📅 캘린더
             </Button>
@@ -226,7 +226,7 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={() => router.push('/kanban')}
-              className="text-white hover:bg-white/20 border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               📋 칸반
             </Button>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={() => router.push('/settings')}
-              className="text-white hover:bg-white/20 border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               ⚙️ 설정
             </Button>
@@ -242,7 +242,7 @@ export default function DashboardPage() {
               variant="outline"
               size="sm"
               onClick={handleLogout}
-              className="text-white hover:bg-white/20 border-white/30"
+              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
             >
               로그아웃
             </Button>

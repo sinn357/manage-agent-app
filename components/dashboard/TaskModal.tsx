@@ -407,9 +407,11 @@ export default function TaskModal({
                 <FormItem>
                   <FormLabel>목표</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value === 'none' ? null : value);
+                    }}
+                    defaultValue={field.value || 'none'}
+                    value={field.value || 'none'}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -417,7 +419,7 @@ export default function TaskModal({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">목표 없음 (일회성 작업)</SelectItem>
+                      <SelectItem value="none">목표 없음 (일회성 작업)</SelectItem>
                       {goals.map((goal) => (
                         <SelectItem key={goal.id} value={goal.id}>
                           {goal.title}

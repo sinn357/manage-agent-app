@@ -168,9 +168,9 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-500 to-violet-500 shadow-lg">
+      <header className="bg-gradient-to-r from-blue-500 to-violet-500 dark:from-slate-800 dark:to-purple-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div
             onClick={() => router.push('/dashboard')}

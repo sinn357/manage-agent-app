@@ -122,10 +122,10 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
-        <div className="mb-6 flex items-center justify-between bg-white/20 backdrop-blur-md rounded-lg p-6 border border-white/30">
+        <div className="mb-6 flex items-center justify-between bg-white/20 dark:bg-slate-800/50 backdrop-blur-md rounded-lg p-6 border border-white/30 dark:border-slate-700">
           <div
             onClick={() => router.push('/dashboard')}
             className="cursor-pointer hover:opacity-80 transition-opacity"
