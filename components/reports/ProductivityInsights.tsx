@@ -38,7 +38,7 @@ export default function ProductivityInsights({ insights, hourlyTotals }: Product
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">생산성 인사이트</h2>
 
       <div className="space-y-6">

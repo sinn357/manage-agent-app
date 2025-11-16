@@ -25,7 +25,7 @@ export default function GoalProgressChart({ goals }: GoalProgressChartProps) {
 
   if (goals.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">목표별 달성률</h2>
         <p className="text-gray-500 text-center py-8">활성 목표가 없습니다.</p>
       </div>
@@ -33,7 +33,7 @@ export default function GoalProgressChart({ goals }: GoalProgressChartProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">목표별 달성률</h2>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>

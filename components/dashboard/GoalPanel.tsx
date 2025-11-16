@@ -78,7 +78,7 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">목표</h2>
         <button

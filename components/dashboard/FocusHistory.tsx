@@ -96,7 +96,7 @@ export default function FocusHistory({ refreshKey = 0 }: FocusHistoryProps) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">포커스 히스토리</h2>
         <p className="text-red-600 text-sm">{error}</p>
       </div>
@@ -104,7 +104,7 @@ export default function FocusHistory({ refreshKey = 0 }: FocusHistoryProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <div className="mb-4">
         <h2 className="text-lg font-semibold text-gray-900">포커스 히스토리</h2>
         <div className="flex gap-4 mt-2 text-sm">

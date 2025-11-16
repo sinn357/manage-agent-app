@@ -214,7 +214,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
   const progressPercent = ((selectedMinutes * 60 - timeLeft) / (selectedMinutes * 60)) * 100;
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">포커스 타이머</h2>
         {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
