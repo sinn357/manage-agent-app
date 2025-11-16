@@ -8,21 +8,25 @@ datasource db {
 }
 
 model FocusSession {
-  id          String    @id @default(cuid())
-  duration    Int
-  actualTime  Int       @default(0)
-  startedAt   DateTime
-  endedAt     DateTime?
-  completed   Boolean   @default(false)
-  interrupted Boolean   @default(false)
-  taskId      String?
-  userId      String
-  createdAt   DateTime  @default(now())
-  Task        Task?     @relation(fields: [taskId], references: [id])
-  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String    @id @default(cuid())
+  duration      Int
+  actualTime    Int       @default(0)
+  startedAt     DateTime
+  endedAt       DateTime?
+  completed     Boolean   @default(false)
+  interrupted   Boolean   @default(false)
+  timeLeft      Int?      // 남은 시간 (초)
+  timerState    String?   // "running", "paused", "idle"
+  lastUpdatedAt DateTime? // 마지막 업데이트 시간
+  taskId        String?
+  userId        String
+  createdAt     DateTime  @default(now())
+  Task          Task?     @relation(fields: [taskId], references: [id])
+  User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
   @@index([userId, startedAt])
+  @@index([userId, timerState])
 }
 
 model Goal {
@@ -63,6 +67,7 @@ model Task {
   title         String
   description   String?
   scheduledDate DateTime?
+  scheduledTime String?        // "09:30" 형식
   priority      String         @default("mid")
   status        String         @default("todo")
   order         Int            @default(0)

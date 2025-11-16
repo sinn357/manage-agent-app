@@ -33,11 +33,59 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
   const [timeLeft, setTimeLeft] = useState(25 * 60); // seconds
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const startTimeRef = useRef<number>(0);
   const elapsedRef = useRef<number>(0);
   const fiveMinuteNotifiedRef = useRef<boolean>(false);
+  const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 컴포넌트 마운트 시 active 세션 복구
+  useEffect(() => {
+    const loadActiveSession = async () => {
+      try {
+        const response = await fetch('/api/focus-sessions?active=true&limit=1');
+        const data = await response.json();
+
+        if (data.success && data.sessions.length > 0) {
+          const session = data.sessions[0];
+
+          // 세션이 있으면 복구
+          setSessionId(session.id);
+          setSelectedMinutes(session.duration);
+          setSelectedTaskId(session.taskId || '');
+
+          // 경과 시간 계산
+          const lastUpdated = session.lastUpdatedAt ? new Date(session.lastUpdatedAt).getTime() : new Date(session.startedAt).getTime();
+          const now = Date.now();
+          const elapsedSeconds = Math.floor((now - lastUpdated) / 1000);
+
+          // 남은 시간 계산
+          const savedTimeLeft = session.timeLeft || (session.duration * 60);
+          let actualTimeLeft = savedTimeLeft;
+
+          if (session.timerState === 'running') {
+            actualTimeLeft = Math.max(0, savedTimeLeft - elapsedSeconds);
+          }
+
+          setTimeLeft(actualTimeLeft);
+          setTimerState((session.timerState as TimerState) || 'running');
+
+          if (actualTimeLeft === 0) {
+            // 타이머가 이미 끝난 경우
+            handleComplete();
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load active session:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadActiveSession();
+  }, []);
 
   // 타이머가 끝났을 때
   useEffect(() => {
@@ -68,10 +116,19 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           return newTime;
         });
       }, 1000);
+
+      // 5초마다 DB에 저장
+      saveIntervalRef.current = setInterval(() => {
+        saveTimerState();
+      }, 5000);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
+      }
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+        saveIntervalRef.current = null;
       }
     }
 
@@ -79,8 +136,29 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+      if (saveIntervalRef.current) {
+        clearInterval(saveIntervalRef.current);
+      }
     };
   }, [timerState]);
+
+  // DB에 타이머 상태 저장
+  const saveTimerState = async () => {
+    if (!sessionId) return;
+
+    try {
+      await fetch(`/api/focus-sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timeLeft,
+          timerState,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to save timer state:', error);
+    }
+  };
 
   const handlePresetClick = (minutes: number) => {
     if (timerState === 'idle') {
@@ -127,13 +205,37 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
     }
   };
 
-  const handlePause = () => {
+  const handlePause = async () => {
     if (timerState === 'running') {
       elapsedRef.current += Math.floor((Date.now() - startTimeRef.current) / 1000);
       setTimerState('paused');
+
+      // DB에 paused 상태 저장
+      if (sessionId) {
+        await fetch(`/api/focus-sessions/${sessionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            timeLeft,
+            timerState: 'paused',
+          }),
+        });
+      }
     } else if (timerState === 'paused') {
       startTimeRef.current = Date.now();
       setTimerState('running');
+
+      // DB에 running 상태 저장
+      if (sessionId) {
+        await fetch(`/api/focus-sessions/${sessionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            timeLeft,
+            timerState: 'running',
+          }),
+        });
+      }
     }
   };
 
@@ -212,6 +314,17 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
   };
 
   const progressPercent = ((selectedMinutes * 60 - timeLeft) / (selectedMinutes * 60)) * 100;
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">포커스 타이머</h2>
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

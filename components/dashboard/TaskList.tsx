@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { getPriorityColor, getPriorityLabel, formatDate, cn } from '@/lib/utils';
 
 interface Task {
@@ -31,10 +31,45 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({ total: 0, completed: 0, inProgress: 0, todo: 0 });
+  const [showOverdue, setShowOverdue] = useState(false);
+  const [showUpcoming, setShowUpcoming] = useState(false);
 
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  // 작업을 오늘/밀린/예정으로 분류
+  const categorizedTasks = useMemo(() => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const todayTasks: Task[] = [];
+    const overdueTasks: Task[] = [];
+    const upcomingTasks: Task[] = [];
+
+    tasks.forEach((task) => {
+      if (!task.scheduledDate) {
+        // 날짜가 없는 작업은 오늘 할 일에 포함
+        todayTasks.push(task);
+        return;
+      }
+
+      const taskDate = new Date(task.scheduledDate);
+      const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+
+      if (taskDateOnly < today) {
+        overdueTasks.push(task);
+      } else if (taskDateOnly.getTime() === today.getTime()) {
+        todayTasks.push(task);
+      } else {
+        upcomingTasks.push(task);
+      }
+    });
+
+    return { todayTasks, overdueTasks, upcomingTasks };
+  }, [tasks]);
 
   const fetchTasks = async () => {
     try {
@@ -106,11 +141,109 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     );
   }
 
+  // TaskItem 렌더링 함수
+  const renderTaskItem = (task: Task) => {
+    const priorityColor = getPriorityColor(task.priority);
+    const isCompleted = task.status === 'completed';
+
+    return (
+      <div
+        key={task.id}
+        onClick={() => onTaskClick?.(task)}
+        className={cn(
+          'flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
+          isCompleted
+            ? 'bg-gray-50 border-gray-200'
+            : 'bg-white border-gray-200 hover:border-gray-300'
+        )}
+      >
+        {/* 체크박스 */}
+        <button
+          onClick={(e) => handleToggleComplete(task.id, e)}
+          className={cn(
+            'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
+            isCompleted
+              ? 'bg-blue-600 border-blue-600'
+              : 'border-gray-300 hover:border-blue-500'
+          )}
+        >
+          {isCompleted && (
+            <svg
+              className="w-3 h-3 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={3}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          )}
+        </button>
+
+        {/* 내용 */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <h3
+              className={cn(
+                'font-medium text-gray-900',
+                isCompleted && 'line-through text-gray-500'
+              )}
+            >
+              {task.title}
+            </h3>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            {/* 우선순위 */}
+            <span
+              className={cn(
+                'px-2 py-0.5 rounded border',
+                priorityColor.bg,
+                priorityColor.text,
+                priorityColor.border
+              )}
+            >
+              {getPriorityLabel(task.priority)}
+            </span>
+
+            {/* 목표 */}
+            {task.Goal && (
+              <span
+                className="px-2 py-0.5 rounded text-white"
+                style={{ backgroundColor: task.Goal.color }}
+              >
+                {task.Goal.title}
+              </span>
+            )}
+
+            {/* 날짜 */}
+            {task.scheduledDate && (
+              <span className="text-gray-500">
+                {formatDate(task.scheduledDate, 'short')}
+              </span>
+            )}
+
+            {/* 포커스 세션 */}
+            {task._count.FocusSession > 0 && (
+              <span className="text-gray-500">
+                🔥 {task._count.FocusSession}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex justify-between items-center mb-4">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900">오늘 할 일</h2>
+          <h2 className="text-lg font-semibold text-gray-900">작업 목록</h2>
           <p className="text-sm text-gray-500">
             {stats.completed}/{stats.total} 완료
           </p>
@@ -125,7 +258,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
 
       {tasks.length === 0 ? (
         <div className="text-center py-8">
-          <p className="text-gray-500 text-sm mb-3">오늘 할 일이 없습니다</p>
+          <p className="text-gray-500 text-sm mb-3">작업이 없습니다</p>
           <button
             onClick={onAddClick}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
@@ -134,103 +267,90 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
           </button>
         </div>
       ) : (
-        <div className="space-y-2">
-          {tasks.map((task) => {
-            const priorityColor = getPriorityColor(task.priority);
-            const isCompleted = task.status === 'completed';
-
-            return (
-              <div
-                key={task.id}
-                onClick={() => onTaskClick?.(task)}
-                className={cn(
-                  'flex items-start gap-3 p-3 rounded-lg border transition-colors cursor-pointer',
-                  isCompleted
-                    ? 'bg-gray-50 border-gray-200'
-                    : 'bg-white border-gray-200 hover:border-gray-300'
-                )}
-              >
-                {/* 체크박스 */}
-                <button
-                  onClick={(e) => handleToggleComplete(task.id, e)}
-                  className={cn(
-                    'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
-                    isCompleted
-                      ? 'bg-blue-600 border-blue-600'
-                      : 'border-gray-300 hover:border-blue-500'
-                  )}
-                >
-                  {isCompleted && (
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
-                </button>
-
-                {/* 내용 */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3
-                      className={cn(
-                        'font-medium text-gray-900',
-                        isCompleted && 'line-through text-gray-500'
-                      )}
-                    >
-                      {task.title}
-                    </h3>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2 text-xs">
-                    {/* 우선순위 */}
-                    <span
-                      className={cn(
-                        'px-2 py-0.5 rounded border',
-                        priorityColor.bg,
-                        priorityColor.text,
-                        priorityColor.border
-                      )}
-                    >
-                      {getPriorityLabel(task.priority)}
-                    </span>
-
-                    {/* 목표 */}
-                    {task.Goal && (
-                      <span
-                        className="px-2 py-0.5 rounded text-white"
-                        style={{ backgroundColor: task.Goal.color }}
-                      >
-                        {task.Goal.title}
-                      </span>
-                    )}
-
-                    {/* 날짜 */}
-                    {task.scheduledDate && (
-                      <span className="text-gray-500">
-                        {formatDate(task.scheduledDate, 'short')}
-                      </span>
-                    )}
-
-                    {/* 포커스 세션 */}
-                    {task._count.FocusSession > 0 && (
-                      <span className="text-gray-500">
-                        🔥 {task._count.FocusSession}
-                      </span>
-                    )}
-                  </div>
-                </div>
+        <div className="space-y-4">
+          {/* 오늘 할 일 */}
+          <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
+            <h3 className="text-base font-semibold text-blue-900 mb-3">
+              오늘 할 일 ({categorizedTasks.todayTasks.length})
+            </h3>
+            {categorizedTasks.todayTasks.length === 0 ? (
+              <p className="text-sm text-blue-600">오늘 할 일이 없습니다</p>
+            ) : (
+              <div className="space-y-2">
+                {categorizedTasks.todayTasks.map(renderTaskItem)}
               </div>
-            );
-          })}
+            )}
+          </div>
+
+          {/* 밀린 작업 */}
+          {categorizedTasks.overdueTasks.length > 0 && (
+            <div className="border-2 border-red-200 rounded-lg">
+              <button
+                onClick={() => setShowOverdue(!showOverdue)}
+                className="w-full flex items-center justify-between p-3 bg-red-50 rounded-t-lg hover:bg-red-100 transition-colors"
+              >
+                <h3 className="text-sm font-semibold text-red-900">
+                  ⚠️ 밀린 작업 ({categorizedTasks.overdueTasks.length})
+                </h3>
+                <svg
+                  className={cn(
+                    'w-5 h-5 text-red-600 transition-transform',
+                    showOverdue && 'rotate-180'
+                  )}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {showOverdue && (
+                <div className="p-3 space-y-2">
+                  {categorizedTasks.overdueTasks.map(renderTaskItem)}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 예정 작업 */}
+          {categorizedTasks.upcomingTasks.length > 0 && (
+            <div className="border border-gray-200 rounded-lg">
+              <button
+                onClick={() => setShowUpcoming(!showUpcoming)}
+                className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-t-lg hover:bg-gray-100 transition-colors"
+              >
+                <h3 className="text-sm font-medium text-gray-700">
+                  📅 예정 작업 ({categorizedTasks.upcomingTasks.length})
+                </h3>
+                <svg
+                  className={cn(
+                    'w-5 h-5 text-gray-500 transition-transform',
+                    showUpcoming && 'rotate-180'
+                  )}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+              {showUpcoming && (
+                <div className="p-3 space-y-2">
+                  {categorizedTasks.upcomingTasks.map(renderTaskItem)}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

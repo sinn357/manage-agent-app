@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
         startedAt: new Date(),
         completed: false,
         interrupted: false,
+        timeLeft: duration * 60, // 초 단위로 저장
+        timerState: 'running',
+        lastUpdatedAt: new Date(),
         userId,
         taskId: taskId || null,
       },
@@ -82,17 +85,26 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const taskId = searchParams.get('taskId');
+    const active = searchParams.get('active') === 'true';
     const limit = parseInt(searchParams.get('limit') || '50');
 
     const where: {
       userId: string;
       taskId?: string;
+      completed?: boolean;
+      interrupted?: boolean;
     } = {
       userId,
     };
 
     if (taskId) {
       where.taskId = taskId;
+    }
+
+    // active 세션만 가져오기 (진행 중인 세션)
+    if (active) {
+      where.completed = false;
+      where.interrupted = false;
     }
 
     const sessions = await prisma.focusSession.findMany({

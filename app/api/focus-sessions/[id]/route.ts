@@ -34,20 +34,34 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { actualTime, completed, interrupted } = body;
+    const { actualTime, completed, interrupted, timeLeft, timerState } = body;
 
     // 세션 종료 시 endedAt 설정
     const shouldEnd = completed === true || interrupted === true;
 
+    // 업데이트할 데이터 구성
+    const updateData: any = {
+      actualTime: actualTime !== undefined ? actualTime : existingSession.actualTime,
+      completed: completed !== undefined ? completed : existingSession.completed,
+      interrupted: interrupted !== undefined ? interrupted : existingSession.interrupted,
+      endedAt: shouldEnd ? new Date() : existingSession.endedAt,
+    };
+
+    // 타이머 상태 업데이트 (진행 중인 세션만)
+    if (!shouldEnd) {
+      if (timeLeft !== undefined) {
+        updateData.timeLeft = timeLeft;
+      }
+      if (timerState !== undefined) {
+        updateData.timerState = timerState;
+      }
+      updateData.lastUpdatedAt = new Date();
+    }
+
     // 세션 업데이트
     const updatedSession = await prisma.focusSession.update({
       where: { id },
-      data: {
-        actualTime: actualTime !== undefined ? actualTime : existingSession.actualTime,
-        completed: completed !== undefined ? completed : existingSession.completed,
-        interrupted: interrupted !== undefined ? interrupted : existingSession.interrupted,
-        endedAt: shouldEnd ? new Date() : existingSession.endedAt,
-      },
+      data: updateData,
       include: {
         Task: {
           select: {

@@ -95,13 +95,14 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    const { title, description, scheduledDate, priority, status, goalId, order } = body;
+    const { title, description, scheduledDate, scheduledTime, priority, status, goalId, order } = body;
 
     // 업데이트할 데이터 준비
     const updateData: {
       title?: string;
       description?: string | null;
       scheduledDate?: Date | null;
+      scheduledTime?: string | null;
       priority?: string;
       status?: string;
       goalId?: string | null;
@@ -125,6 +126,10 @@ export async function PATCH(
 
     if (scheduledDate !== undefined) {
       updateData.scheduledDate = scheduledDate ? new Date(scheduledDate) : null;
+    }
+
+    if (scheduledTime !== undefined) {
+      updateData.scheduledTime = scheduledTime || null;
     }
 
     if (priority !== undefined) {
