@@ -148,42 +148,45 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-gradient-to-r from-blue-500 to-violet-500 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">리포트</h1>
-            <p className="text-sm text-gray-600">생산성 분석 및 통계</p>
+          <div
+            onClick={() => router.push('/dashboard')}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <h1 className="text-2xl font-bold text-white">리포트</h1>
+            <p className="text-sm text-white/90">생산성 분석 및 통계</p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
             >
               🏠 대시보드
             </button>
             <button
               onClick={() => router.push('/calendar')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
             >
               📅 캘린더
             </button>
             <button
               onClick={() => router.push('/kanban')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
             >
               📋 칸반
             </button>
             <button
               onClick={() => router.push('/settings')}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
             >
               ⚙️ 설정
             </button>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
             >
               로그아웃
             </button>

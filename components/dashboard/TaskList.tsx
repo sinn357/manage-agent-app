@@ -163,7 +163,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
           className={cn(
             'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
             isCompleted
-              ? 'bg-blue-600 border-blue-600'
+              ? 'bg-blue-500 border-blue-500'
               : 'border-gray-300 hover:border-blue-500'
           )}
         >
@@ -240,7 +240,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <div className="flex justify-between items-center mb-4">
         <div>
           <h2 className="text-lg font-semibold text-gray-900">작업 목록</h2>
@@ -250,7 +250,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
         </div>
         <button
           onClick={onAddClick}
-          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          className="text-sm text-violet-500 hover:text-violet-600 font-medium"
         >
           + 추가
         </button>
@@ -261,7 +261,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
           <p className="text-gray-500 text-sm mb-3">작업이 없습니다</p>
           <button
             onClick={onAddClick}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="text-violet-500 hover:text-violet-600 text-sm font-medium"
           >
             첫 작업을 추가해보세요
           </button>

@@ -80,17 +80,20 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 p-6">
       <div className="max-w-6xl mx-auto">
         {/* 헤더 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">설정</h1>
-            <p className="text-gray-600 mt-1">알림, 루틴 및 환경 설정을 관리하세요</p>
+        <div className="mb-6 flex items-center justify-between bg-white/20 backdrop-blur-md rounded-lg p-6 border border-white/30">
+          <div
+            onClick={() => router.push('/dashboard')}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <h1 className="text-3xl font-bold text-white">설정</h1>
+            <p className="text-white/90 mt-1">알림, 루틴 및 환경 설정을 관리하세요</p>
           </div>
           <button
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-white border border-white/50 rounded-lg hover:bg-white/20 transition-colors"
           >
             대시보드
           </button>
@@ -126,7 +129,7 @@ export default function SettingsPage() {
         {activeTab === 'notifications' && (
           <div>
             {/* 알림 권한 */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6 mb-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">알림 권한</h2>
           <div className="flex items-center justify-between">
             <div>
@@ -165,7 +168,7 @@ export default function SettingsPage() {
         </div>
 
         {/* 알림 설정 */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">알림 설정</h2>
 
           {/* 전체 알림 활성화 */}

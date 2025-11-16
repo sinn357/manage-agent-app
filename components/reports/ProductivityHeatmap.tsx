@@ -27,7 +27,7 @@ export default function ProductivityHeatmap({ heatmap }: ProductivityHeatmapProp
     if (intensity < 0.4) return 'bg-blue-300';
     if (intensity < 0.6) return 'bg-blue-400';
     if (intensity < 0.8) return 'bg-blue-500';
-    return 'bg-blue-600';
+    return 'bg-blue-500';
   };
 
   // 툴팁 텍스트
@@ -36,7 +36,7 @@ export default function ProductivityHeatmap({ heatmap }: ProductivityHeatmapProp
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-4">시간대별 집중력 히트맵</h2>
       <p className="text-sm text-gray-600 mb-6">
         어느 시간대에 가장 집중을 잘하는지 확인하세요
@@ -93,7 +93,7 @@ export default function ProductivityHeatmap({ heatmap }: ProductivityHeatmapProp
           <div className="w-4 h-4 bg-blue-300 rounded"></div>
           <div className="w-4 h-4 bg-blue-400 rounded"></div>
           <div className="w-4 h-4 bg-blue-500 rounded"></div>
-          <div className="w-4 h-4 bg-blue-600 rounded"></div>
+          <div className="w-4 h-4 bg-blue-500 rounded"></div>
         </div>
         <span>많음</span>
       </div>

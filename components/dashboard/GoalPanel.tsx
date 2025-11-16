@@ -78,12 +78,12 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold text-gray-900">목표</h2>
         <button
           onClick={onAddClick}
-          className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          className="text-sm text-violet-500 hover:text-violet-600 font-medium"
         >
           + 추가
         </button>
@@ -94,7 +94,7 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
           <p className="text-gray-500 text-sm mb-3">아직 목표가 없습니다</p>
           <button
             onClick={onAddClick}
-            className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+            className="text-violet-500 hover:text-violet-600 text-sm font-medium"
           >
             첫 목표를 추가해보세요
           </button>
