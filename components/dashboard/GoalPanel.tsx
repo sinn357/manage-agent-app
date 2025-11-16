@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { calculateDDay, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useGoals } from '@/lib/hooks/useGoals';
 
 interface Goal {
   id: string;
@@ -26,34 +26,10 @@ interface GoalPanelProps {
 }
 
 export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // TanStack Query로 목표 가져오기
+  const { data: goals = [], isLoading, error } = useGoals();
 
-  useEffect(() => {
-    fetchGoals();
-  }, []);
-
-  const fetchGoals = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/goals');
-      const data = await response.json();
-
-      if (data.success) {
-        setGoals(data.goals);
-      } else {
-        setError(data.error || 'Failed to fetch goals');
-      }
-    } catch (err) {
-      console.error('Fetch goals error:', err);
-      setError('Network error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">목표</h2>
@@ -73,7 +49,7 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">목표</h2>
-        <p className="text-red-600 text-sm">{error}</p>
+        <p className="text-red-600 text-sm">{error.message}</p>
       </div>
     );
   }

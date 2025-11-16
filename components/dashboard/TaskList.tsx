@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { getPriorityColor, getPriorityLabel, formatDate, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { useTasks, useToggleTaskComplete } from '@/lib/hooks/useTasks';
 
 interface Task {
   id: string;
@@ -28,16 +29,27 @@ interface TaskListProps {
 }
 
 export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState({ total: 0, completed: 0, inProgress: 0, todo: 0 });
   const [showOverdue, setShowOverdue] = useState(false);
   const [showUpcoming, setShowUpcoming] = useState(false);
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  // TanStack Query로 작업 가져오기
+  const { data: allTasks = [], isLoading, error } = useTasks();
+  const toggleComplete = useToggleTaskComplete();
+
+  // 완료되지 않은 작업만 필터링
+  const tasks = useMemo(() => {
+    return allTasks.filter(t => t.status !== 'completed');
+  }, [allTasks]);
+
+  // 통계 계산
+  const stats = useMemo(() => {
+    return {
+      total: allTasks.length,
+      completed: allTasks.filter(t => t.status === 'completed').length,
+      inProgress: allTasks.filter(t => t.status === 'in_progress').length,
+      todo: allTasks.filter(t => t.status === 'todo').length,
+    };
+  }, [allTasks]);
 
   // 작업을 오늘/밀린/예정으로 분류
   const categorizedTasks = useMemo(() => {
@@ -72,59 +84,12 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     return { todayTasks, overdueTasks, upcomingTasks };
   }, [tasks]);
 
-  const fetchTasks = async () => {
-    try {
-      console.log('TaskList: Fetching tasks...');
-      setLoading(true);
-      // 모든 작업을 가져와서 클라이언트에서 분류
-      const response = await fetch('/api/tasks');
-      const data = await response.json();
-      console.log('TaskList: Received tasks:', data);
-
-      if (data.success) {
-        console.log('TaskList: Setting', data.tasks.length, 'tasks');
-        const allTasks = data.tasks || [];
-        // 완료되지 않은 작업만 필터링
-        const incompleteTasks = allTasks.filter((t: any) => t.status !== 'completed');
-        setTasks(incompleteTasks);
-
-        // stats 계산
-        const total = allTasks.length;
-        const completed = allTasks.filter((t: any) => t.status === 'completed').length;
-        const inProgress = allTasks.filter((t: any) => t.status === 'in_progress').length;
-        const todo = allTasks.filter((t: any) => t.status === 'todo').length;
-        setStats({ total, completed, inProgress, todo });
-      } else {
-        setError(data.error || 'Failed to fetch tasks');
-      }
-    } catch (err) {
-      console.error('Fetch tasks error:', err);
-      setError('Network error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleToggleComplete = async (taskId: string, e: React.MouseEvent) => {
+  const handleToggleComplete = (taskId: string, e: React.MouseEvent) => {
     e.stopPropagation(); // 부모 클릭 이벤트 방지
-
-    try {
-      const response = await fetch(`/api/tasks/${taskId}/complete`, {
-        method: 'PATCH',
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // 전체 목록 리프레시
-        fetchTasks();
-      }
-    } catch (err) {
-      console.error('Toggle complete error:', err);
-    }
+    toggleComplete.mutate(taskId); // TanStack Query 뮤테이션으로 자동 업데이트
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">오늘 할 일</h2>
@@ -147,7 +112,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     return (
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">오늘 할 일</h2>
-        <p className="text-red-600 text-sm">{error}</p>
+        <p className="text-red-600 text-sm">{error.message}</p>
       </div>
     );
   }
