@@ -1,7 +1,56 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { cn } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+
+const PRESET_COLORS = [
+  '#3B82F6', // blue
+  '#8B5CF6', // purple
+  '#EC4899', // pink
+  '#EF4444', // red
+  '#F59E0B', // amber
+  '#10B981', // green
+  '#06B6D4', // cyan
+  '#6366F1', // indigo
+];
+
+// Goal 형식 스키마
+const goalFormSchema = z.object({
+  title: z.string()
+    .min(1, '목표 제목을 입력하세요')
+    .max(100, '목표 제목은 100자 이하여야 합니다'),
+  description: z.string()
+    .max(500, '설명은 500자 이하여야 합니다')
+    .optional(),
+  targetDate: z.string()
+    .optional(),
+  color: z.string()
+    .regex(/^#[0-9A-F]{6}$/i, '유효한 색상 코드를 입력하세요'),
+});
+
+type GoalFormValues = z.infer<typeof goalFormSchema>;
 
 interface Goal {
   id?: string;
@@ -18,52 +67,62 @@ interface GoalModalProps {
   goal?: Goal | null;
 }
 
-const PRESET_COLORS = [
-  '#3B82F6', // blue
-  '#8B5CF6', // purple
-  '#EC4899', // pink
-  '#EF4444', // red
-  '#F59E0B', // amber
-  '#10B981', // green
-  '#06B6D4', // cyan
-  '#6366F1', // indigo
-];
-
-export default function GoalModal({ isOpen, onClose, onSuccess, goal }: GoalModalProps) {
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    targetDate: '',
-    color: '#3B82F6',
-  });
+export default function GoalModal({
+  isOpen,
+  onClose,
+  onSuccess,
+  goal
+}: GoalModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (isOpen && goal) {
-      // 수정 모드
-      setFormData({
-        title: goal.title,
-        description: goal.description || '',
-        targetDate: goal.targetDate
-          ? new Date(goal.targetDate).toISOString().split('T')[0]
-          : '',
-        color: goal.color,
-      });
-    } else if (isOpen) {
-      // 생성 모드
-      setFormData({
-        title: '',
-        description: '',
-        targetDate: '',
-        color: '#3B82F6',
-      });
-    }
-    setError('');
-  }, [isOpen, goal]);
+  // 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
+  const formatDateForInput = (date: Date | string | null | undefined): string => {
+    if (!date) return '';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const d = typeof date === 'string' ? new Date(date) : date;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const form = useForm<GoalFormValues>({
+    resolver: zodResolver(goalFormSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      targetDate: '',
+      color: '#3B82F6',
+    },
+  });
+
+  // Modal이 열릴 때마다 폼 리셋 및 초기값 설정
+  useEffect(() => {
+    if (isOpen) {
+      if (goal) {
+        // 수정 모드
+        form.reset({
+          title: goal.title,
+          description: goal.description || '',
+          targetDate: formatDateForInput(goal.targetDate),
+          color: goal.color,
+        });
+      } else {
+        // 생성 모드
+        form.reset({
+          title: '',
+          description: '',
+          targetDate: '',
+          color: '#3B82F6',
+        });
+      }
+
+      setError('');
+    }
+  }, [isOpen, goal, form]);
+
+  const onSubmit = async (values: GoalFormValues) => {
     setLoading(true);
     setError('');
 
@@ -75,10 +134,10 @@ export default function GoalModal({ isOpen, onClose, onSuccess, goal }: GoalModa
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: formData.title,
-          description: formData.description || null,
-          targetDate: formData.targetDate || null,
-          color: formData.color,
+          title: values.title,
+          description: values.description || null,
+          targetDate: values.targetDate || null,
+          color: values.color,
         }),
       });
 
@@ -126,138 +185,139 @@ export default function GoalModal({ isOpen, onClose, onSuccess, goal }: GoalModa
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {goal?.id ? '목표 수정' : '새 목표'}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>{goal?.id ? '목표 수정' : '새 목표'}</DialogTitle>
+          <DialogDescription>
+            {goal?.id ? '목표 정보를 수정하세요' : '새로운 목표를 생성하세요'}
+          </DialogDescription>
+        </DialogHeader>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* 제목 */}
-          <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-              제목 *
-            </label>
-            <input
-              id="title"
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="예: 토익 900점 달성"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {/* 제목 */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>제목 *</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="예: 토익 900점 달성"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* 설명 */}
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-              설명
-            </label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="목표에 대한 설명 (선택)"
-              rows={3}
+            {/* 설명 */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>설명</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="목표에 대한 설명 (선택)"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* 목표 날짜 */}
-          <div>
-            <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700 mb-1">
-              목표 날짜
-            </label>
-            <input
-              id="targetDate"
-              type="date"
-              value={formData.targetDate}
-              onChange={(e) => setFormData({ ...formData, targetDate: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            {/* 목표 날짜 */}
+            <FormField
+              control={form.control}
+              name="targetDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>목표 날짜</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* 색상 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">색상</label>
-            <div className="grid grid-cols-8 gap-2">
-              {PRESET_COLORS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, color })}
-                  className={cn(
-                    'w-8 h-8 rounded-full transition-transform',
-                    formData.color === color ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''
-                  )}
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </div>
-          </div>
+            {/* 색상 */}
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>색상</FormLabel>
+                  <FormControl>
+                    <div className="grid grid-cols-8 gap-2">
+                      {PRESET_COLORS.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => field.onChange(color)}
+                          className={cn(
+                            'w-8 h-8 rounded-full transition-transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
+                            field.value === color ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''
+                          )}
+                          style={{ backgroundColor: color }}
+                          aria-label={`색상 ${color}`}
+                        />
+                      ))}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* 에러 메시지 */}
-          {error && (
-            <div className="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">{error}</div>
-          )}
-
-          {/* 버튼 */}
-          <div className="flex gap-2 pt-4">
-            {goal?.id && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50"
-              >
-                삭제
-              </button>
+            {/* 에러 메시지 */}
+            {error && (
+              <div className="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">
+                {error}
+              </div>
             )}
-            <div className="flex-1" />
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 disabled:opacity-50"
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 rounded-md disabled:opacity-50 transition-colors"
-            >
-              {loading ? '저장 중...' : goal?.id ? '수정' : '생성'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+
+            <DialogFooter className="gap-2">
+              {goal?.id && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={loading}
+                  className="mr-auto"
+                >
+                  삭제
+                </Button>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={loading}
+              >
+                취소
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? '저장 중...' : goal?.id ? '수정' : '생성'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 }
