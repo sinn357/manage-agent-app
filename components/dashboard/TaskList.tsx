@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { getPriorityColor, getPriorityLabel, formatDate, cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface Task {
   id: string;
@@ -258,23 +259,27 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
             {stats.completed}/{stats.total} 완료
           </p>
         </div>
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onAddClick}
-          className="text-sm text-violet-500 hover:text-violet-600 font-medium"
+          className="text-violet-500 hover:text-violet-600"
         >
           + 추가
-        </button>
+        </Button>
       </div>
 
       {tasks.length === 0 ? (
         <div className="text-center py-8">
           <p className="text-gray-500 text-sm mb-3">작업이 없습니다</p>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={onAddClick}
-            className="text-violet-500 hover:text-violet-600 text-sm font-medium"
+            className="text-violet-500 hover:text-violet-600"
           >
             첫 작업을 추가해보세요
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="space-y-4">

@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
 import GoalPanel from '@/components/dashboard/GoalPanel';
 import GoalModal from '@/components/dashboard/GoalModal';
 import TaskList from '@/components/dashboard/TaskList';
@@ -159,36 +160,46 @@ export default function DashboardPage() {
             <p className="text-sm text-white/90">안녕하세요, {user.name || user.username}님!</p>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/reports')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="text-white hover:bg-white/20 border-white/30"
             >
               📊 리포트
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/calendar')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="text-white hover:bg-white/20 border-white/30"
             >
               📅 캘린더
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/kanban')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="text-white hover:bg-white/20 border-white/30"
             >
               📋 칸반
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/settings')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="text-white hover:bg-white/20 border-white/30"
             >
               ⚙️ 설정
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="text-white hover:bg-white/20 border-white/30"
             >
               로그아웃
-            </button>
+            </Button>
           </div>
         </div>
       </header>
