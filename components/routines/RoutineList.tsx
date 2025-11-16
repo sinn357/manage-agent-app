@@ -139,14 +139,14 @@ export default function RoutineList() {
 
   const getPriorityColor = (priority: string) => {
     if (priority === 'high') return 'text-red-600 bg-red-50';
-    if (priority === 'mid') return 'text-blue-600 bg-blue-50';
+    if (priority === 'mid') return 'text-blue-500 bg-blue-50';
     return 'text-gray-600 bg-gray-50';
   };
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
       </div>
     );
   }
@@ -165,7 +165,7 @@ export default function RoutineList() {
           </button>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             + 루틴 추가
           </button>
@@ -177,7 +177,7 @@ export default function RoutineList() {
           <p className="text-gray-500 mb-4">등록된 루틴이 없습니다</p>
           <button
             onClick={handleAdd}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             첫 루틴 만들기
           </button>

@@ -34,7 +34,7 @@ export default function StatsOverview({ tasks, focus }: StatsOverviewProps) {
       label: '작업 달성률',
       value: `${tasks.completionRate}%`,
       total: null,
-      color: 'text-blue-600',
+      color: 'text-blue-500',
       bgColor: 'bg-blue-50',
       icon: '📊',
     },

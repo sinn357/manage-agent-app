@@ -134,24 +134,27 @@ export default function KanbanPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 p-6">
       <div className="max-w-7xl mx-auto">
         {/* 헤더 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">칸반 보드</h1>
-            <p className="text-gray-600 mt-1">작업 상태를 드래그하여 변경하세요</p>
+        <div className="mb-6 flex items-center justify-between bg-white/20 backdrop-blur-md rounded-lg p-6 border border-white/30">
+          <div
+            onClick={() => router.push('/dashboard')}
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+          >
+            <h1 className="text-3xl font-bold text-white">칸반 보드</h1>
+            <p className="text-white/90 mt-1">작업 상태를 드래그하여 변경하세요</p>
           </div>
           <div className="flex gap-3">
             <button
               onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-white border border-white/50 rounded-lg hover:bg-white/20 transition-colors"
             >
               대시보드
             </button>
             <button
               onClick={() => router.push('/calendar')}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-white border border-white/50 rounded-lg hover:bg-white/20 transition-colors"
             >
               캘린더
             </button>
@@ -160,7 +163,7 @@ export default function KanbanPage() {
                 setSelectedTask(null);
                 setIsTaskModalOpen(true);
               }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-violet-500 text-white rounded-lg hover:from-blue-600 hover:to-violet-600 transition-all shadow-lg"
             >
               + 새 작업
             </button>
@@ -169,8 +172,8 @@ export default function KanbanPage() {
 
         {/* 칸반 보드 */}
         {loading ? (
-          <div className="bg-white rounded-lg shadow-md p-6 min-h-[500px] flex items-center justify-center">
-            <div className="text-gray-600">작업 불러오는 중...</div>
+          <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6 min-h-[500px] flex items-center justify-center">
+            <div className="text-gray-700">작업 불러오는 중...</div>
           </div>
         ) : (
           <KanbanBoard
