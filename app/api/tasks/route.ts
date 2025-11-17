@@ -68,9 +68,8 @@ export async function GET(request: NextRequest) {
       },
       orderBy: [
         { status: 'asc' }, // todo > in_progress > completed
-        { priority: 'desc' }, // high > mid > low
-        { order: 'asc' },
-        { createdAt: 'desc' },
+        { order: 'asc' }, // 수동 정렬 (드래그앤드롭)
+        { createdAt: 'desc' }, // 같은 order 값일 때 최신순
       ],
       take: limit,
       skip: offset,
