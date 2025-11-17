@@ -2,7 +2,8 @@
 
 import { calculateDDay, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useGoals, useUpdateGoal } from '@/lib/hooks/useGoals';
+import { useGoals } from '@/lib/hooks/useGoals';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
   closestCenter,
@@ -72,28 +73,28 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
       )}
       {...attributes}
     >
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-3">
         {/* Drag Handle */}
         <button
           {...listeners}
-          className="mt-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing focus:outline-none"
+          className="mt-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing focus:outline-none flex-shrink-0"
         >
           <GripVertical className="h-5 w-5" />
         </button>
 
         {/* Goal Content */}
         <div
-          className="flex-1 cursor-pointer"
+          className="flex-1 cursor-pointer pl-3"
           onClick={() => onGoalClick?.(goal)}
           style={{ borderLeftWidth: '4px', borderLeftColor: goal.color }}
         >
           {/* 제목 & D-day */}
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="font-medium text-gray-900 flex-1">{goal.title}</h3>
+          <div className="flex justify-between items-start mb-3">
+            <h3 className="font-medium text-gray-900 flex-1 pr-2">{goal.title}</h3>
             {dday && (
               <span
                 className={cn(
-                  'text-xs font-semibold px-2 py-1 rounded',
+                  'text-xs font-semibold px-2 py-1 rounded flex-shrink-0',
                   dday.isOverdue
                     ? 'bg-red-100 text-red-700'
                     : dday.daysLeft <= 7
@@ -107,8 +108,8 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
           </div>
 
           {/* 진행률 */}
-          <div className="mb-2">
-            <div className="flex justify-between items-center text-xs text-gray-600 mb-1">
+          <div className="mb-3">
+            <div className="flex justify-between items-center text-xs text-gray-600 mb-2">
               <span>진행률</span>
               <span className="font-semibold">{goal.progress}%</span>
             </div>
@@ -145,7 +146,7 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
 export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
   // TanStack Query로 목표 가져오기
   const { data: goals = [], isLoading, error } = useGoals();
-  const updateGoal = useUpdateGoal();
+  const queryClient = useQueryClient();
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -169,15 +170,21 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
       return;
     }
 
-    // Reorder locally (optimistic update via TanStack Query)
+    // Reorder locally
     const reorderedGoals = arrayMove(goals, oldIndex, newIndex);
 
-    // Update each goal's order in the backend
-    reorderedGoals.forEach((goal, index) => {
-      updateGoal.mutate({
-        id: goal.id,
-        order: index,
-      });
+    // Update each goal's order in the backend and refetch
+    Promise.all(
+      reorderedGoals.map((goal, index) =>
+        fetch(`/api/goals/${goal.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: index }),
+        })
+      )
+    ).then(() => {
+      // Refetch goals after all updates complete
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
     });
   };
 

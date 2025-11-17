@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react';
 import { getPriorityColor, getPriorityLabel, formatDate, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { useTasks, useToggleTaskComplete, useUpdateTask } from '@/lib/hooks/useTasks';
+import { useTasks, useToggleTaskComplete } from '@/lib/hooks/useTasks';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   DndContext,
   closestCenter,
@@ -197,7 +198,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
   // TanStack Query로 작업 가져오기
   const { data: allTasks = [], isLoading, error } = useTasks();
   const toggleComplete = useToggleTaskComplete();
-  const updateTask = useUpdateTask();
+  const queryClient = useQueryClient();
 
   // Drag and drop sensors
   const sensors = useSensors(
@@ -278,12 +279,18 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     // Reorder locally
     const reorderedTasks = arrayMove(taskList, oldIndex, newIndex);
 
-    // Update each task's order in the backend
-    reorderedTasks.forEach((task, index) => {
-      updateTask.mutate({
-        id: task.id,
-        order: index,
-      });
+    // Update each task's order in the backend and refetch
+    Promise.all(
+      reorderedTasks.map((task, index) =>
+        fetch(`/api/tasks/${task.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: index }),
+        })
+      )
+    ).then(() => {
+      // Refetch tasks after all updates complete
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
     });
   };
 
