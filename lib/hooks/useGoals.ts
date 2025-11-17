@@ -35,6 +35,7 @@ interface CreateGoalInput {
 
 interface UpdateGoalInput extends Partial<CreateGoalInput> {
   status?: string;
+  order?: number;
 }
 
 // 모든 목표 조회

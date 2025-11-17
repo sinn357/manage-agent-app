@@ -51,6 +51,7 @@ interface CreateTaskInput {
 
 interface UpdateTaskInput extends Partial<CreateTaskInput> {
   status?: string;
+  order?: number;
 }
 
 // 모든 작업 조회
