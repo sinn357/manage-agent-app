@@ -121,7 +121,10 @@ export async function PATCH(request: Request) {
           { status: 400 }
         );
       }
-      updates.name = name.trim() || null;
+      const trimmedName = name.trim();
+      if (trimmedName) {
+        updates.name = trimmedName;
+      }
     }
 
     // 업데이트할 필드가 없으면 에러
