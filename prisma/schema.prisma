@@ -104,15 +104,17 @@ model Routine {
 }
 
 model User {
-  id           String         @id @default(cuid())
-  email        String         @unique
-  username     String         @unique
-  passwordHash String
-  name         String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  FocusSession FocusSession[]
-  Goal         Goal[]
-  Task         Task[]
-  Routine      Routine[]
+  id             String         @id @default(cuid())
+  email          String         @unique
+  username       String         @unique
+  passwordHash   String
+  name           String?
+  birthDate      DateTime?      // 생년월일
+  targetLifespan Int?           // 목표 수명 (나이)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  FocusSession   FocusSession[]
+  Goal           Goal[]
+  Task           Task[]
+  Routine        Routine[]
 }

@@ -4,6 +4,7 @@ import { calculateDDay, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useGoals } from '@/lib/hooks/useGoals';
 import { useQueryClient } from '@tanstack/react-query';
+import { calculateGoalTimeRemaining, formatTimeRemaining } from '@/lib/lifeCalculations';
 import {
   DndContext,
   closestCenter,
@@ -62,6 +63,7 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
   };
 
   const dday = goal.targetDate ? calculateDDay(goal.targetDate) : null;
+  const timeRemaining = goal.targetDate ? calculateGoalTimeRemaining(goal.targetDate) : null;
 
   return (
     <div
@@ -123,6 +125,35 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
               ></div>
             </div>
           </div>
+
+          {/* 기한까지 남은 시간 */}
+          {timeRemaining && (
+            <div className="mb-3">
+              <div className="flex justify-between items-center text-xs text-gray-600 mb-2">
+                <span>⏰ 남은 시간</span>
+                <span className={cn(
+                  "font-semibold",
+                  timeRemaining.isOverdue ? "text-red-600" : "text-violet-600"
+                )}>
+                  {formatTimeRemaining(timeRemaining)}
+                </span>
+              </div>
+              {!timeRemaining.isOverdue && (
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={cn(
+                      "h-2 rounded-full transition-all duration-300",
+                      timeRemaining.days <= 7 ? "bg-red-500" :
+                      timeRemaining.days <= 30 ? "bg-orange-500" : "bg-violet-500"
+                    )}
+                    style={{
+                      width: `${Math.max(0, 100 - timeRemaining.percentage)}%`,
+                    }}
+                  ></div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 통계 */}
           <div className="flex gap-3 text-xs text-gray-500">

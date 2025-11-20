@@ -21,11 +21,7 @@ interface FocusTimerProps {
 
 type TimerState = 'idle' | 'running' | 'paused';
 
-const PRESETS = [
-  { label: '25분', minutes: 25 },
-  { label: '50분', minutes: 50 },
-  { label: '90분', minutes: 90 },
-];
+const QUICK_PRESETS = [5, 10, 25, 30, 45, 60];
 
 export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimerProps) {
   const [timerState, setTimerState] = useState<TimerState>('idle');
@@ -178,11 +174,12 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
     }
   };
 
-  const handlePresetClick = (minutes: number) => {
-    if (timerState === 'idle') {
+  const handleQuickPresetChange = (value: string) => {
+    if (timerState === 'idle' && value) {
+      const minutes = parseInt(value);
       setSelectedMinutes(minutes);
       setTimeLeft(minutes * 60);
-      setCustomMinutes('');
+      setCustomMinutes(minutes.toString());
     }
   };
 
@@ -343,19 +340,19 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">포커스 타이머</h2>
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-4">
+        <h2 className="text-base font-semibold text-gray-900 mb-3">포커스 타이머</h2>
+        <div className="text-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">포커스 타이머</h2>
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-4">
+      <div className="flex justify-between items-center mb-3">
+        <h2 className="text-base font-semibold text-gray-900">포커스 타이머</h2>
         {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
           <Button
             variant="ghost"
@@ -369,13 +366,13 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       </div>
 
       {/* 타이머 디스플레이 */}
-      <div className="relative mb-6">
-        <div className="text-center mb-4">
-          <div className="text-6xl font-bold text-gray-900 mb-2">
+      <div className="relative mb-4">
+        <div className="text-center mb-3">
+          <div className="text-4xl font-bold text-gray-900 mb-1">
             {formatTime(timeLeft)}
           </div>
           {timerState !== 'idle' && (
-            <div className="text-sm text-gray-500">
+            <div className="text-xs text-gray-500">
               {selectedMinutes}분 중 {Math.floor((selectedMinutes * 60 - timeLeft) / 60)}분 경과
             </div>
           )}
@@ -383,7 +380,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
         {/* Progress bar */}
         {timerState !== 'idle' && (
-          <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
             <div
               className="h-full bg-blue-500 transition-all duration-1000 ease-linear"
               style={{ width: `${progressPercent}%` }}
@@ -392,26 +389,13 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         )}
       </div>
 
-      {/* 프리셋 & 커스텀 */}
+      {/* 시간 입력 (드롭다운 포함) */}
       {timerState === 'idle' && (
-        <div className="mb-6">
-          <div className="flex gap-2 mb-3">
-            {PRESETS.map((preset) => (
-              <Button
-                key={preset.minutes}
-                variant={selectedMinutes === preset.minutes && !customMinutes ? "default" : "outline"}
-                size="sm"
-                onClick={() => handlePresetClick(preset.minutes)}
-                className="flex-1"
-              >
-                {preset.label}
-              </Button>
-            ))}
-          </div>
-          <div>
-            <label htmlFor="custom-minutes" className="block text-sm font-medium text-gray-700 mb-1">
-              커스텀 (분)
-            </label>
+        <div className="mb-4">
+          <label htmlFor="custom-minutes" className="block text-xs font-medium text-gray-700 mb-1">
+            시간 설정 (분)
+          </label>
+          <div className="flex gap-2">
             <input
               id="custom-minutes"
               type="number"
@@ -419,26 +403,38 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
               max="999"
               value={customMinutes}
               onChange={(e) => handleCustomChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="직접 입력 (1-999분)"
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="직접 입력"
             />
+            <select
+              value=""
+              onChange={(e) => handleQuickPresetChange(e.target.value)}
+              className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+            >
+              <option value="">선택</option>
+              {QUICK_PRESETS.map((minutes) => (
+                <option key={minutes} value={minutes}>
+                  {minutes}분
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       )}
 
       {/* 작업 선택 */}
       {timerState === 'idle' && tasks.length > 0 && (
-        <div className="mb-6">
-          <label htmlFor="task-select" className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="mb-4">
+          <label htmlFor="task-select" className="block text-xs font-medium text-gray-700 mb-1">
             작업 연결 (선택)
           </label>
           <select
             id="task-select"
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">작업 없음 (일반 포커스)</option>
+            <option value="">작업 없음</option>
             {tasks.map((task) => (
               <option key={task.id} value={task.id}>
                 {task.title}
@@ -453,8 +449,8 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         {timerState === 'idle' && (
           <Button
             onClick={handleStart}
-            className="flex-1 py-6"
-            size="lg"
+            className="flex-1 py-3"
+            size="sm"
           >
             시작
           </Button>
@@ -464,16 +460,16 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           <>
             <Button
               onClick={handlePause}
-              className="flex-1 py-6 bg-yellow-600 hover:bg-yellow-700"
-              size="lg"
+              className="flex-1 py-3 bg-yellow-600 hover:bg-yellow-700 text-sm"
+              size="sm"
             >
               일시정지
             </Button>
             <Button
               onClick={handleStop}
-              className="flex-1 py-6"
+              className="flex-1 py-3 text-sm"
               variant="destructive"
-              size="lg"
+              size="sm"
             >
               중단
             </Button>
@@ -484,16 +480,16 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           <>
             <Button
               onClick={handlePause}
-              className="flex-1 py-6"
-              size="lg"
+              className="flex-1 py-3 text-sm"
+              size="sm"
             >
               재개
             </Button>
             <Button
               onClick={handleStop}
-              className="flex-1 py-6"
+              className="flex-1 py-3 text-sm"
               variant="destructive"
-              size="lg"
+              size="sm"
             >
               중단
             </Button>
@@ -503,10 +499,10 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
       {/* 상태 표시 */}
       {timerState !== 'idle' && (
-        <div className="mt-4 text-center text-sm">
+        <div className="mt-3 text-center text-xs">
           <span
             className={cn(
-              'inline-block px-3 py-1 rounded-full font-medium',
+              'inline-block px-2 py-1 rounded-full font-medium',
               timerState === 'running'
                 ? 'bg-green-100 text-green-800'
                 : 'bg-yellow-100 text-yellow-800'

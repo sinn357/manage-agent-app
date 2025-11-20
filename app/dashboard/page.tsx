@@ -12,6 +12,8 @@ import GoalPanel from '@/components/dashboard/GoalPanel';
 import TaskList from '@/components/dashboard/TaskList';
 import FocusTimer from '@/components/dashboard/FocusTimer';
 import FocusHistory from '@/components/dashboard/FocusHistory';
+import LifeTimeline from '@/components/dashboard/LifeTimeline';
+import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 
 // 모달 컴포넌트는 필요할 때만 로드
 const GoalModal = dynamic(() => import('@/components/dashboard/GoalModal'), {
@@ -67,6 +69,9 @@ export default function DashboardPage() {
 
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
   const [focusHistoryKey, setFocusHistoryKey] = useState(0);
+
+  const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
+  const [lifeTimelineKey, setLifeTimelineKey] = useState(0);
 
   // 키보드 단축키 설정
   useKeyboardShortcuts([
@@ -177,6 +182,19 @@ export default function DashboardPage() {
     setGoalKey((prev) => prev + 1);
   }, []);
 
+  const handleProfileSettingsOpen = useCallback(() => {
+    setIsProfileSettingsOpen(true);
+  }, []);
+
+  const handleProfileSettingsClose = useCallback(() => {
+    setIsProfileSettingsOpen(false);
+  }, []);
+
+  const handleProfileSettingsSuccess = useCallback(() => {
+    // LifeTimeline 리프레시
+    setLifeTimelineKey((prev) => prev + 1);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -252,32 +270,36 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Goal Panel */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* 왼쪽: LifeTimeline + Goals */}
           <div className="lg:col-span-1 space-y-6">
+            <LifeTimeline
+              key={`life-${lifeTimelineKey}`}
+              onSettingsClick={handleProfileSettingsOpen}
+            />
             <GoalPanel
               key={`goal-${goalKey}`}
               onGoalClick={handleGoalClick}
               onAddClick={handleAddGoal}
             />
-            <FocusHistory key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
           </div>
 
-          {/* Task Panel */}
+          {/* 가운데: TaskList */}
           <div className="lg:col-span-2">
-            <div className="mb-6">
-              <TaskList
-                key={`task-${taskKey}`}
-                onTaskClick={handleTaskClick}
-                onAddClick={handleAddTask}
-              />
-            </div>
+            <TaskList
+              key={`task-${taskKey}`}
+              onTaskClick={handleTaskClick}
+              onAddClick={handleAddTask}
+            />
+          </div>
 
-            {/* Focus Timer */}
+          {/* 오른쪽: FocusTimer + FocusHistory */}
+          <div className="lg:col-span-1 space-y-6">
             <FocusTimer
               tasks={todayTasks}
               onSessionComplete={() => setFocusHistoryKey((prev) => prev + 1)}
             />
+            <FocusHistory key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
           </div>
         </div>
       </main>
@@ -296,6 +318,13 @@ export default function DashboardPage() {
         onClose={handleTaskModalClose}
         onSuccess={handleTaskSuccess}
         task={selectedTask}
+      />
+
+      {/* Profile Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={isProfileSettingsOpen}
+        onClose={handleProfileSettingsClose}
+        onSuccess={handleProfileSettingsSuccess}
       />
     </div>
   );

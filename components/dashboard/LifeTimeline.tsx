@@ -1,0 +1,173 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { formatLifeTimeRemaining } from '@/lib/lifeCalculations';
+import type { LifeStats } from '@/lib/lifeCalculations';
+
+interface LifeTimelineProps {
+  onSettingsClick: () => void;
+}
+
+export default function LifeTimeline({ onSettingsClick }: LifeTimelineProps) {
+  const [lifeStats, setLifeStats] = useState<LifeStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLifeStats();
+  }, []);
+
+  const fetchLifeStats = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/user/profile');
+      const data = await response.json();
+
+      if (data.success) {
+        setLifeStats(data.lifeStats);
+      } else {
+        setError(data.error || 'Failed to fetch life stats');
+      }
+    } catch (err) {
+      console.error('Fetch life stats error:', err);
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 외부에서 새로고침할 수 있도록 expose
+  // (프로필 설정 팝업에서 저장 후 호출)
+  const refresh = () => {
+    fetchLifeStats();
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">🧬 Life Timeline</h2>
+        </div>
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-full mb-2"></div>
+          <div className="h-4 bg-gray-100 rounded w-3/4"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">🧬 Life Timeline</h2>
+        </div>
+        <p className="text-red-600 text-sm">{error}</p>
+      </div>
+    );
+  }
+
+  // LifeStats가 없는 경우 (아직 설정하지 않음)
+  if (!lifeStats) {
+    return (
+      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">🧬 Life Timeline</h2>
+          <button
+            onClick={onSettingsClick}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            title="설정"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-sm mb-4">아직 Life Timeline을 설정하지 않았습니다</p>
+          <Button onClick={onSettingsClick} size="sm">
+            설정하기
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // LifeStats가 있는 경우
+  const progressPercent = Math.min(100, Math.max(0, lifeStats.percentage));
+
+  return (
+    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">🧬 Life Timeline</h2>
+        <button
+          onClick={onSettingsClick}
+          className="text-gray-400 hover:text-gray-600 transition-colors"
+          title="설정"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* 게이지바 */}
+      <div className="mb-3">
+        <div className="flex justify-between items-baseline mb-2">
+          <div className="text-2xl font-bold text-gray-900">
+            {lifeStats.currentAge}세 / {lifeStats.targetAge}세
+          </div>
+          <div className="text-sm font-medium text-violet-600">
+            {progressPercent.toFixed(1)}%
+          </div>
+        </div>
+        <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 via-violet-500 to-purple-500 transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* 남은 일수 */}
+      <div className="grid grid-cols-2 gap-3 text-sm">
+        <div className="bg-blue-50 rounded-lg p-3">
+          <div className="text-gray-600 text-xs mb-1">남은 일수</div>
+          <div className="text-blue-700 font-semibold">
+            {lifeStats.daysLeft.toLocaleString()}일
+          </div>
+        </div>
+        <div className="bg-violet-50 rounded-lg p-3">
+          <div className="text-gray-600 text-xs mb-1">남은 시간</div>
+          <div className="text-violet-700 font-semibold">
+            {formatLifeTimeRemaining(lifeStats)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// refresh 함수를 외부에서 호출할 수 있도록 export
+export type LifeTimelineRef = {
+  refresh: () => void;
+};
