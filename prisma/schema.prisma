@@ -38,13 +38,16 @@ model Goal {
   color       String      @default("#3B82F6")
   order       Int         @default(0)
   userId      String
+  lifeGoalId  String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
   User        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  LifeGoal    LifeGoal?   @relation(fields: [lifeGoalId], references: [id])
   Milestone   Milestone[]
   Task        Task[]
 
   @@index([userId, status])
+  @@index([lifeGoalId])
 }
 
 model Milestone {
@@ -117,4 +120,23 @@ model User {
   Goal           Goal[]
   Task           Task[]
   Routine        Routine[]
+  LifeGoal       LifeGoal[]
+}
+
+model LifeGoal {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   @default("custom") // health, wealth, learning, career, relationship, creativity, contribution, custom
+  icon        String   @default("🌟")
+  color       String   @default("#8B5CF6")
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  userId      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Goal        Goal[]
+
+  @@index([userId, active])
 }

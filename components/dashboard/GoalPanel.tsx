@@ -38,6 +38,12 @@ interface Goal {
     totalMilestones: number;
     completedMilestones: number;
   };
+  LifeGoal?: {
+    id: string;
+    title: string;
+    icon: string;
+    color: string;
+  } | null;
 }
 
 interface GoalPanelProps {
@@ -91,8 +97,23 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
           style={{ borderLeftWidth: '4px', borderLeftColor: goal.color }}
         >
           {/* 제목 & D-day */}
-          <div className="flex justify-between items-start mb-3">
-            <h3 className="font-medium text-gray-900 flex-1 pr-2">{goal.title}</h3>
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex-1 pr-2">
+              <h3 className="font-medium text-gray-900 mb-1">{goal.title}</h3>
+              {goal.LifeGoal && (
+                <div className="flex items-center gap-1">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: `${goal.LifeGoal.color}20`,
+                      color: goal.LifeGoal.color,
+                    }}
+                  >
+                    {goal.LifeGoal.icon} {goal.LifeGoal.title}
+                  </span>
+                </div>
+              )}
+            </div>
             {dday && (
               <span
                 className={cn(

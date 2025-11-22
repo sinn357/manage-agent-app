@@ -48,6 +48,7 @@ const goalFormSchema = z.object({
     .optional(),
   color: z.string()
     .regex(/^#[0-9A-F]{6}$/i, '유효한 색상 코드를 입력하세요'),
+  lifeGoalId: z.string().optional(),
 });
 
 type GoalFormValues = z.infer<typeof goalFormSchema>;
@@ -57,6 +58,14 @@ interface Goal {
   title: string;
   description: string | null;
   targetDate: Date | null;
+  color: string;
+  lifeGoalId?: string | null;
+}
+
+interface LifeGoal {
+  id: string;
+  title: string;
+  icon: string;
   color: string;
 }
 
@@ -75,6 +84,7 @@ export default function GoalModal({
 }: GoalModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [lifeGoals, setLifeGoals] = useState<LifeGoal[]>([]);
 
   // 날짜를 YYYY-MM-DD 형식으로 변환하는 헬퍼 함수
   const formatDateForInput = (date: Date | string | null | undefined): string => {
@@ -94,8 +104,28 @@ export default function GoalModal({
       description: '',
       targetDate: '',
       color: '#3B82F6',
+      lifeGoalId: '',
     },
   });
+
+  // LifeGoal 목록 가져오기
+  useEffect(() => {
+    const fetchLifeGoals = async () => {
+      try {
+        const response = await fetch('/api/life-goals');
+        const data = await response.json();
+        if (data.success) {
+          setLifeGoals(data.lifeGoals);
+        }
+      } catch (err) {
+        console.error('Failed to fetch life goals:', err);
+      }
+    };
+
+    if (isOpen) {
+      fetchLifeGoals();
+    }
+  }, [isOpen]);
 
   // Modal이 열릴 때마다 폼 리셋 및 초기값 설정
   useEffect(() => {
@@ -107,6 +137,7 @@ export default function GoalModal({
           description: goal.description || '',
           targetDate: formatDateForInput(goal.targetDate),
           color: goal.color,
+          lifeGoalId: goal.lifeGoalId || '',
         });
       } else {
         // 생성 모드
@@ -115,6 +146,7 @@ export default function GoalModal({
           description: '',
           targetDate: '',
           color: '#3B82F6',
+          lifeGoalId: '',
         });
       }
 
@@ -138,6 +170,7 @@ export default function GoalModal({
           description: values.description || null,
           targetDate: values.targetDate || null,
           color: values.color,
+          lifeGoalId: values.lifeGoalId || null,
         }),
       });
 
@@ -233,6 +266,33 @@ export default function GoalModal({
                 </FormItem>
               )}
             />
+
+            {/* 인생목표 연결 */}
+            {lifeGoals.length > 0 && (
+              <FormField
+                control={form.control}
+                name="lifeGoalId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>인생목표 연결 (선택)</FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <option value="">연결 안함</option>
+                        {lifeGoals.map((lifeGoal) => (
+                          <option key={lifeGoal.id} value={lifeGoal.id}>
+                            {lifeGoal.icon} {lifeGoal.title}
+                          </option>
+                        ))}
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* 목표 날짜 */}
             <FormField

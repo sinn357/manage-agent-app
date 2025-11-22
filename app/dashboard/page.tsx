@@ -24,6 +24,10 @@ const TaskModal = dynamic(() => import('@/components/dashboard/TaskModal'), {
   ssr: false,
 });
 
+const LifeGoalModal = dynamic(() => import('@/components/dashboard/LifeGoalModal'), {
+  ssr: false,
+});
+
 interface Goal {
   id: string;
   title: string;
@@ -72,6 +76,9 @@ export default function DashboardPage() {
 
   const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
   const [lifeTimelineKey, setLifeTimelineKey] = useState(0);
+
+  const [isLifeGoalModalOpen, setIsLifeGoalModalOpen] = useState(false);
+  const [selectedLifeGoal, setSelectedLifeGoal] = useState<any>(null);
 
   // 키보드 단축키 설정
   useKeyboardShortcuts([
@@ -195,6 +202,26 @@ export default function DashboardPage() {
     setLifeTimelineKey((prev) => prev + 1);
   }, []);
 
+  const handleAddLifeGoal = useCallback(() => {
+    setSelectedLifeGoal(null);
+    setIsLifeGoalModalOpen(true);
+  }, []);
+
+  const handleLifeGoalClick = useCallback((lifeGoal: any) => {
+    setSelectedLifeGoal(lifeGoal);
+    setIsLifeGoalModalOpen(true);
+  }, []);
+
+  const handleLifeGoalModalClose = useCallback(() => {
+    setIsLifeGoalModalOpen(false);
+    setSelectedLifeGoal(null);
+  }, []);
+
+  const handleLifeGoalSuccess = useCallback(() => {
+    // LifeTimeline 리프레시
+    setLifeTimelineKey((prev) => prev + 1);
+  }, []);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -276,6 +303,8 @@ export default function DashboardPage() {
             <LifeTimeline
               key={`life-${lifeTimelineKey}`}
               onSettingsClick={handleProfileSettingsOpen}
+              onLifeGoalClick={handleLifeGoalClick}
+              onAddLifeGoalClick={handleAddLifeGoal}
             />
             <GoalPanel
               key={`goal-${goalKey}`}
@@ -325,6 +354,14 @@ export default function DashboardPage() {
         isOpen={isProfileSettingsOpen}
         onClose={handleProfileSettingsClose}
         onSuccess={handleProfileSettingsSuccess}
+      />
+
+      {/* Life Goal Modal */}
+      <LifeGoalModal
+        isOpen={isLifeGoalModalOpen}
+        onClose={handleLifeGoalModalClose}
+        onSuccess={handleLifeGoalSuccess}
+        lifeGoal={selectedLifeGoal}
       />
     </div>
   );
