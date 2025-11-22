@@ -11,8 +11,8 @@ export interface LifeStats {
   percentage: number;
   yearsLeft: number;
   monthsLeft: number;
-  birthDate?: Date;
-  targetDeathDate?: Date;
+  birthDate?: Date | string;
+  targetDeathDate?: Date | string;
 }
 
 export interface GoalTimeRemaining {
@@ -191,9 +191,10 @@ export function formatLifeTimeRemaining(stats: LifeStats): string {
 /**
  * 날짜를 간단한 형태로 포맷 (YYYY.MM.DD)
  */
-export function formatSimpleDate(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+export function formatSimpleDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
   return `${year}.${month}.${day}`;
 }

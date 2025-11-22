@@ -42,7 +42,13 @@ export async function GET() {
     // LifeStats 계산 (birthDate와 targetLifespan이 있는 경우에만)
     let lifeStats = null;
     if (user.birthDate && user.targetLifespan) {
-      lifeStats = calculateLifeStats(user.birthDate, user.targetLifespan);
+      const stats = calculateLifeStats(user.birthDate, user.targetLifespan);
+      // Date 객체를 ISO 문자열로 변환하여 JSON 직렬화 문제 방지
+      lifeStats = {
+        ...stats,
+        birthDate: stats.birthDate instanceof Date ? stats.birthDate.toISOString() : stats.birthDate,
+        targetDeathDate: stats.targetDeathDate instanceof Date ? stats.targetDeathDate.toISOString() : stats.targetDeathDate,
+      };
     }
 
     return NextResponse.json({
@@ -153,7 +159,13 @@ export async function PATCH(request: Request) {
     // LifeStats 계산
     let lifeStats = null;
     if (updatedUser.birthDate && updatedUser.targetLifespan) {
-      lifeStats = calculateLifeStats(updatedUser.birthDate, updatedUser.targetLifespan);
+      const stats = calculateLifeStats(updatedUser.birthDate, updatedUser.targetLifespan);
+      // Date 객체를 ISO 문자열로 변환하여 JSON 직렬화 문제 방지
+      lifeStats = {
+        ...stats,
+        birthDate: stats.birthDate instanceof Date ? stats.birthDate.toISOString() : stats.birthDate,
+        targetDeathDate: stats.targetDeathDate instanceof Date ? stats.targetDeathDate.toISOString() : stats.targetDeathDate,
+      };
     }
 
     return NextResponse.json({
