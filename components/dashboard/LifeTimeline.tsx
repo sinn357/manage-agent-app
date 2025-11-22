@@ -2,20 +2,39 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { formatLifeTimeRemaining } from '@/lib/lifeCalculations';
+import { formatLifeTimeRemaining, formatSimpleDate } from '@/lib/lifeCalculations';
 import type { LifeStats } from '@/lib/lifeCalculations';
+
+interface LifeGoal {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string;
+  icon: string;
+  color: string;
+  progress: number;
+  stats: {
+    totalGoals: number;
+    activeGoals: number;
+  };
+}
 
 interface LifeTimelineProps {
   onSettingsClick: () => void;
+  onLifeGoalClick?: (lifeGoal: LifeGoal) => void;
+  onAddLifeGoalClick?: () => void;
 }
 
-export default function LifeTimeline({ onSettingsClick }: LifeTimelineProps) {
+export default function LifeTimeline({ onSettingsClick, onLifeGoalClick, onAddLifeGoalClick }: LifeTimelineProps) {
   const [lifeStats, setLifeStats] = useState<LifeStats | null>(null);
+  const [lifeGoals, setLifeGoals] = useState<LifeGoal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lifeGoalsLoading, setLifeGoalsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLifeStats();
+    fetchLifeGoals();
   }, []);
 
   const fetchLifeStats = async () => {
@@ -34,6 +53,24 @@ export default function LifeTimeline({ onSettingsClick }: LifeTimelineProps) {
       setError('Network error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLifeGoals = async () => {
+    try {
+      setLifeGoalsLoading(true);
+      const response = await fetch('/api/life-goals');
+      const data = await response.json();
+
+      if (data.success) {
+        setLifeGoals(data.lifeGoals);
+      } else {
+        console.error('Failed to fetch life goals:', data.error);
+      }
+    } catch (err) {
+      console.error('Fetch life goals error:', err);
+    } finally {
+      setLifeGoalsLoading(false);
     }
   };
 
@@ -146,10 +183,24 @@ export default function LifeTimeline({ onSettingsClick }: LifeTimelineProps) {
             style={{ width: `${progressPercent}%` }}
           />
         </div>
+        {/* 날짜 표시 */}
+        {lifeStats.birthDate && lifeStats.targetDeathDate && (
+          <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+            <span title="생년월일">
+              🎂 {formatSimpleDate(lifeStats.birthDate)}
+            </span>
+            <span title="현재">
+              📍 {formatSimpleDate(new Date())}
+            </span>
+            <span title="목표 수명">
+              🏁 {formatSimpleDate(lifeStats.targetDeathDate)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* 남은 일수 */}
-      <div className="grid grid-cols-2 gap-3 text-sm">
+      <div className="grid grid-cols-2 gap-3 text-sm mb-6">
         <div className="bg-blue-50 rounded-lg p-3">
           <div className="text-gray-600 text-xs mb-1">남은 일수</div>
           <div className="text-blue-700 font-semibold">
@@ -162,6 +213,77 @@ export default function LifeTimeline({ onSettingsClick }: LifeTimelineProps) {
             {formatLifeTimeRemaining(lifeStats)}
           </div>
         </div>
+      </div>
+
+      {/* 인생목표 섹션 */}
+      <div>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-sm font-semibold text-gray-900">🌟 나의 인생목표</h3>
+          {onAddLifeGoalClick && (
+            <button
+              onClick={onAddLifeGoalClick}
+              className="text-xs text-violet-600 hover:text-violet-700 font-medium"
+            >
+              + 추가
+            </button>
+          )}
+        </div>
+
+        {lifeGoalsLoading ? (
+          <div className="space-y-2">
+            {[1, 2].map((i) => (
+              <div key={i} className="animate-pulse bg-gray-100 rounded-lg h-16"></div>
+            ))}
+          </div>
+        ) : lifeGoals.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-gray-500 text-xs mb-2">아직 인생목표가 없습니다</p>
+            {onAddLifeGoalClick && (
+              <Button
+                onClick={onAddLifeGoalClick}
+                variant="ghost"
+                size="sm"
+                className="text-violet-600 hover:text-violet-700"
+              >
+                첫 인생목표를 추가해보세요
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {lifeGoals.map((lifeGoal) => (
+              <div
+                key={lifeGoal.id}
+                onClick={() => onLifeGoalClick?.(lifeGoal)}
+                className="bg-white border border-gray-200 rounded-lg p-3 hover:border-gray-300 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{lifeGoal.icon}</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {lifeGoal.title}
+                    </span>
+                  </div>
+                  <span className="text-xs font-semibold text-gray-600">
+                    {lifeGoal.progress}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
+                  <div
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${lifeGoal.progress}%`,
+                      backgroundColor: lifeGoal.color,
+                    }}
+                  ></div>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {lifeGoal.stats.activeGoals}개 목표
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

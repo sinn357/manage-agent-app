@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    // 목표 조회 (마일스톤, 작업 개수 포함)
+    // 목표 조회 (마일스톤, 작업 개수 + LifeGoal 포함)
     const goals = await prisma.goal.findMany({
       where: {
         userId,
@@ -34,6 +34,14 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             status: true,
+          },
+        },
+        LifeGoal: {
+          select: {
+            id: true,
+            title: true,
+            icon: true,
+            color: true,
           },
         },
         _count: {

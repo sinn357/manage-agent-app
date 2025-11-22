@@ -11,6 +11,8 @@ export interface LifeStats {
   percentage: number;
   yearsLeft: number;
   monthsLeft: number;
+  birthDate?: Date;
+  targetDeathDate?: Date;
 }
 
 export interface GoalTimeRemaining {
@@ -79,6 +81,11 @@ export function calculateLifeStats(birthDate: Date, targetLifespan: number): Lif
   const yearsLeft = Math.floor(daysLeft / 365);
   const monthsLeft = Math.floor((daysLeft % 365) / 30);
 
+  // 목표 사망 날짜 계산
+  const birth = new Date(birthDate);
+  const targetDeathDate = new Date(birth);
+  targetDeathDate.setFullYear(birth.getFullYear() + targetLifespan);
+
   return {
     currentAge,
     targetAge: targetLifespan,
@@ -88,6 +95,8 @@ export function calculateLifeStats(birthDate: Date, targetLifespan: number): Lif
     percentage,
     yearsLeft,
     monthsLeft,
+    birthDate: new Date(birthDate),
+    targetDeathDate,
   };
 }
 
@@ -177,4 +186,14 @@ export function formatLifeTimeRemaining(stats: LifeStats): string {
   }
 
   return `${stats.daysLeft}일`;
+}
+
+/**
+ * 날짜를 간단한 형태로 포맷 (YYYY.MM.DD)
+ */
+export function formatSimpleDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}.${month}.${day}`;
 }
