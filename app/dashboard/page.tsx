@@ -14,6 +14,7 @@ import FocusTimer from '@/components/dashboard/FocusTimer';
 import FocusHistory from '@/components/dashboard/FocusHistory';
 import LifeTimeline from '@/components/dashboard/LifeTimeline';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
+import { BarChart3, Calendar, Kanban, Settings, LogOut, Sparkles } from 'lucide-react';
 
 // 모달 컴포넌트는 필요할 때만 로드
 const GoalModal = dynamic(() => import('@/components/dashboard/GoalModal'), {
@@ -224,10 +225,13 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-surface">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full border-4 border-border"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+          </div>
+          <p className="text-foreground-secondary font-medium">로딩 중...</p>
         </div>
       </div>
     );
@@ -238,59 +242,77 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
+    <div className="min-h-screen bg-surface">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-500 to-violet-500 dark:from-slate-800 dark:to-purple-800 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <div
-            onClick={() => router.push('/dashboard')}
-            className="cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            <h1 className="text-2xl font-bold text-white">Manage Agent</h1>
-            <p className="text-sm text-white/90">안녕하세요, {user.name || user.username}님!</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/reports')}
-              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
+      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-xl shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center">
+            {/* Logo & User Info */}
+            <div
+              onClick={() => router.push('/dashboard')}
+              className="flex items-center gap-3 cursor-pointer group"
             >
-              📊 리포트
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/calendar')}
-              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
-            >
-              📅 캘린더
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/kanban')}
-              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
-            >
-              📋 칸반
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push('/settings')}
-              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
-            >
-              ⚙️ 설정
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="border-white/30 bg-white/10 text-white hover:bg-white/20"
-            >
-              로그아웃
-            </Button>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-violet flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-foreground">Manage Agent</h1>
+                <p className="text-xs text-foreground-secondary">
+                  안녕하세요, {user.name || user.username}님!
+                </p>
+              </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/reports')}
+                className="gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="hidden sm:inline">리포트</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/calendar')}
+                className="gap-2"
+              >
+                <Calendar className="w-4 h-4" />
+                <span className="hidden sm:inline">캘린더</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/kanban')}
+                className="gap-2"
+              >
+                <Kanban className="w-4 h-4" />
+                <span className="hidden sm:inline">칸반</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/settings')}
+                className="gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                <span className="hidden sm:inline">설정</span>
+              </Button>
+              <div className="w-px h-6 bg-border mx-1"></div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2 text-foreground-secondary hover:text-danger"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">로그아웃</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
