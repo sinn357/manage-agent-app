@@ -350,7 +350,7 @@ export default function LifeGoalModal({
               {lifeGoal && (
                 <Button
                   type="button"
-                  variant="destructive"
+                  variant="danger"
                   onClick={handleDelete}
                   disabled={loading}
                 >

@@ -443,7 +443,7 @@ export default function TaskModal({
               {task?.id && (
                 <Button
                   type="button"
-                  variant="destructive"
+                  variant="danger"
                   onClick={handleDelete}
                   disabled={loading}
                   className="mr-auto"

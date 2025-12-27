@@ -352,7 +352,7 @@ export default function GoalModal({
               {goal?.id && (
                 <Button
                   type="button"
-                  variant="destructive"
+                  variant="danger"
                   onClick={handleDelete}
                   disabled={loading}
                   className="mr-auto"

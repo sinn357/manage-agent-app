@@ -53,7 +53,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
       // 기본 fallback UI
       return (
         <div className="flex items-center justify-center min-h-screen p-4 bg-gray-50">
-          <Alert variant="destructive" className="max-w-md">
+          <Alert variant="danger" className="max-w-md">
             <AlertTitle className="text-lg font-semibold">
               오류가 발생했습니다
             </AlertTitle>

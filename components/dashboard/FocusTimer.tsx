@@ -468,7 +468,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
             <Button
               onClick={handleStop}
               className="flex-1 py-3 text-sm"
-              variant="destructive"
+              variant="danger"
               size="sm"
             >
               중단
@@ -488,7 +488,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
             <Button
               onClick={handleStop}
               className="flex-1 py-3 text-sm"
-              variant="destructive"
+              variant="danger"
               size="sm"
             >
               중단
