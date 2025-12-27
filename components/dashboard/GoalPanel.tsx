@@ -2,6 +2,7 @@
 
 import { calculateDDay, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useGoals } from '@/lib/hooks/useGoals';
 import { useQueryClient } from '@tanstack/react-query';
 import { calculateGoalTimeRemaining, formatTimeRemaining } from '@/lib/lifeCalculations';
@@ -22,7 +23,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Plus, Target } from 'lucide-react';
 
 interface Goal {
   id: string;
@@ -76,8 +77,8 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
       ref={setNodeRef}
       style={style}
       className={cn(
-        "border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors bg-white",
-        isDragging && "shadow-lg ring-2 ring-violet-400"
+        "border border-border rounded-2xl p-4 hover:border-primary/50 transition-all bg-background hover:shadow-md",
+        isDragging && "shadow-xl ring-2 ring-primary"
       )}
       {...attributes}
     >
@@ -85,7 +86,7 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
         {/* Drag Handle */}
         <button
           {...listeners}
-          className="mt-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing focus:outline-none flex-shrink-0"
+          className="mt-1 text-foreground-tertiary hover:text-foreground-secondary cursor-grab active:cursor-grabbing focus:outline-none flex-shrink-0 transition-colors"
         >
           <GripVertical className="h-5 w-5" />
         </button>
@@ -94,16 +95,16 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
         <div
           className="flex-1 cursor-pointer pl-3"
           onClick={() => onGoalClick?.(goal)}
-          style={{ borderLeftWidth: '4px', borderLeftColor: goal.color }}
+          style={{ borderLeftWidth: '3px', borderLeftColor: goal.color }}
         >
           {/* 제목 & D-day */}
-          <div className="flex justify-between items-start mb-2">
+          <div className="flex justify-between items-start mb-3">
             <div className="flex-1 pr-2">
-              <h3 className="font-medium text-gray-900 mb-1">{goal.title}</h3>
+              <h3 className="font-semibold text-foreground mb-1.5">{goal.title}</h3>
               {goal.LifeGoal && (
                 <div className="flex items-center gap-1">
                   <span
-                    className="text-xs px-2 py-0.5 rounded-full"
+                    className="text-xs px-2 py-0.5 rounded-full font-medium"
                     style={{
                       backgroundColor: `${goal.LifeGoal.color}20`,
                       color: goal.LifeGoal.color,
@@ -117,12 +118,12 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
             {dday && (
               <span
                 className={cn(
-                  'text-xs font-semibold px-2 py-1 rounded flex-shrink-0',
+                  'text-xs font-semibold px-2.5 py-1 rounded-lg flex-shrink-0',
                   dday.isOverdue
-                    ? 'bg-red-100 text-red-700'
+                    ? 'bg-danger/10 text-danger'
                     : dday.daysLeft <= 7
-                    ? 'bg-orange-100 text-orange-700'
-                    : 'bg-blue-100 text-blue-700'
+                    ? 'bg-warning/10 text-warning'
+                    : 'bg-primary/10 text-primary'
                 )}
               >
                 {dday.display}
@@ -132,13 +133,13 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
 
           {/* 진행률 */}
           <div className="mb-3">
-            <div className="flex justify-between items-center text-xs text-gray-600 mb-2">
+            <div className="flex justify-between items-center text-xs text-foreground-secondary mb-2">
               <span>진행률</span>
-              <span className="font-semibold">{goal.progress}%</span>
+              <span className="font-semibold text-foreground">{goal.progress}%</span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-surface rounded-full h-2.5 overflow-hidden">
               <div
-                className="h-2 rounded-full transition-all duration-300"
+                className="h-2.5 rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${goal.progress}%`,
                   backgroundColor: goal.color,
@@ -150,22 +151,24 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
           {/* 기한까지 남은 시간 */}
           {timeRemaining && (
             <div className="mb-3">
-              <div className="flex justify-between items-center text-xs text-gray-600 mb-2">
-                <span>⏰ 남은 시간</span>
+              <div className="flex justify-between items-center text-xs text-foreground-secondary mb-2">
+                <span className="flex items-center gap-1">
+                  ⏰ 남은 시간
+                </span>
                 <span className={cn(
                   "font-semibold",
-                  timeRemaining.isOverdue ? "text-red-600" : "text-violet-600"
+                  timeRemaining.isOverdue ? "text-danger" : "text-primary"
                 )}>
                   {formatTimeRemaining(timeRemaining)}
                 </span>
               </div>
               {!timeRemaining.isOverdue && (
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-surface rounded-full h-2.5 overflow-hidden">
                   <div
                     className={cn(
-                      "h-2 rounded-full transition-all duration-300",
-                      timeRemaining.days <= 7 ? "bg-red-500" :
-                      timeRemaining.days <= 30 ? "bg-orange-500" : "bg-violet-500"
+                      "h-2.5 rounded-full transition-all duration-500",
+                      timeRemaining.days <= 7 ? "bg-danger" :
+                      timeRemaining.days <= 30 ? "bg-warning" : "bg-primary"
                     )}
                     style={{
                       width: `${Math.max(0, 100 - timeRemaining.percentage)}%`,
@@ -177,15 +180,17 @@ function SortableGoalItem({ goal, onGoalClick }: { goal: Goal; onGoalClick?: (go
           )}
 
           {/* 통계 */}
-          <div className="flex gap-3 text-xs text-gray-500">
+          <div className="flex gap-4 text-xs text-foreground-tertiary">
             {goal.stats.totalTasks > 0 && (
-              <span>
-                작업 {goal.stats.completedTasks}/{goal.stats.totalTasks}
+              <span className="flex items-center gap-1">
+                <span className="font-medium text-foreground-secondary">작업</span>{' '}
+                {goal.stats.completedTasks}/{goal.stats.totalTasks}
               </span>
             )}
             {goal.stats.totalMilestones > 0 && (
-              <span>
-                마일스톤 {goal.stats.completedMilestones}/{goal.stats.totalMilestones}
+              <span className="flex items-center gap-1">
+                <span className="font-medium text-foreground-secondary">마일스톤</span>{' '}
+                {goal.stats.completedMilestones}/{goal.stats.totalMilestones}
               </span>
             )}
           </div>
@@ -242,77 +247,101 @@ export default function GoalPanel({ onGoalClick, onAddClick }: GoalPanelProps) {
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">목표</h2>
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse">
-              <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-              <div className="h-2 bg-gray-100 rounded w-full"></div>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-primary" />
+            목표
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="animate-pulse space-y-2">
+                <div className="h-4 bg-surface rounded-lg w-3/4"></div>
+                <div className="h-2.5 bg-surface rounded-full w-full"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">목표</h2>
-        <p className="text-red-600 text-sm">{error.message}</p>
-      </div>
+      <Card variant="outline">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-primary" />
+            목표
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-danger text-sm">{error.message}</p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">목표</h2>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="flex items-center gap-2">
+          <Target className="w-5 h-5 text-primary" />
+          목표
+        </CardTitle>
         <Button
           variant="ghost"
           size="sm"
           onClick={onAddClick}
-          className="text-violet-500 hover:text-violet-600"
+          className="gap-1.5 h-8"
         >
-          + 추가
+          <Plus className="w-4 h-4" />
+          추가
         </Button>
-      </div>
+      </CardHeader>
 
-      {goals.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500 text-sm mb-3">아직 목표가 없습니다</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onAddClick}
-            className="text-violet-500 hover:text-violet-600"
-          >
-            첫 목표를 추가해보세요
-          </Button>
-        </div>
-      ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={goals.map((g) => g.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <div className="space-y-4">
-              {goals.map((goal) => (
-                <SortableGoalItem
-                  key={goal.id}
-                  goal={goal}
-                  onGoalClick={onGoalClick}
-                />
-              ))}
+      <CardContent>
+        {goals.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+              <Target className="w-8 h-8 text-foreground-tertiary" />
             </div>
-          </SortableContext>
-        </DndContext>
-      )}
-    </div>
+            <p className="text-foreground-secondary text-sm mb-4">아직 목표가 없습니다</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddClick}
+              className="gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              첫 목표를 추가해보세요
+            </Button>
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={goals.map((g) => g.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {goals.map((goal) => (
+                  <SortableGoalItem
+                    key={goal.id}
+                    goal={goal}
+                    onGoalClick={onGoalClick}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )}
+      </CardContent>
+    </Card>
   );
 }
