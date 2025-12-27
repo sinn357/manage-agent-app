@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import { getPriorityColor, getPriorityLabel, formatDate, cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useTasks, useToggleTaskComplete } from '@/lib/hooks/useTasks';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -22,7 +23,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Plus, CheckCircle2, Circle, ListTodo, ChevronDown, AlertCircle, Calendar as CalendarIcon, Flame } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -80,18 +81,18 @@ function SortableTaskItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-start gap-2 p-3 rounded-lg border transition-colors',
+        'flex items-start gap-3 p-3 rounded-xl border transition-all',
         isCompleted
-          ? 'bg-gray-50 border-gray-200'
-          : 'bg-white border-gray-200 hover:border-gray-300',
-        isDragging && 'shadow-lg ring-2 ring-violet-400'
+          ? 'bg-surface/50 border-border'
+          : 'bg-background border-border hover:border-primary/50 hover:shadow-sm',
+        isDragging && 'shadow-xl ring-2 ring-primary'
       )}
       {...attributes}
     >
       {/* Drag Handle */}
       <button
         {...listeners}
-        className="flex-shrink-0 mt-1 text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing focus:outline-none"
+        className="flex-shrink-0 mt-0.5 text-foreground-tertiary hover:text-foreground-secondary cursor-grab active:cursor-grabbing focus:outline-none transition-colors"
       >
         <GripVertical className="h-5 w-5" />
       </button>
@@ -100,27 +101,12 @@ function SortableTaskItem({
       <button
         onClick={(e) => onToggleComplete(task.id, e)}
         aria-label={`${task.title} ${isCompleted ? '완료 취소' : '완료 처리'}`}
-        className={cn(
-          'flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors',
-          isCompleted
-            ? 'bg-blue-500 border-blue-500'
-            : 'border-gray-300 hover:border-blue-500'
-        )}
+        className="flex-shrink-0 mt-0.5 transition-all"
       >
-        {isCompleted && (
-          <svg
-            className="w-3 h-3 text-white"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={3}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+        {isCompleted ? (
+          <CheckCircle2 className="w-5 h-5 text-success" />
+        ) : (
+          <Circle className="w-5 h-5 text-border hover:text-primary transition-colors" />
         )}
       </button>
 
@@ -128,32 +114,21 @@ function SortableTaskItem({
       <div
         className="flex-1 min-w-0 cursor-pointer"
         onClick={() => onTaskClick?.(task)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onTaskClick?.(task);
-          }
-        }}
-        role="button"
-        tabIndex={0}
-        aria-label={`작업: ${task.title}, 우선순위: ${getPriorityLabel(task.priority)}, ${isCompleted ? '완료됨' : '미완료'}`}
       >
-        <div className="flex items-center gap-2 mb-1">
-          <h3
-            className={cn(
-              'font-medium text-gray-900',
-              isCompleted && 'line-through text-gray-500'
-            )}
-          >
-            {task.title}
-          </h3>
-        </div>
+        <h3
+          className={cn(
+            'font-medium text-foreground mb-2 transition-all',
+            isCompleted && 'line-through text-foreground-tertiary'
+          )}
+        >
+          {task.title}
+        </h3>
 
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {/* Priority */}
           <span
             className={cn(
-              'px-2 py-0.5 rounded border',
+              'px-2 py-0.5 rounded-lg font-medium border',
               priorityColor.bg,
               priorityColor.text,
               priorityColor.border
@@ -165,7 +140,7 @@ function SortableTaskItem({
           {/* Goal */}
           {task.Goal && (
             <span
-              className="px-2 py-0.5 rounded text-white"
+              className="px-2 py-0.5 rounded-lg text-white font-medium"
               style={{ backgroundColor: task.Goal.color }}
             >
               {task.Goal.title}
@@ -174,15 +149,17 @@ function SortableTaskItem({
 
           {/* Date */}
           {task.scheduledDate && (
-            <span className="text-gray-500">
+            <span className="flex items-center gap-1 text-foreground-secondary">
+              <CalendarIcon className="w-3 h-3" />
               {formatDate(task.scheduledDate, 'short')}
             </span>
           )}
 
           {/* Focus sessions */}
           {task._count.FocusSession > 0 && (
-            <span className="text-gray-500">
-              🔥 {task._count.FocusSession}
+            <span className="flex items-center gap-1 text-foreground-secondary">
+              <Flame className="w-3 h-3 text-warning" />
+              {task._count.FocusSession}
             </span>
           )}
         </div>
@@ -192,7 +169,7 @@ function SortableTaskItem({
 }
 
 export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
-  const [showOverdue, setShowOverdue] = useState(false);
+  const [showOverdue, setShowOverdue] = useState(true);
   const [showUpcoming, setShowUpcoming] = useState(false);
 
   // TanStack Query로 작업 가져오기
@@ -208,60 +185,44 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
     })
   );
 
-  // 완료되지 않은 작업만 필터링
-  const tasks = useMemo(() => {
-    return allTasks.filter(t => t.status !== 'completed');
-  }, [allTasks]);
+  const handleToggleComplete = (taskId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleComplete.mutate(taskId);
+  };
 
-  // 통계 계산
-  const stats = useMemo(() => {
-    return {
-      total: allTasks.length,
-      completed: allTasks.filter(t => t.status === 'completed').length,
-      inProgress: allTasks.filter(t => t.status === 'in_progress').length,
-      todo: allTasks.filter(t => t.status === 'todo').length,
-    };
-  }, [allTasks]);
-
-  // 작업을 오늘/밀린/예정으로 분류
+  // 작업 분류: 오늘, 밀린, 예정
   const categorizedTasks = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
 
     const todayTasks: Task[] = [];
     const overdueTasks: Task[] = [];
     const upcomingTasks: Task[] = [];
+    const noDateTasks: Task[] = [];
 
-    tasks.forEach((task) => {
+    allTasks.forEach((task) => {
+      if (task.status === 'completed') return;
+
       if (!task.scheduledDate) {
-        // 날짜가 없는 작업은 오늘 할 일에 포함
-        todayTasks.push(task);
+        noDateTasks.push(task);
         return;
       }
 
       const taskDate = new Date(task.scheduledDate);
-      const taskDateOnly = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
+      const taskDay = new Date(taskDate.getFullYear(), taskDate.getMonth(), taskDate.getDate());
 
-      if (taskDateOnly < today) {
+      if (taskDay < today) {
         overdueTasks.push(task);
-      } else if (taskDateOnly.getTime() === today.getTime()) {
+      } else if (taskDay.getTime() === today.getTime()) {
         todayTasks.push(task);
       } else {
         upcomingTasks.push(task);
       }
     });
 
-    return { todayTasks, overdueTasks, upcomingTasks };
-  }, [tasks]);
+    return { todayTasks, overdueTasks, upcomingTasks, noDateTasks };
+  }, [allTasks]);
 
-  const handleToggleComplete = (taskId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // 부모 클릭 이벤트 방지
-    toggleComplete.mutate(taskId); // TanStack Query 뮤테이션으로 자동 업데이트
-  };
-
-  // Drag end handler for each category
   const createHandleDragEnd = (taskList: Task[]) => (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -276,10 +237,8 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
       return;
     }
 
-    // Reorder locally
     const reorderedTasks = arrayMove(taskList, oldIndex, newIndex);
 
-    // Update each task's order in the backend and refetch
     Promise.all(
       reorderedTasks.map((task, index) =>
         fetch(`/api/tasks/${task.id}`, {
@@ -289,220 +248,225 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
         })
       )
     ).then(() => {
-      // Refetch tasks after all updates complete
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     });
   };
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">오늘 할 일</h2>
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="animate-pulse flex gap-3">
-              <div className="h-5 w-5 bg-gray-200 rounded"></div>
-              <div className="flex-1">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ListTodo className="w-5 h-5 text-primary" />
+            작업
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="animate-pulse flex items-start gap-3 p-3">
+                <div className="w-5 h-5 rounded-full bg-surface"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-surface rounded-lg w-3/4"></div>
+                  <div className="h-3 bg-surface rounded-lg w-1/2"></div>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">오늘 할 일</h2>
-        <p className="text-red-600 text-sm">{error.message}</p>
-      </div>
+      <Card variant="outline">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ListTodo className="w-5 h-5 text-primary" />
+            작업
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-danger text-sm">{error.message}</p>
+        </CardContent>
+      </Card>
     );
   }
 
+  const totalIncompleteTasks =
+    categorizedTasks.todayTasks.length +
+    categorizedTasks.overdueTasks.length +
+    categorizedTasks.upcomingTasks.length +
+    categorizedTasks.noDateTasks.length;
 
   return (
-    <section className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6" aria-label="작업 목록">
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <h2 className="text-lg font-semibold text-gray-900">작업 목록</h2>
-          <p className="text-sm text-gray-500">
-            {stats.completed}/{stats.total} 완료
-          </p>
-        </div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="flex items-center gap-2">
+          <ListTodo className="w-5 h-5 text-primary" />
+          작업
+          {totalIncompleteTasks > 0 && (
+            <span className="text-sm font-normal text-foreground-tertiary">
+              ({totalIncompleteTasks})
+            </span>
+          )}
+        </CardTitle>
         <Button
           variant="ghost"
           size="sm"
           onClick={onAddClick}
-          className="text-violet-500 hover:text-violet-600"
+          className="gap-1.5 h-8"
         >
-          + 추가
+          <Plus className="w-4 h-4" />
+          추가
         </Button>
-      </div>
+      </CardHeader>
 
-      {tasks.length === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-500 text-sm mb-3">작업이 없습니다</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onAddClick}
-            className="text-violet-500 hover:text-violet-600"
-          >
-            첫 작업을 추가해보세요
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {/* 오늘 할 일 */}
-          <div className="bg-blue-50 rounded-lg p-4 border-2 border-blue-200">
-            <h3 className="text-base font-semibold text-blue-900 mb-3">
-              오늘 할 일 ({categorizedTasks.todayTasks.length})
-            </h3>
-            {categorizedTasks.todayTasks.length === 0 ? (
-              <p className="text-sm text-blue-600">오늘 할 일이 없습니다</p>
-            ) : (
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragEnd={createHandleDragEnd(categorizedTasks.todayTasks)}
-              >
-                <SortableContext
-                  items={categorizedTasks.todayTasks.map((t) => t.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-2">
-                    {categorizedTasks.todayTasks.map((task) => (
-                      <SortableTaskItem
-                        key={task.id}
-                        task={task}
-                        onTaskClick={onTaskClick}
-                        onToggleComplete={handleToggleComplete}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-            )}
+      <CardContent className="space-y-4">
+        {totalIncompleteTasks === 0 ? (
+          <div className="text-center py-12">
+            <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+              <ListTodo className="w-8 h-8 text-foreground-tertiary" />
+            </div>
+            <p className="text-foreground-secondary text-sm mb-4">미완료 작업이 없습니다</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onAddClick}
+              className="gap-1.5"
+            >
+              <Plus className="w-4 h-4" />
+              새 작업 추가하기
+            </Button>
           </div>
-
-          {/* 밀린 작업 */}
-          {categorizedTasks.overdueTasks.length > 0 && (
-            <div className="border-2 border-red-200 rounded-lg">
-              <button
-                onClick={() => setShowOverdue(!showOverdue)}
-                aria-expanded={showOverdue}
-                aria-label={`밀린 작업 ${categorizedTasks.overdueTasks.length}개 ${showOverdue ? '접기' : '펼치기'}`}
-                className="w-full flex items-center justify-between p-3 bg-red-50 rounded-t-lg hover:bg-red-100 transition-colors"
-              >
-                <h3 className="text-sm font-semibold text-red-900">
-                  ⚠️ 밀린 작업 ({categorizedTasks.overdueTasks.length})
+        ) : (
+          <>
+            {/* 오늘 할 일 */}
+            {(categorizedTasks.todayTasks.length > 0 || categorizedTasks.noDateTasks.length > 0) && (
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <CalendarIcon className="w-4 h-4 text-primary" />
+                  오늘 ({categorizedTasks.todayTasks.length + categorizedTasks.noDateTasks.length})
                 </h3>
-                <svg
-                  className={cn(
-                    'w-5 h-5 text-red-600 transition-transform',
-                    showOverdue && 'rotate-180'
-                  )}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={createHandleDragEnd([...categorizedTasks.todayTasks, ...categorizedTasks.noDateTasks])}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </button>
-              {showOverdue && (
-                <div className="p-3">
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={createHandleDragEnd(categorizedTasks.overdueTasks)}
+                  <SortableContext
+                    items={[...categorizedTasks.todayTasks, ...categorizedTasks.noDateTasks].map((t) => t.id)}
+                    strategy={verticalListSortingStrategy}
                   >
-                    <SortableContext
-                      items={categorizedTasks.overdueTasks.map((t) => t.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div className="space-y-2">
-                        {categorizedTasks.overdueTasks.map((task) => (
-                          <SortableTaskItem
-                            key={task.id}
-                            task={task}
-                            onTaskClick={onTaskClick}
-                            onToggleComplete={handleToggleComplete}
-                          />
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                </div>
-              )}
-            </div>
-          )}
+                    <div className="space-y-2">
+                      {[...categorizedTasks.todayTasks, ...categorizedTasks.noDateTasks].map((task) => (
+                        <SortableTaskItem
+                          key={task.id}
+                          task={task}
+                          onTaskClick={onTaskClick}
+                          onToggleComplete={handleToggleComplete}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
+            )}
 
-          {/* 예정 작업 */}
-          {categorizedTasks.upcomingTasks.length > 0 && (
-            <div className="border border-gray-200 rounded-lg">
-              <button
-                onClick={() => setShowUpcoming(!showUpcoming)}
-                aria-expanded={showUpcoming}
-                aria-label={`예정 작업 ${categorizedTasks.upcomingTasks.length}개 ${showUpcoming ? '접기' : '펼치기'}`}
-                className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-t-lg hover:bg-gray-100 transition-colors"
-              >
-                <h3 className="text-sm font-medium text-gray-700">
-                  📅 예정 작업 ({categorizedTasks.upcomingTasks.length})
-                </h3>
-                <svg
-                  className={cn(
-                    'w-5 h-5 text-gray-500 transition-transform',
-                    showUpcoming && 'rotate-180'
-                  )}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+            {/* 밀린 작업 */}
+            {categorizedTasks.overdueTasks.length > 0 && (
+              <div className="border border-danger/20 rounded-2xl overflow-hidden">
+                <button
+                  onClick={() => setShowOverdue(!showOverdue)}
+                  className="w-full flex items-center justify-between p-3 bg-danger/5 hover:bg-danger/10 transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
+                  <h3 className="text-sm font-semibold text-danger flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4" />
+                    밀린 작업 ({categorizedTasks.overdueTasks.length})
+                  </h3>
+                  <ChevronDown
+                    className={cn(
+                      'w-5 h-5 text-danger transition-transform',
+                      showOverdue && 'rotate-180'
+                    )}
                   />
-                </svg>
-              </button>
-              {showUpcoming && (
-                <div className="p-3">
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={createHandleDragEnd(categorizedTasks.upcomingTasks)}
-                  >
-                    <SortableContext
-                      items={categorizedTasks.upcomingTasks.map((t) => t.id)}
-                      strategy={verticalListSortingStrategy}
+                </button>
+                {showOverdue && (
+                  <div className="p-3 bg-background">
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={createHandleDragEnd(categorizedTasks.overdueTasks)}
                     >
-                      <div className="space-y-2">
-                        {categorizedTasks.upcomingTasks.map((task) => (
-                          <SortableTaskItem
-                            key={task.id}
-                            task={task}
-                            onTaskClick={onTaskClick}
-                            onToggleComplete={handleToggleComplete}
-                          />
-                        ))}
-                      </div>
-                    </SortableContext>
-                  </DndContext>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </section>
+                      <SortableContext
+                        items={categorizedTasks.overdueTasks.map((t) => t.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2">
+                          {categorizedTasks.overdueTasks.map((task) => (
+                            <SortableTaskItem
+                              key={task.id}
+                              task={task}
+                              onTaskClick={onTaskClick}
+                              onToggleComplete={handleToggleComplete}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 예정 작업 */}
+            {categorizedTasks.upcomingTasks.length > 0 && (
+              <div className="border border-border rounded-2xl overflow-hidden">
+                <button
+                  onClick={() => setShowUpcoming(!showUpcoming)}
+                  className="w-full flex items-center justify-between p-3 bg-surface hover:bg-surface/80 transition-colors"
+                >
+                  <h3 className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4" />
+                    예정 작업 ({categorizedTasks.upcomingTasks.length})
+                  </h3>
+                  <ChevronDown
+                    className={cn(
+                      'w-5 h-5 text-foreground-tertiary transition-transform',
+                      showUpcoming && 'rotate-180'
+                    )}
+                  />
+                </button>
+                {showUpcoming && (
+                  <div className="p-3 bg-background">
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={createHandleDragEnd(categorizedTasks.upcomingTasks)}
+                    >
+                      <SortableContext
+                        items={categorizedTasks.upcomingTasks.map((t) => t.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2">
+                          {categorizedTasks.upcomingTasks.map((task) => (
+                            <SortableTaskItem
+                              key={task.id}
+                              task={task}
+                              onTaskClick={onTaskClick}
+                              onToggleComplete={handleToggleComplete}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }
