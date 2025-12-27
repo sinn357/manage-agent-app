@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Timer, Bell } from 'lucide-react';
 import {
   notifyFocusComplete,
   notifyFocusAlmostComplete,
@@ -340,39 +342,52 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
   if (loading) {
     return (
-      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-4">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">포커스 타이머</h2>
-        <div className="text-center py-4">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-        </div>
-      </div>
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Timer className="w-5 h-5 text-primary" />
+            포커스 타이머
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-4">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-4">
-      <div className="flex justify-between items-center mb-3">
-        <h2 className="text-base font-semibold text-gray-900">포커스 타이머</h2>
+    <Card variant="glass">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="flex items-center gap-2">
+          <Timer className="w-5 h-5 text-primary" />
+          포커스 타이머
+        </CardTitle>
         {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default' && (
           <Button
             variant="ghost"
             size="sm"
             onClick={requestNotificationPermission}
-            className="text-xs text-violet-500 hover:text-violet-600"
+            className="gap-1.5 h-8"
           >
+            <Bell className="w-4 h-4" />
             알림 허용
           </Button>
         )}
-      </div>
+      </CardHeader>
+
+      <CardContent>
 
       {/* 타이머 디스플레이 */}
-      <div className="relative mb-4">
-        <div className="text-center mb-3">
-          <div className="text-4xl font-bold text-gray-900 mb-1">
+      <div className="relative mb-6">
+        <div className="text-center mb-4">
+          <div className="text-5xl font-bold bg-gradient-to-r from-primary to-violet bg-clip-text text-transparent mb-2">
             {formatTime(timeLeft)}
           </div>
           {timerState !== 'idle' && (
-            <div className="text-xs text-gray-500">
+            <div className="text-sm text-foreground-secondary">
               {selectedMinutes}분 중 {Math.floor((selectedMinutes * 60 - timeLeft) / 60)}분 경과
             </div>
           )}
@@ -380,9 +395,9 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
         {/* Progress bar */}
         {timerState !== 'idle' && (
-          <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+          <div className="w-full h-2.5 bg-surface rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 transition-all duration-1000 ease-linear"
+              className="h-full bg-gradient-to-r from-primary to-violet transition-all duration-1000 ease-linear rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -391,11 +406,11 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
       {/* 시간 입력 (드롭다운 포함) */}
       {timerState === 'idle' && (
-        <div className="mb-4">
-          <label htmlFor="custom-minutes" className="block text-xs font-medium text-gray-700 mb-1">
+        <div className="mb-6">
+          <label htmlFor="custom-minutes" className="block text-sm font-medium text-foreground mb-2">
             시간 설정 (분)
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <input
               id="custom-minutes"
               type="number"
@@ -403,13 +418,13 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
               max="999"
               value={customMinutes}
               onChange={(e) => handleCustomChange(e.target.value)}
-              className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
               placeholder="직접 입력"
             />
             <select
               value=""
               onChange={(e) => handleQuickPresetChange(e.target.value)}
-              className="px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              className="px-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
             >
               <option value="">선택</option>
               {QUICK_PRESETS.map((minutes) => (
@@ -424,15 +439,15 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
       {/* 작업 선택 */}
       {timerState === 'idle' && tasks.length > 0 && (
-        <div className="mb-4">
-          <label htmlFor="task-select" className="block text-xs font-medium text-gray-700 mb-1">
+        <div className="mb-6">
+          <label htmlFor="task-select" className="block text-sm font-medium text-foreground mb-2">
             작업 연결 (선택)
           </label>
           <select
             id="task-select"
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
           >
             <option value="">작업 없음</option>
             {tasks.map((task) => (
@@ -445,12 +460,12 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       )}
 
       {/* 컨트롤 버튼 */}
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         {timerState === 'idle' && (
           <Button
             onClick={handleStart}
-            className="flex-1 py-3"
-            size="sm"
+            className="flex-1"
+            size="lg"
           >
             시작
           </Button>
@@ -460,16 +475,17 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           <>
             <Button
               onClick={handlePause}
-              className="flex-1 py-3 bg-yellow-600 hover:bg-yellow-700 text-sm"
-              size="sm"
+              className="flex-1"
+              variant="warning"
+              size="lg"
             >
               일시정지
             </Button>
             <Button
               onClick={handleStop}
-              className="flex-1 py-3 text-sm"
+              className="flex-1"
               variant="danger"
-              size="sm"
+              size="lg"
             >
               중단
             </Button>
@@ -480,16 +496,17 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           <>
             <Button
               onClick={handlePause}
-              className="flex-1 py-3 text-sm"
-              size="sm"
+              className="flex-1"
+              variant="success"
+              size="lg"
             >
               재개
             </Button>
             <Button
               onClick={handleStop}
-              className="flex-1 py-3 text-sm"
+              className="flex-1"
               variant="danger"
-              size="sm"
+              size="lg"
             >
               중단
             </Button>
@@ -499,19 +516,20 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
       {/* 상태 표시 */}
       {timerState !== 'idle' && (
-        <div className="mt-3 text-center text-xs">
+        <div className="mt-4 text-center">
           <span
             className={cn(
-              'inline-block px-2 py-1 rounded-full font-medium',
+              'inline-block px-4 py-2 rounded-xl text-sm font-semibold',
               timerState === 'running'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-yellow-100 text-yellow-800'
+                ? 'bg-success/10 text-success'
+                : 'bg-warning/10 text-warning'
             )}
           >
             {timerState === 'running' ? '집중 중' : '일시정지됨'}
           </span>
         </div>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

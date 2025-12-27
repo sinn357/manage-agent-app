@@ -1,7 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { formatDuration, formatRelativeTime } from '@/lib/utils';
+import { formatDuration, formatRelativeTime, cn } from '@/lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { History, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface FocusSession {
   id: string;
@@ -79,28 +82,40 @@ export default function FocusHistory({ refreshKey = 0 }: FocusHistoryProps) {
 
   if (loading) {
     return (
-      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-4">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">포커스 히스토리</h2>
-        <div className="space-y-2">
-          {[1, 2].map((i) => (
-            <div key={i} className="animate-pulse flex gap-2">
-              <div className="flex-1">
-                <div className="h-3 bg-gray-200 rounded w-3/4 mb-1"></div>
-                <div className="h-2 bg-gray-100 rounded w-1/2"></div>
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="w-5 h-5 text-primary" />
+            포커스 히스토리
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <div key={i} className="animate-pulse space-y-2">
+                <div className="h-4 bg-surface rounded-lg w-3/4"></div>
+                <div className="h-3 bg-surface rounded-lg w-1/2"></div>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-4">
-        <h2 className="text-base font-semibold text-gray-900 mb-3">포커스 히스토리</h2>
-        <p className="text-red-600 text-xs">{error}</p>
-      </div>
+      <Card variant="glass">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <History className="w-5 h-5 text-primary" />
+            포커스 히스토리
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-danger text-sm">{error}</p>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -108,69 +123,75 @@ export default function FocusHistory({ refreshKey = 0 }: FocusHistoryProps) {
   const hasMore = sessions.length > 2;
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-4">
-      <div className="mb-3">
-        <h2 className="text-base font-semibold text-gray-900 mb-2">포커스 히스토리</h2>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="bg-gray-50 rounded px-2 py-1">
-            <span className="text-gray-600">세션:</span>{' '}
-            <span className="font-medium text-gray-900">{stats.total}</span>
+    <Card variant="glass">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center gap-2">
+          <History className="w-5 h-5 text-primary" />
+          포커스 히스토리
+        </CardTitle>
+        <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="bg-surface rounded-xl px-4 py-3">
+            <div className="text-xs text-foreground-secondary mb-1">세션</div>
+            <div className="text-lg font-bold text-foreground">{stats.total}</div>
           </div>
-          <div className="bg-gray-50 rounded px-2 py-1">
-            <span className="text-gray-600">완료:</span>{' '}
-            <span className="font-medium text-green-600">{stats.completed}</span>
+          <div className="bg-surface rounded-xl px-4 py-3">
+            <div className="text-xs text-foreground-secondary mb-1">완료</div>
+            <div className="text-lg font-bold text-success">{stats.completed}</div>
           </div>
         </div>
-      </div>
+      </CardHeader>
+
+      <CardContent>
 
       {sessions.length === 0 ? (
-        <div className="text-center py-4">
-          <p className="text-gray-500 text-xs">아직 세션이 없습니다</p>
+        <div className="text-center py-8">
+          <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+            <History className="w-8 h-8 text-foreground-tertiary" />
+          </div>
+          <p className="text-foreground-secondary text-sm">아직 세션이 없습니다</p>
         </div>
       ) : (
         <>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {displaySessions.map((session) => (
               <div
                 key={session.id}
-                className="flex items-start justify-between p-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors group"
+                className="flex items-start justify-between p-4 rounded-xl border border-border hover:bg-surface transition-all group hover:shadow-sm"
               >
                 <div className="flex-1 min-w-0">
                   {session.task ? (
-                    <div className="font-medium text-gray-900 text-xs truncate">
+                    <div className="font-semibold text-foreground text-sm truncate mb-1">
                       {session.task.title}
                     </div>
                   ) : (
-                    <div className="font-medium text-gray-500 text-xs">일반 포커스</div>
+                    <div className="font-semibold text-foreground-secondary text-sm mb-1">일반 포커스</div>
                   )}
-                  <div className="flex items-center gap-1 mt-0.5 text-xs text-gray-500">
-                    <span className="text-[10px]">{formatRelativeTime(session.createdAt)}</span>
+                  <div className="flex items-center gap-2 text-xs text-foreground-tertiary">
+                    <span>{formatRelativeTime(session.createdAt)}</span>
                     <span>•</span>
-                    <span className="text-[10px]">
+                    <span>
                       {formatDuration(session.actualTime)} / {formatDuration(session.duration)}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                <div className="flex items-center gap-2 flex-shrink-0 ml-3">
                   {session.completed && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-800">
+                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-success/10 text-success">
                       완료
                     </span>
                   )}
                   {session.interrupted && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-yellow-100 text-yellow-800">
+                    <span className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold bg-warning/10 text-warning">
                       중단
                     </span>
                   )}
                   <button
                     onClick={() => handleDelete(session.id)}
-                    className="opacity-0 group-hover:opacity-100 p-0.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-all"
+                    className="opacity-0 group-hover:opacity-100 p-2 text-danger hover:bg-danger/10 rounded-lg transition-all"
                     title="삭제"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -179,15 +200,26 @@ export default function FocusHistory({ refreshKey = 0 }: FocusHistoryProps) {
 
           {/* 더보기 버튼 */}
           {hasMore && (
-            <button
+            <Button
               onClick={() => setExpanded(!expanded)}
-              className="w-full mt-2 py-1.5 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded transition-colors"
+              variant="ghost"
+              size="sm"
+              className="w-full mt-3 gap-1.5"
             >
-              {expanded ? '접기 ▲' : `더보기 (${sessions.length - 2}개) ▼`}
-            </button>
+              {expanded ? (
+                <>
+                  접기 <ChevronUp className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  더보기 ({sessions.length - 2}개) <ChevronDown className="w-4 h-4" />
+                </>
+              )}
+            </Button>
           )}
         </>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 }

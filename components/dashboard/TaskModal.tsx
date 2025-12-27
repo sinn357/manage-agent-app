@@ -434,7 +434,7 @@ export default function TaskModal({
 
             {/* 에러 메시지 */}
             {error && (
-              <div className="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">
+              <div className="text-danger text-sm bg-danger/10 py-3 px-4 rounded-xl border border-danger/20">
                 {error}
               </div>
             )}

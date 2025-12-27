@@ -278,7 +278,7 @@ export default function GoalModal({
                     <FormControl>
                       <select
                         {...field}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-11 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50 transition-all"
                       >
                         <option value="">연결 안함</option>
                         {lifeGoals.map((lifeGoal) => (
@@ -327,8 +327,8 @@ export default function GoalModal({
                           type="button"
                           onClick={() => field.onChange(color)}
                           className={cn(
-                            'w-8 h-8 rounded-full transition-transform focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
-                            field.value === color ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''
+                            'w-10 h-10 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary',
+                            field.value === color ? 'ring-2 ring-offset-2 ring-primary scale-110 shadow-lg' : 'hover:scale-105'
                           )}
                           style={{ backgroundColor: color }}
                           aria-label={`색상 ${color}`}
@@ -343,7 +343,7 @@ export default function GoalModal({
 
             {/* 에러 메시지 */}
             {error && (
-              <div className="text-red-600 text-sm bg-red-50 py-2 px-3 rounded">
+              <div className="text-danger text-sm bg-danger/10 py-3 px-4 rounded-xl border border-danger/20">
                 {error}
               </div>
             )}
