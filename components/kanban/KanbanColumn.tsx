@@ -22,32 +22,34 @@ interface KanbanColumnProps {
   id: string;
   title: string;
   color: string;
+  borderColor?: string;
+  textColor?: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
 }
 
-export default function KanbanColumn({ id, title, color, tasks, onTaskClick }: KanbanColumnProps) {
+export default function KanbanColumn({ id, title, color, borderColor, textColor, tasks, onTaskClick }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({
     id: id,
   });
 
   return (
-    <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden">
+    <div className={`flex flex-col glass-card rounded-xl shadow-lg border ${borderColor || 'border-border'} overflow-hidden floating-card`}>
       {/* 헤더 */}
-      <div className={`${color} px-4 py-3 font-semibold text-gray-800 flex items-center justify-between`}>
-        <span>{title}</span>
-        <span className="bg-white px-2 py-1 rounded-full text-xs font-bold">{tasks.length}</span>
+      <div className={`${color} px-5 py-4 font-bold ${textColor || 'text-foreground'} flex items-center justify-between border-b ${borderColor || 'border-border'}`}>
+        <span className="text-base">{title}</span>
+        <span className="bg-background px-3 py-1 rounded-full text-xs font-bold shadow-sm">{tasks.length}</span>
       </div>
 
       {/* 카드 리스트 */}
       <div
         ref={setNodeRef}
-        className="flex-1 p-3 space-y-2 min-h-[500px] overflow-y-auto"
+        className="flex-1 p-4 space-y-3 min-h-[500px] max-h-[700px] overflow-y-auto"
       >
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.length === 0 ? (
-            <div className="text-center text-gray-400 py-8">
-              <p className="text-sm">작업이 없습니다</p>
+            <div className="text-center text-foreground-tertiary py-12">
+              <p className="text-sm font-medium">작업이 없습니다</p>
             </div>
           ) : (
             tasks.map((task) => (

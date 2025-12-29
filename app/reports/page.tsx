@@ -4,30 +4,44 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { Button } from '@/components/ui/button';
+import { BarChart3, Home, Calendar, LayoutGrid, Settings, LogOut } from 'lucide-react';
 
 // 차트 컴포넌트들은 lazy load (recharts 번들이 크기 때문)
 const StatsOverview = dynamic(() => import('@/components/reports/StatsOverview'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-48" />,
+  loading: () => (
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-48 border border-border" />
+  ),
 });
 
 const GoalProgressChart = dynamic(() => import('@/components/reports/GoalProgressChart'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+  loading: () => (
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-96 border border-border" />
+  ),
 });
 
 const FocusTimeChart = dynamic(() => import('@/components/reports/FocusTimeChart'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+  loading: () => (
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-96 border border-border" />
+  ),
 });
 
 const ProductivityHeatmap = dynamic(() => import('@/components/reports/ProductivityHeatmap'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+  loading: () => (
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-96 border border-border" />
+  ),
 });
 
 const WeeklyProductivity = dynamic(() => import('@/components/reports/WeeklyProductivity'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-96" />,
+  loading: () => (
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-96 border border-border" />
+  ),
 });
 
 const ProductivityInsights = dynamic(() => import('@/components/reports/ProductivityInsights'), {
-  loading: () => <div className="animate-pulse bg-gray-200 rounded-lg h-48" />,
+  loading: () => (
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-48 border border-border" />
+  ),
 });
 
 interface ReportData {
@@ -149,10 +163,10 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">로딩 중...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground-secondary">로딩 중...</p>
         </div>
       </div>
     );
@@ -168,48 +182,70 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-surface to-background">
       {/* Header */}
-      <header className="bg-gradient-to-r from-blue-500 to-violet-500 dark:from-slate-800 dark:to-purple-800 shadow-lg">
+      <header className="glass-card border-b border-border/50 sticky top-0 z-10 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div
             onClick={() => router.push('/dashboard')}
             className="cursor-pointer hover:opacity-80 transition-opacity"
           >
-            <h1 className="text-2xl font-bold text-white">리포트</h1>
-            <p className="text-sm text-white/90">생산성 분석 및 통계</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-primary to-violet">
+                <BarChart3 className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold gradient-text">리포트</h1>
+                <p className="text-sm text-foreground-secondary">생산성 분석 및 통계</p>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="gap-2"
             >
-              🏠 대시보드
-            </button>
-            <button
+              <Home className="w-4 h-4" />
+              대시보드
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => router.push('/calendar')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="gap-2"
             >
-              📅 캘린더
-            </button>
-            <button
+              <Calendar className="w-4 h-4" />
+              캘린더
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => router.push('/kanban')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="gap-2"
             >
-              📋 칸반
-            </button>
-            <button
+              <LayoutGrid className="w-4 h-4" />
+              칸반
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => router.push('/settings')}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="gap-2"
             >
-              ⚙️ 설정
-            </button>
-            <button
+              <Settings className="w-4 h-4" />
+              설정
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-white hover:bg-white/20 rounded-md transition-colors border border-white/30"
+              className="gap-2"
             >
+              <LogOut className="w-4 h-4" />
               로그아웃
-            </button>
+            </Button>
           </div>
         </div>
       </header>
@@ -217,47 +253,47 @@ export default function ReportsPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tab Selector */}
-        <div className="mb-6 flex justify-center gap-4">
-          <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
+        <div className="mb-8 flex justify-center gap-4">
+          <div className="glass-card inline-flex rounded-xl p-1.5 border border-border shadow-sm">
             <button
               onClick={() => setTabType('report')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
                 tabType === 'report'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                  : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
               }`}
             >
-              📊 리포트
+              리포트
             </button>
             <button
               onClick={() => setTabType('analysis')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
                 tabType === 'analysis'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                  : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
               }`}
             >
-              🔥 패턴 분석
+              패턴 분석
             </button>
           </div>
 
-          <div className="inline-flex rounded-lg border border-gray-300 bg-white p-1">
+          <div className="glass-card inline-flex rounded-xl p-1.5 border border-border shadow-sm">
             <button
               onClick={() => setViewType('week')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
                 viewType === 'week'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                  : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
               }`}
             >
               주간
             </button>
             <button
               onClick={() => setViewType('month')}
-              className={`px-6 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
                 viewType === 'month'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                  : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
               }`}
             >
               월간
@@ -269,12 +305,12 @@ export default function ReportsPage() {
         {isLoadingData ? (
           <div className="flex justify-center items-center py-20">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">데이터 로딩 중...</p>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-foreground-secondary">데이터 로딩 중...</p>
             </div>
           </div>
         ) : tabType === 'report' && reportData ? (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Stats Overview */}
             <StatsOverview tasks={reportData.tasks} focus={reportData.focus} />
 
@@ -284,27 +320,27 @@ export default function ReportsPage() {
               <FocusTimeChart dailyFocus={reportData.focus.dailyFocus} />
             </div>
 
-            {/* Additional Stats */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">작업 상태</h2>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-yellow-600">{reportData.tasks.todo}</p>
-                  <p className="text-sm text-gray-600 mt-1">할 일</p>
+            {/* Additional Stats - Bento Grid Style */}
+            <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+              <h2 className="text-lg font-bold text-foreground mb-6 gradient-text">작업 상태</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-6 bg-warning/10 rounded-xl border border-warning/20 hover:shadow-md transition-shadow">
+                  <p className="text-4xl font-bold text-warning mb-2">{reportData.tasks.todo}</p>
+                  <p className="text-sm font-medium text-foreground-secondary">할 일</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-blue-600">{reportData.tasks.inProgress}</p>
-                  <p className="text-sm text-gray-600 mt-1">진행 중</p>
+                <div className="text-center p-6 bg-info/10 rounded-xl border border-info/20 hover:shadow-md transition-shadow">
+                  <p className="text-4xl font-bold text-info mb-2">{reportData.tasks.inProgress}</p>
+                  <p className="text-sm font-medium text-foreground-secondary">진행 중</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-3xl font-bold text-green-600">{reportData.tasks.completed}</p>
-                  <p className="text-sm text-gray-600 mt-1">완료</p>
+                <div className="text-center p-6 bg-success/10 rounded-xl border border-success/20 hover:shadow-md transition-shadow">
+                  <p className="text-4xl font-bold text-success mb-2">{reportData.tasks.completed}</p>
+                  <p className="text-sm font-medium text-foreground-secondary">완료</p>
                 </div>
               </div>
             </div>
           </div>
         ) : tabType === 'analysis' && heatmapData ? (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Heatmap */}
             <ProductivityHeatmap heatmap={heatmapData.heatmap} />
 
@@ -318,8 +354,8 @@ export default function ReportsPage() {
             </div>
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow p-6 text-center">
-            <p className="text-gray-600">데이터를 불러올 수 없습니다.</p>
+          <div className="glass-card rounded-xl shadow-lg border border-border p-6 text-center">
+            <p className="text-foreground-secondary">데이터를 불러올 수 없습니다.</p>
           </div>
         )}
       </main>

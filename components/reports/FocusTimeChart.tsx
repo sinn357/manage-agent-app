@@ -1,6 +1,7 @@
 'use client';
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Clock } from 'lucide-react';
 
 interface DailyFocus {
   date: string;
@@ -28,32 +29,59 @@ export default function FocusTimeChart({ dailyFocus }: FocusTimeChartProps) {
   const avgHours = dailyFocus.length > 0 ? totalHours / dailyFocus.length : 0;
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">일별 집중 시간</h2>
+    <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-gradient-to-r from-violet to-purple">
+            <Clock className="w-5 h-5 text-white" />
+          </div>
+          <h2 className="text-lg font-bold gradient-text">일별 집중 시간</h2>
+        </div>
         <div className="flex gap-4 text-sm">
-          <span className="text-gray-600">
-            총 <span className="font-semibold text-blue-500">{totalHours.toFixed(1)}h</span>
+          <span className="text-foreground-secondary">
+            총 <span className="font-bold text-info">{totalHours.toFixed(1)}h</span>
           </span>
-          <span className="text-gray-600">
-            평균 <span className="font-semibold text-green-600">{avgHours.toFixed(1)}h</span>
+          <span className="text-foreground-secondary">
+            평균 <span className="font-bold text-success">{avgHours.toFixed(1)}h</span>
           </span>
         </div>
       </div>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis label={{ value: '시간 (h)', angle: -90, position: 'insideLeft' }} />
-          <Tooltip />
+          <defs>
+            <linearGradient id="focusGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+              <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis
+            dataKey="date"
+            tick={{ fill: 'hsl(var(--foreground-secondary))', fontSize: 12 }}
+            stroke="hsl(var(--border))"
+          />
+          <YAxis
+            label={{ value: '시간 (h)', angle: -90, position: 'insideLeft', fill: 'hsl(var(--foreground-secondary))' }}
+            tick={{ fill: 'hsl(var(--foreground-secondary))' }}
+            stroke="hsl(var(--border))"
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'hsl(var(--surface))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '12px',
+              color: 'hsl(var(--foreground))'
+            }}
+          />
           <Legend />
           <Line
             type="monotone"
             dataKey="집중시간"
-            stroke="#3B82F6"
-            strokeWidth={2}
-            dot={{ fill: '#3B82F6', r: 4 }}
-            activeDot={{ r: 6 }}
+            stroke="#8b5cf6"
+            strokeWidth={3}
+            dot={{ fill: '#8b5cf6', r: 5, strokeWidth: 2, stroke: '#fff' }}
+            activeDot={{ r: 7 }}
+            fill="url(#focusGradient)"
           />
         </LineChart>
       </ResponsiveContainer>

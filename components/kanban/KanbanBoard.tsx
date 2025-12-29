@@ -38,9 +38,9 @@ interface KanbanBoardProps {
 }
 
 const COLUMNS = [
-  { id: 'todo', title: '할 일', color: 'bg-gray-100' },
-  { id: 'in_progress', title: '진행 중', color: 'bg-blue-100' },
-  { id: 'completed', title: '완료', color: 'bg-green-100' },
+  { id: 'todo', title: '할 일', color: 'bg-warning/10', borderColor: 'border-warning/30', textColor: 'text-warning' },
+  { id: 'in_progress', title: '진행 중', color: 'bg-info/10', borderColor: 'border-info/30', textColor: 'text-info' },
+  { id: 'completed', title: '완료', color: 'bg-success/10', borderColor: 'border-success/30', textColor: 'text-success' },
 ];
 
 export default function KanbanBoard({ tasks, onTaskClick, onTaskStatusChange }: KanbanBoardProps) {
@@ -117,7 +117,7 @@ export default function KanbanBoard({ tasks, onTaskClick, onTaskStatusChange }: 
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {COLUMNS.map((column) => {
           const columnTasks = getTasksByStatus(column.id);
           return (
@@ -126,6 +126,8 @@ export default function KanbanBoard({ tasks, onTaskClick, onTaskStatusChange }: 
               id={column.id}
               title={column.title}
               color={column.color}
+              borderColor={column.borderColor}
+              textColor={column.textColor}
               tasks={columnTasks}
               onTaskClick={onTaskClick}
             />

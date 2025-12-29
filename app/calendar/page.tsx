@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import dynamic from 'next/dynamic';
+import { Button } from '@/components/ui/button';
+import { CalendarDays, Home, Plus } from 'lucide-react';
 
 // CalendarView는 react-big-calendar를 포함하므로 lazy load
 const CalendarView = dynamic(() => import('@/components/calendar/CalendarView'), {
   loading: () => (
-    <div className="animate-pulse bg-gray-200 rounded-lg h-[600px] flex items-center justify-center">
-      <p className="text-gray-500">캘린더 로딩 중...</p>
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-[600px] border border-border flex items-center justify-center">
+      <p className="text-foreground-secondary">캘린더 로딩 중...</p>
     </div>
   ),
   ssr: false,
@@ -115,48 +117,62 @@ export default function CalendarPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">로딩 중...</div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-foreground-secondary">로딩 중...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* 헤더 */}
-        <div className="mb-6 flex items-center justify-between bg-white/20 dark:bg-slate-800/50 backdrop-blur-md rounded-lg p-6 border border-white/30 dark:border-slate-700">
+    <div className="min-h-screen bg-gradient-to-br from-background via-surface to-background">
+      {/* Header */}
+      <header className="glass-card border-b border-border/50 sticky top-0 z-10 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div
             onClick={() => router.push('/dashboard')}
             className="cursor-pointer hover:opacity-80 transition-opacity"
           >
-            <h1 className="text-3xl font-bold text-white">캘린더</h1>
-            <p className="text-white/90 mt-1">일정을 한눈에 확인하세요</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-success to-info">
+                <CalendarDays className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold gradient-text">캘린더</h1>
+                <p className="text-sm text-foreground-secondary">일정을 한눈에 확인하세요</p>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-3">
-            <button
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 text-white border border-white/50 rounded-lg hover:bg-white/20 transition-colors"
+              className="gap-2"
             >
+              <Home className="w-4 h-4" />
               대시보드
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => {
                 setSelectedTask(null);
                 setSelectedDate(new Date());
                 setIsTaskModalOpen(true);
               }}
-              className="px-4 py-2 bg-gradient-to-r from-blue-500 to-violet-500 text-white rounded-lg hover:from-blue-600 hover:to-violet-600 transition-all shadow-lg"
+              className="gap-2"
             >
-              + 새 작업
-            </button>
+              <Plus className="w-4 h-4" />
+              새 작업
+            </Button>
           </div>
         </div>
+      </header>
 
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
         {/* 캘린더 */}
         {loading ? (
-          <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6 h-[700px] flex items-center justify-center">
-            <div className="text-gray-700">일정 불러오는 중...</div>
+          <div className="glass-card rounded-xl shadow-lg border border-border p-6 h-[700px] flex items-center justify-center">
+            <div className="text-foreground-secondary">일정 불러오는 중...</div>
           </div>
         ) : (
           <CalendarView
@@ -165,7 +181,7 @@ export default function CalendarPage() {
             onSelectSlot={handleSelectSlot}
           />
         )}
-      </div>
+      </main>
 
       {/* 작업 모달 */}
       <TaskModal

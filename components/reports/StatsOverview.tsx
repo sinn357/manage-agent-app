@@ -1,5 +1,7 @@
 'use client';
 
+import { CheckCircle2, TrendingUp, Clock, Target } from 'lucide-react';
+
 interface TaskStats {
   total: number;
   completed: number;
@@ -26,54 +28,72 @@ export default function StatsOverview({ tasks, focus }: StatsOverviewProps) {
       label: '완료한 작업',
       value: tasks.completed,
       total: tasks.total,
-      color: 'text-green-600',
-      bgColor: 'bg-green-50',
-      icon: '✓',
+      color: 'text-success',
+      bgColor: 'bg-success/10',
+      borderColor: 'border-success/20',
+      iconBg: 'bg-success',
+      Icon: CheckCircle2,
     },
     {
       label: '작업 달성률',
       value: `${tasks.completionRate}%`,
       total: null,
-      color: 'text-blue-500',
-      bgColor: 'bg-blue-50',
-      icon: '📊',
+      color: 'text-info',
+      bgColor: 'bg-info/10',
+      borderColor: 'border-info/20',
+      iconBg: 'bg-info',
+      Icon: TrendingUp,
     },
     {
       label: '총 집중 시간',
       value: `${focus.totalHours}h`,
       total: null,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
-      icon: '⏱️',
+      color: 'text-violet',
+      bgColor: 'bg-violet/10',
+      borderColor: 'border-violet/20',
+      iconBg: 'bg-violet',
+      Icon: Clock,
     },
     {
       label: '완료한 세션',
       value: focus.completedSessions,
       total: focus.sessionsCount,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-      icon: '🎯',
+      color: 'text-warning',
+      bgColor: 'bg-warning/10',
+      borderColor: 'border-warning/20',
+      iconBg: 'bg-warning',
+      Icon: Target,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      {stats.map((stat, index) => (
-        <div key={index} className={`${stat.bgColor} rounded-lg p-5 shadow`}>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-2xl">{stat.icon}</span>
-            <span className={`text-2xl font-bold ${stat.color}`}>
-              {stat.value}
-              {stat.total !== null && (
-                <span className="text-sm text-gray-500 font-normal ml-1">
-                  / {stat.total}
-                </span>
-              )}
-            </span>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {stats.map((stat, index) => {
+        const Icon = stat.Icon;
+        return (
+          <div
+            key={index}
+            className={`glass-card rounded-xl p-6 border ${stat.borderColor} ${stat.bgColor} floating-card transition-all duration-300`}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className={`p-3 rounded-xl ${stat.iconBg} shadow-md`}>
+                <Icon className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-baseline gap-2">
+                <span className={`text-3xl font-bold ${stat.color}`}>{stat.value}</span>
+                {stat.total !== null && (
+                  <span className="text-sm text-foreground-tertiary font-medium">
+                    / {stat.total}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm font-semibold text-foreground-secondary">{stat.label}</p>
+            </div>
           </div>
-          <p className="text-sm text-gray-700 font-medium">{stat.label}</p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

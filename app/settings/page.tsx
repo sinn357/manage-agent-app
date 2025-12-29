@@ -13,6 +13,8 @@ import {
 } from '@/lib/notifications';
 import toast from 'react-hot-toast';
 import RoutineList from '@/components/routines/RoutineList';
+import { Button } from '@/components/ui/button';
+import { Settings as SettingsIcon, Home, Bell, RefreshCw, Save } from 'lucide-react';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -73,94 +75,101 @@ export default function SettingsPage() {
 
   if (isLoading || !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-600">로딩 중...</div>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="text-foreground-secondary">로딩 중...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-violet-400 to-purple-400 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* 헤더 */}
-        <div className="mb-6 flex items-center justify-between bg-white/20 backdrop-blur-md rounded-lg p-6 border border-white/30">
+    <div className="min-h-screen bg-gradient-to-br from-background via-surface to-background">
+      {/* Header */}
+      <header className="glass-card border-b border-border/50 sticky top-0 z-10 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div
             onClick={() => router.push('/dashboard')}
             className="cursor-pointer hover:opacity-80 transition-opacity"
           >
-            <h1 className="text-3xl font-bold text-white">설정</h1>
-            <p className="text-white/90 mt-1">알림, 루틴 및 환경 설정을 관리하세요</p>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-gradient-to-r from-primary to-violet">
+                <SettingsIcon className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold gradient-text">설정</h1>
+                <p className="text-sm text-foreground-secondary">알림, 루틴 및 환경 설정을 관리하세요</p>
+              </div>
+            </div>
           </div>
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => router.push('/dashboard')}
-            className="px-4 py-2 text-white border border-white/50 rounded-lg hover:bg-white/20 transition-colors"
+            className="gap-2"
           >
+            <Home className="w-4 h-4" />
             대시보드
-          </button>
+          </Button>
         </div>
+      </header>
 
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Tabs */}
-        <div className="mb-6 border-b border-gray-200">
-          <div className="flex gap-4">
-            <button
-              onClick={() => setActiveTab('notifications')}
-              className={`pb-4 px-2 border-b-2 font-medium transition-colors ${
-                activeTab === 'notifications'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              🔔 알림 설정
-            </button>
-            <button
-              onClick={() => setActiveTab('routines')}
-              className={`pb-4 px-2 border-b-2 font-medium transition-colors ${
-                activeTab === 'routines'
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              🔁 루틴 관리
-            </button>
-          </div>
+        <div className="mb-8 glass-card inline-flex rounded-xl p-1.5 border border-border shadow-sm">
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              activeTab === 'notifications'
+                ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <Bell className="w-4 h-4" />
+            알림 설정
+          </button>
+          <button
+            onClick={() => setActiveTab('routines')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              activeTab === 'routines'
+                ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <RefreshCw className="w-4 h-4" />
+            루틴 관리
+          </button>
         </div>
 
         {/* Tab Content */}
         {activeTab === 'notifications' && (
-          <div>
+          <div className="space-y-6">
             {/* 알림 권한 */}
-            <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6 mb-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">알림 권한</h2>
+            <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+          <h2 className="text-lg font-bold gradient-text mb-6">알림 권한</h2>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-700 mb-1">브라우저 알림 상태</p>
-              <p className="text-sm text-gray-500">
+              <p className="text-foreground font-medium mb-1">브라우저 알림 상태</p>
+              <p className="text-sm text-foreground-secondary">
                 {permission === 'granted' && '✅ 허용됨'}
                 {permission === 'denied' && '❌ 거부됨'}
                 {permission === 'default' && '⏳ 대기 중'}
               </p>
             </div>
             {permission !== 'granted' && (
-              <button
-                onClick={handleRequestPermission}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
+              <Button onClick={handleRequestPermission}>
                 권한 요청
-              </button>
+              </Button>
             )}
             {permission === 'granted' && (
-              <button
-                onClick={handleTestNotification}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
+              <Button variant="success" onClick={handleTestNotification}>
                 테스트 알림
-              </button>
+              </Button>
             )}
           </div>
 
           {permission === 'denied' && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">
+            <div className="mt-4 p-4 bg-danger/10 border border-danger/30 rounded-xl">
+              <p className="text-sm text-danger font-medium">
                 알림 권한이 거부되었습니다. 브라우저 설정에서 변경할 수 있습니다.
               </p>
             </div>
@@ -168,8 +177,8 @@ export default function SettingsPage() {
         </div>
 
         {/* 알림 설정 */}
-        <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">알림 설정</h2>
+        <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+          <h2 className="text-lg font-bold gradient-text mb-6">알림 설정</h2>
 
           {/* 전체 알림 활성화 */}
           <div className="mb-6 pb-6 border-b">
@@ -269,13 +278,14 @@ export default function SettingsPage() {
           </div>
 
               {/* 저장 버튼 */}
-              <button
+              <Button
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-medium"
+                className="w-full gap-2"
               >
+                <Save className="w-4 h-4" />
                 {saving ? '저장 중...' : '설정 저장'}
-              </button>
+              </Button>
             </div>
           </div>
         )}

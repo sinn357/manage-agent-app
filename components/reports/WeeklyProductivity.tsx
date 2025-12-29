@@ -1,6 +1,7 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { TrendingUp } from 'lucide-react';
 
 interface DailyTotal {
   day: number;
@@ -34,22 +35,48 @@ export default function WeeklyProductivity({ dailyTotals }: WeeklyProductivityPr
   const avgHours = dailyTotals.length > 0 ? totalHours / 7 : 0;
 
   return (
-    <div className="bg-white/90 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">요일별 생산성</h2>
-        <div className="text-sm text-gray-600">
-          평균 <span className="font-semibold text-blue-500">{avgHours.toFixed(1)}h/일</span>
+    <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-2">
+          <div className="p-2 rounded-lg bg-gradient-to-r from-info to-primary">
+            <TrendingUp className="w-5 h-5 text-white" />
+          </div>
+          <h2 className="text-lg font-bold gradient-text">요일별 생산성</h2>
+        </div>
+        <div className="text-sm text-foreground-secondary">
+          평균 <span className="font-bold text-info">{avgHours.toFixed(1)}h/일</span>
         </div>
       </div>
 
       <ResponsiveContainer width="100%" height={300}>
         <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="요일" />
-          <YAxis label={{ value: '시간 (h)', angle: -90, position: 'insideLeft' }} />
-          <Tooltip />
+          <defs>
+            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity={1}/>
+              <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.8}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+          <XAxis
+            dataKey="요일"
+            tick={{ fill: 'hsl(var(--foreground-secondary))' }}
+            stroke="hsl(var(--border))"
+          />
+          <YAxis
+            label={{ value: '시간 (h)', angle: -90, position: 'insideLeft', fill: 'hsl(var(--foreground-secondary))' }}
+            tick={{ fill: 'hsl(var(--foreground-secondary))' }}
+            stroke="hsl(var(--border))"
+          />
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'hsl(var(--surface))',
+              border: '1px solid hsl(var(--border))',
+              borderRadius: '12px',
+              color: 'hsl(var(--foreground))'
+            }}
+          />
           <Legend />
-          <Bar dataKey="집중시간" fill="#3B82F6" radius={[8, 8, 0, 0]} />
+          <Bar dataKey="집중시간" fill="url(#barGradient)" radius={[12, 12, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

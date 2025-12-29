@@ -135,7 +135,7 @@ export default function CalendarView({ tasks, onSelectEvent, onSelectSlot }: Cal
   }, [onSelectSlot]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card calendar-modern">
       <div className="h-[700px]">
         <Calendar
           localizer={localizer}
@@ -176,20 +176,78 @@ export default function CalendarView({ tasks, onSelectEvent, onSelectSlot }: Cal
       </div>
 
       {/* 범례 */}
-      <div className="mt-4 flex gap-4 text-sm text-gray-600">
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-red-500 rounded"></div>
-          <span>높은 우선순위</span>
+      <div className="mt-6 flex gap-6 justify-center text-sm font-medium">
+        <div className="flex items-center gap-2 px-4 py-2 bg-danger/10 rounded-lg border border-danger/20">
+          <div className="w-4 h-4 bg-danger rounded-md shadow-sm"></div>
+          <span className="text-foreground-secondary">높은 우선순위</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-amber-500 rounded"></div>
-          <span>중간 우선순위</span>
+        <div className="flex items-center gap-2 px-4 py-2 bg-warning/10 rounded-lg border border-warning/20">
+          <div className="w-4 h-4 bg-warning rounded-md shadow-sm"></div>
+          <span className="text-foreground-secondary">중간 우선순위</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-4 h-4 bg-blue-500 opacity-50 rounded"></div>
-          <span>완료된 작업</span>
+        <div className="flex items-center gap-2 px-4 py-2 bg-info/10 rounded-lg border border-info/20">
+          <div className="w-4 h-4 bg-info opacity-50 rounded-md shadow-sm"></div>
+          <span className="text-foreground-secondary">완료된 작업</span>
         </div>
       </div>
+
+      <style jsx global>{`
+        .calendar-modern .rbc-calendar {
+          font-family: inherit;
+        }
+        .calendar-modern .rbc-header {
+          padding: 12px 8px;
+          font-weight: 600;
+          color: hsl(var(--foreground-secondary));
+          border-bottom: 1px solid hsl(var(--border));
+        }
+        .calendar-modern .rbc-today {
+          background-color: hsl(var(--primary) / 0.1);
+        }
+        .calendar-modern .rbc-off-range-bg {
+          background-color: hsl(var(--surface));
+        }
+        .calendar-modern .rbc-month-view {
+          border: 1px solid hsl(var(--border));
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        .calendar-modern .rbc-day-bg {
+          border-left: 1px solid hsl(var(--border));
+        }
+        .calendar-modern .rbc-month-row {
+          border-top: 1px solid hsl(var(--border));
+        }
+        .calendar-modern .rbc-toolbar button {
+          color: hsl(var(--foreground));
+          border: 1px solid hsl(var(--border));
+          background-color: hsl(var(--surface));
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-weight: 500;
+          transition: all 0.2s;
+        }
+        .calendar-modern .rbc-toolbar button:hover {
+          background-color: hsl(var(--primary) / 0.1);
+          border-color: hsl(var(--primary));
+        }
+        .calendar-modern .rbc-toolbar button:active,
+        .calendar-modern .rbc-toolbar button.rbc-active {
+          background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--violet)));
+          color: white;
+          border-color: hsl(var(--primary));
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        .calendar-modern .rbc-event {
+          border-radius: 6px;
+          padding: 4px 8px;
+          font-weight: 500;
+        }
+        .calendar-modern .rbc-event:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2);
+        }
+      `}</style>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { CalendarDays, GripVertical, Flag } from 'lucide-react';
 
 interface Task {
   id: string;
@@ -40,11 +41,13 @@ export default function KanbanCard({ task, onClick, isDragging = false }: Kanban
   };
 
   // 우선순위 색상
-  const priorityColors = {
-    high: 'border-l-red-500',
-    mid: 'border-l-amber-500',
-    low: 'border-l-green-500',
+  const priorityConfig = {
+    high: { border: 'border-l-danger', bg: 'bg-danger/10', text: 'text-danger', icon: 'text-danger' },
+    mid: { border: 'border-l-warning', bg: 'bg-warning/10', text: 'text-warning', icon: 'text-warning' },
+    low: { border: 'border-l-success', bg: 'bg-success/10', text: 'text-success', icon: 'text-success' },
   };
+
+  const priority = priorityConfig[task.priority as keyof typeof priorityConfig] || priorityConfig.mid;
 
   // 날짜 포맷
   const formatDate = (dateString?: string) => {
@@ -58,61 +61,52 @@ export default function KanbanCard({ task, onClick, isDragging = false }: Kanban
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       onClick={onClick}
-      className={`bg-white border-l-4 ${priorityColors[task.priority as keyof typeof priorityColors] || priorityColors.mid} rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer p-3 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+      className={`glass-card border-l-4 ${priority.border} rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer p-4 group ${isDragging ? 'cursor-grabbing scale-105' : 'cursor-grab hover:scale-[1.02]'}`}
     >
-      {/* 제목 */}
-      <h3 className="font-medium text-gray-800 mb-1 line-clamp-2">{task.title}</h3>
+      {/* 드래그 핸들 & 제목 */}
+      <div className="flex items-start gap-2 mb-2">
+        <div {...listeners} className="mt-1 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity">
+          <GripVertical className="w-4 h-4 text-foreground-tertiary" />
+        </div>
+        <h3 className="flex-1 font-semibold text-foreground line-clamp-2 leading-tight">{task.title}</h3>
+      </div>
 
       {/* 설명 */}
       {task.description && (
-        <p className="text-sm text-gray-600 mb-2 line-clamp-2">{task.description}</p>
+        <p className="text-sm text-foreground-secondary mb-3 line-clamp-2">{task.description}</p>
       )}
 
       {/* 메타 정보 */}
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className="flex items-center gap-2 flex-wrap">
         {/* 목표 */}
         {task.Goal && (
           <div
-            className="flex items-center gap-1 px-2 py-1 rounded-full"
-            style={{ backgroundColor: `${task.Goal.color}20` }}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium shadow-sm"
+            style={{ backgroundColor: `${task.Goal.color}20`, color: task.Goal.color }}
           >
             <div
-              className="w-2 h-2 rounded-full"
+              className="w-2 h-2 rounded-full shadow-sm"
               style={{ backgroundColor: task.Goal.color }}
             />
-            <span className="text-xs truncate max-w-[120px]">{task.Goal.title}</span>
+            <span className="truncate max-w-[100px]">{task.Goal.title}</span>
           </div>
         )}
 
         {/* 날짜 */}
         {task.scheduledDate && (
-          <div className="flex items-center gap-1 text-gray-500">
-            <svg
-              className="w-3 h-3"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-            </svg>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-surface rounded-lg text-xs font-medium text-foreground-secondary">
+            <CalendarDays className="w-3 h-3" />
             <span>{formatDate(task.scheduledDate)}</span>
           </div>
         )}
-      </div>
 
-      {/* 우선순위 뱃지 */}
-      <div className="mt-2">
+        {/* 우선순위 뱃지 */}
         {task.priority === 'high' && (
-          <span className="inline-block px-2 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded">
-            높음
-          </span>
+          <div className={`flex items-center gap-1 px-2.5 py-1 ${priority.bg} rounded-lg`}>
+            <Flag className={`w-3 h-3 ${priority.icon}`} />
+            <span className={`text-xs font-bold ${priority.text}`}>높음</span>
+          </div>
         )}
       </div>
     </div>
