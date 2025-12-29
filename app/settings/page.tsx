@@ -295,7 +295,7 @@ export default function SettingsPage() {
             <RoutineList />
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
