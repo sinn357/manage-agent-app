@@ -485,6 +485,218 @@ const sensors = useSensors(
 
 ---
 
+## ✅ Design System Redesign "Gradient Elevation" (2025-12-27 ~ 2025-12-29)
+
+### 목표
+2025년 최신 디자인 트렌드를 적용한 전체 UI/UX 리뉴얼
+
+### 디자인 콘셉트
+**"Gradient Elevation"** - Glassmorphism 2.0 + Floating Cards + Smooth Transitions
+
+### 핵심 디자인 시스템
+
+#### 1. 색상 시스템
+**시맨틱 컬러** (CSS Custom Properties):
+- `--primary`: 주요 색상 (파랑)
+- `--violet`: 보라
+- `--purple`: 진보라
+- `--success`: 초록 (성공)
+- `--warning`: 노랑 (경고)
+- `--danger`: 빨강 (위험)
+- `--info`: 하늘 (정보)
+- `--background`, `--surface`, `--border`, `--foreground`
+
+#### 2. 컴포넌트 스타일
+**Utility Classes**:
+- `glass-card`: Glassmorphism 효과 (배경 블러, 반투명)
+- `floating-card`: 부드러운 그림자 + 호버 애니메이션
+- `gradient-text`: 그라디언트 텍스트
+- `gradient-border`: 그라디언트 테두리
+
+**Gradients**:
+- `from-primary to-violet`: 주요 그라디언트
+- `from-success to-info`: 성공/정보 그라디언트
+- `from-violet to-purple`: 보라 계열
+
+#### 3. 아이콘 시스템
+- **Before**: 이모지 아이콘 (🎯, 📊, 🔔 등)
+- **After**: lucide-react 아이콘 라이브러리
+  - `BarChart3`, `Target`, `Clock`, `Flame`, `TrendingUp`
+  - `LayoutGrid`, `Bell`, `RefreshCw`, `Save`
+  - `CalendarDays`, `GripVertical`, `Flag`
+
+#### 4. Micro-interactions
+- **Transitions**: `transition-all duration-300`
+- **Hover Effects**: `hover:scale-[1.02]`, `hover:shadow-lg`
+- **Active States**: `active:scale-95`
+
+### Session 1-2: Dashboard Redesign (2025-12-27 ~ 2025-12-28)
+
+#### 업데이트된 컴포넌트
+1. **Dashboard Layout** (`app/dashboard/page.tsx`)
+   - Glass-card 헤더 + 그라디언트 아이콘
+   - 3단 레이아웃 유지, 카드 스타일 개선
+
+2. **GoalPanel** - 목표 패널
+   - 목표 카드에 floating-card 효과
+   - 그라디언트 진행률 바
+   - lucide-react 아이콘 (Target, Calendar)
+
+3. **TaskList** - 작업 리스트
+   - 우선순위별 시맨틱 컬러 (danger/warning/success)
+   - 체크박스 호버 효과
+   - Flag 아이콘으로 우선순위 표시
+
+4. **FocusTimer** - 포커스 타이머
+   - 그라디언트 타이머 링
+   - Glass-card 프리셋 버튼
+   - Clock 아이콘
+
+5. **FocusHistory** - 포커스 히스토리
+   - 세션 카드 glassmorphism
+   - 호버 시 삭제 버튼 표시
+
+### Session 3: Reports + Calendar Pages (2025-12-29)
+
+#### Reports Page (`app/reports/page.tsx`)
+- **Header**: glass-card + 그라디언트 아이콘 (BarChart3)
+- **Tabs**: 그라디언트 활성 상태
+- **Button 컴포넌트**: 네비게이션 버튼 전환
+
+#### 업데이트된 리포트 컴포넌트 (6개)
+
+1. **StatsOverview** - 통계 카드
+   - Glass-card 스타일
+   - 각 카드별 시맨틱 컬러
+   - Icons: CheckCircle2, TrendingUp, Clock, Target
+
+2. **GoalProgressChart** - 목표 진행률 차트
+   - recharts 색상 커스터마이징
+   - 그라디언트 바 (완료: #10B981, 미완료: #CBD5E1)
+   - CartesianGrid 투명도 조정
+
+3. **FocusTimeChart** - 일별 집중 시간 차트
+   - 라인 차트 그라디언트 fill
+   - 보라색 계열 (#8b5cf6)
+   - 부드러운 곡선 (curve="monotone")
+
+4. **ProductivityHeatmap** - 생산성 히트맵
+   - 시간대별 집중도 색상 스케일
+   - 호버 시 scale-110 효과
+   - Primary 컬러 변형 (20%~100%)
+
+5. **WeeklyProductivity** - 주간 생산성
+   - 그라디언트 바 차트
+   - from-info to-primary
+
+6. **ProductivityInsights** - AI 인사이트
+   - 인사이트 카드별 시맨틱 컬러
+   - Icons: Lightbulb, Target, CalendarCheck2, BarChart2
+
+#### Calendar Page (`app/calendar/page.tsx`)
+- **Header**: from-success to-info 그라디언트
+- **CalendarView** (`components/calendar/CalendarView.tsx`)
+  - react-big-calendar 커스텀 스타일링
+  - CSS-in-JS로 툴바 버튼, 이벤트 스타일 재정의
+  - 그라디언트 활성 버튼
+  - 호버 효과 (translateY, shadow)
+
+### Session 4: Kanban + Settings Pages (2025-12-29)
+
+#### Kanban Page (`app/kanban/page.tsx`)
+- **Header**: from-violet to-purple 그라디언트
+- **Button 컴포넌트**: 네비게이션 + 새 작업 버튼
+
+#### 업데이트된 칸반 컴포넌트 (3개)
+
+1. **KanbanBoard** - 칸반 보드
+   - 컬럼 정의 시맨틱 컬러화:
+     - todo: `bg-warning/10`, `border-warning/30`, `text-warning`
+     - in_progress: `bg-info/10`, `border-info/30`, `text-info`
+     - completed: `bg-success/10`, `border-success/30`, `text-success`
+
+2. **KanbanColumn** - 칸반 컬럼
+   - Glass-card + floating-card 효과
+   - 헤더 시맨틱 컬러 배경
+   - 작업 개수 뱃지
+
+3. **KanbanCard** - 칸반 카드
+   - 드래그 핸들 추가 (GripVertical)
+   - 우선순위별 border-left 컬러
+   - Icons: CalendarDays, Flag
+   - 호버 시 scale-[1.02]
+   - group-hover로 드래그 핸들 표시
+
+#### Settings Page (`app/settings/page.tsx`)
+- **Header**: from-primary to-violet 그라디언트
+- **Tabs**: 그라디언트 활성 상태 (Bell, RefreshCw 아이콘)
+- **Button 컴포넌트**:
+  - 권한 요청, 테스트 알림, 대시보드 버튼
+  - 저장 버튼 (Save 아이콘)
+- **Glass-card**: 알림 권한, 알림 설정 섹션
+
+### 기술적 변경사항
+
+#### 컴포넌트 임포트 패턴
+```typescript
+// Before
+import { Button } from '@/components/ui/button';
+
+// Icon imports
+import { BarChart3, Target, Clock, Bell, Save } from 'lucide-react';
+```
+
+#### 그라디언트 적용 패턴
+```tsx
+// 아이콘 배경
+<div className="p-2 rounded-xl bg-gradient-to-r from-primary to-violet">
+  <Icon className="w-6 h-6 text-white" />
+</div>
+
+// 활성 탭
+<button className={`
+  ${active
+    ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+    : 'text-foreground-secondary hover:bg-surface'
+  }
+`}>
+
+// 차트 그라디언트
+<defs>
+  <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+  </linearGradient>
+</defs>
+```
+
+### 통계
+
+**업데이트된 파일**: 총 18개
+- Pages: 4개 (dashboard, reports, calendar, kanban, settings)
+- Components: 14개
+  - Dashboard: 5개
+  - Reports: 6개
+  - Calendar: 1개
+  - Kanban: 3개
+
+**추가된 아이콘**: 20+ lucide-react 아이콘
+
+**적용된 디자인 패턴**:
+- Glassmorphism: 모든 카드 컴포넌트
+- Gradient: 헤더, 버튼, 차트
+- Semantic Colors: 모든 상태 표시 요소
+- Micro-interactions: 호버, 활성 상태
+
+### 영향
+- ✅ 현대적이고 일관된 디자인 시스템
+- ✅ 시각적 계층 구조 개선
+- ✅ 사용자 경험 향상 (부드러운 애니메이션)
+- ✅ 접근성 개선 (시맨틱 컬러)
+- ✅ 유지보수성 향상 (재사용 가능한 유틸리티 클래스)
+
+---
+
 ## 📝 교훈 & 인사이트
 
 ### 개발 프로세스
