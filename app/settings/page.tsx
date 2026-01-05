@@ -13,13 +13,14 @@ import {
 } from '@/lib/notifications';
 import toast from 'react-hot-toast';
 import RoutineList from '@/components/routines/RoutineList';
+import TrashList from '@/components/trash/TrashList';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon, Home, Bell, RefreshCw, Save } from 'lucide-react';
+import { Settings as SettingsIcon, Home, Bell, RefreshCw, Save, Trash2 } from 'lucide-react';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'notifications' | 'routines'>('notifications');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'routines' | 'trash'>('notifications');
   const [permission, setPermission] = useState<'granted' | 'denied' | 'default'>('default');
   const [settings, setSettings] = useState<NotificationSettings>(getNotificationSettings());
   const [saving, setSaving] = useState(false);
@@ -137,6 +138,17 @@ export default function SettingsPage() {
           >
             <RefreshCw className="w-4 h-4" />
             루틴 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('trash')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              activeTab === 'trash'
+                ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <Trash2 className="w-4 h-4" />
+            휴지통
           </button>
         </div>
 
@@ -293,6 +305,12 @@ export default function SettingsPage() {
         {activeTab === 'routines' && (
           <div>
             <RoutineList />
+          </div>
+        )}
+
+        {activeTab === 'trash' && (
+          <div>
+            <TrashList />
           </div>
         )}
       </main>

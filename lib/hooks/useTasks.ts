@@ -15,6 +15,7 @@ interface Task {
   userId: string;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
   Goal: {
     id: string;
     title: string;
@@ -181,6 +182,60 @@ export function useToggleTaskComplete() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       queryClient.invalidateQueries({ queryKey: ['goals'] });
+    },
+  });
+}
+
+// 삭제된 작업 목록 조회
+export function useDeletedTasks() {
+  return useQuery<Task[], Error>({
+    queryKey: ['tasks', 'deleted'],
+    queryFn: async () => {
+      const response = await fetch('/api/tasks/deleted');
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error || 'Failed to fetch deleted tasks');
+      return data.tasks;
+    },
+  });
+}
+
+// 작업 복구
+export function useRestoreTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation<Task, Error, string>({
+    mutationFn: async (id) => {
+      const response = await fetch(`/api/tasks/${id}/restore`, {
+        method: 'PATCH',
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error || 'Failed to restore task');
+      return data.task;
+    },
+    onSuccess: () => {
+      // 삭제된 작업 목록 및 일반 작업 목록 재조회
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'deleted'] });
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['goals'] });
+    },
+  });
+}
+
+// 영구 삭제
+export function usePermanentDeleteTask() {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, string>({
+    mutationFn: async (id) => {
+      const response = await fetch(`/api/tasks/${id}/permanent`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      if (!data.success) throw new Error(data.error || 'Failed to permanently delete task');
+    },
+    onSuccess: () => {
+      // 삭제된 작업 목록 재조회
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'deleted'] });
     },
   });
 }
