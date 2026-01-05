@@ -861,6 +861,156 @@ where: {
 
 ---
 
+## ✅ Trash Management UI Implementation (2026-01-05)
+
+### 목표
+소프트 삭제된 작업을 관리할 수 있는 휴지통 UI 추가
+
+### 구현된 기능
+
+#### 1. Backend API (3개 엔드포인트)
+
+**1-1. GET /api/tasks/deleted**
+- **기능**: 소프트 삭제된 작업 목록 조회
+- **파일**: `app/api/tasks/deleted/route.ts`
+- **구현 내용**:
+  - `deletedAt: { not: null }` 필터로 삭제된 작업만 조회
+  - Goal 정보 및 FocusSession 개수 포함
+  - 최근 삭제 순 정렬 (`deletedAt: 'desc'`)
+  - 페이지네이션 지원 (limit, offset)
+
+**1-2. PATCH /api/tasks/[id]/restore**
+- **기능**: 삭제된 작업 복구
+- **파일**: `app/api/tasks/[id]/restore/route.ts`
+- **구현 내용**:
+  - 소유권 및 삭제 상태 확인
+  - `deletedAt`을 `null`로 설정하여 복구
+  - 복구된 작업은 일반 작업 목록에 표시됨
+
+**1-3. DELETE /api/tasks/[id]/permanent**
+- **기능**: 작업 영구 삭제
+- **파일**: `app/api/tasks/[id]/permanent/route.ts`
+- **구현 내용**:
+  - 이미 소프트 삭제된 작업만 영구 삭제 가능
+  - DB에서 완전히 제거
+  - CASCADE 설정으로 관련 FocusSession도 자동 삭제
+
+#### 2. React Query 훅 추가
+
+**파일**: `lib/hooks/useTasks.ts`
+
+**추가된 훅**:
+- `useDeletedTasks()`: 삭제된 작업 목록 조회
+- `useRestoreTask()`: 작업 복구 mutation
+- `usePermanentDeleteTask()`: 영구 삭제 mutation
+
+**Task 인터페이스 확장**:
+```typescript
+interface Task {
+  // ...
+  deletedAt: Date | null; // 추가
+}
+```
+
+**쿼리 무효화 전략**:
+- 복구 시: `['tasks', 'deleted']`, `['tasks']`, `['goals']` 모두 무효화
+- 영구 삭제 시: `['tasks', 'deleted']`만 무효화
+
+#### 3. TrashList 컴포넌트
+
+**파일**: `components/trash/TrashList.tsx`
+
+**주요 기능**:
+- **로딩 상태**: Skeleton UI (3개 카드)
+- **에러 상태**: AlertTriangle 아이콘 + 에러 메시지
+- **빈 상태**: Trash2 아이콘 + "휴지통이 비어 있습니다"
+- **작업 목록**:
+  - Glass-card 디자인
+  - 우선순위, 목표, 일정, 포커스 세션 정보 표시
+  - 삭제 시간 (상대 시간: "3시간 전")
+- **확인 다이얼로그**:
+  - 복구/영구 삭제 전 확인 모달
+  - 타입별 아이콘 및 메시지 표시
+  - 취소 가능
+
+**UI 패턴**:
+```typescript
+// 복구 버튼
+<Button variant="secondary" size="sm">
+  <RotateCcw /> 복구
+</Button>
+
+// 영구 삭제 버튼
+<Button variant="danger" size="sm">
+  <Trash2 /> 영구 삭제
+</Button>
+```
+
+#### 4. 설정 페이지 통합
+
+**파일**: `app/settings/page.tsx`
+
+**변경 사항**:
+- 탭 타입 확장: `'notifications' | 'routines' | 'trash'`
+- "휴지통" 탭 버튼 추가 (Trash2 아이콘)
+- TrashList 컴포넌트 렌더링
+
+**탭 순서**:
+1. 🔔 알림 설정
+2. 🔁 루틴 관리
+3. 🗑️ 휴지통 (NEW)
+
+### 기술적 세부사항
+
+#### 보안
+- 모든 API에서 `getCurrentUserId()` 인증 확인
+- `userId` 기반 소유권 검증
+- 영구 삭제는 `deletedAt !== null`인 작업만 허용
+
+#### 사용자 경험
+- 복구/영구 삭제 전 확인 다이얼로그 필수
+- toast로 성공/실패 피드백
+- 로딩 중 버튼 disabled 처리
+- 일관된 Glass-card 디자인 시스템
+
+#### 데이터 일관성
+- 복구 시 모든 관련 쿼리 무효화
+- CASCADE 삭제로 FocusSession도 함께 제거
+- 낙관적 업데이트 없음 (복구/삭제는 신중한 작업)
+
+### 통계
+
+**변경된 파일**: 6개
+- API: 3개 (신규)
+- 컴포넌트: 1개 (신규)
+- 훅: 1개 (수정)
+- 페이지: 1개 (수정)
+
+**코드 변경**:
+- 추가: 574줄
+- 삭제: 2줄
+- 순 증가: 572줄
+
+**커밋**:
+- Hash: `d1d6326`
+- Message: "feat: 휴지통 UI 추가 - 소프트 삭제 작업 관리"
+
+### 영향
+- ✅ 실수로 삭제한 작업 복구 가능
+- ✅ 영구 삭제 전 확인 절차로 안전성 향상
+- ✅ 삭제된 작업 히스토리 추적 가능
+- ✅ 설정 페이지에서 모든 데이터 관리 통합
+- ✅ 일관된 디자인 시스템 적용
+
+### 다음 단계
+NEXT_FEATURES.md 참고:
+- ✅ 소프트 삭제 관리 UI (완료)
+- 루틴 → 작업 자동 생성 시스템 (4-6시간)
+- 통합 검색 기능 (6-8시간)
+- 작업 시작 시간 알림 (4-5시간)
+
+---
+
 **마지막 업데이트**: 2026-01-05
 **배포 URL**: https://manage-agent-app.vercel.app
 **GitHub**: https://github.com/sinn357/manage-agent-app
