@@ -718,6 +718,149 @@ import { BarChart3, Target, Clock, Bell, Save } from 'lucide-react';
 
 ---
 
-**마지막 업데이트**: 2025-11-15
+## ✅ Mobile & UX Improvements + Soft Delete (2026-01-05)
+
+### 목표
+모바일 사용성 개선, 데이터 관리 강화, 루틴 시스템 통합
+
+### 구현된 기능
+
+#### 1. 모바일 반응형 레이아웃 최적화
+**문제**: 리포트, 칸반 페이지에서 메뉴바가 모바일 화면을 초과하여 가로 스크롤 발생
+
+**해결**:
+- `app/reports/page.tsx`, `app/kanban/page.tsx` 수정
+- 버튼 텍스트를 모바일에서 숨김 (`hidden sm:inline`)
+- 타이틀도 모바일에서 숨김 (`hidden sm:block`)
+- gap 축소로 공간 효율성 개선 (`gap-1 sm:gap-2`)
+
+**결과**:
+- ✅ 모바일에서 가로 스크롤 제거
+- ✅ 아이콘만 표시하여 깔끔한 UI
+- ✅ 모든 버튼이 화면 안에 표시됨
+
+#### 2. 작업 소프트 삭제 시스템 구현
+**개념**: 삭제된 작업을 DB에서 즉시 제거하지 않고 `deletedAt` 필드로 마킹
+
+**구현**:
+- **Prisma 스키마** (`prisma/schema.prisma:83`):
+  ```prisma
+  model Task {
+    // ...
+    deletedAt DateTime? // 소프트 삭제
+    // ...
+    @@index([userId, deletedAt])
+  }
+  ```
+
+- **Task API 수정**:
+  - `GET /api/tasks`: `deletedAt: null` 필터 추가
+  - `GET /api/tasks/[id]`: `deletedAt: null` 필터 추가
+  - `PATCH /api/tasks/[id]`: `deletedAt: null` 필터 추가
+  - `DELETE /api/tasks/[id]`: 실제 삭제 대신 `deletedAt` 설정
+  - `GET /api/tasks/today`: `deletedAt: null` 필터 추가
+
+**장점**:
+- ✅ 히스토리 추적 가능
+- ✅ 복구 기능 구현 가능
+- ✅ 데이터 분석 유지
+- ✅ 실수로 삭제 시 복구 가능
+
+#### 3. UI 버그 수정
+
+**3-1. 목표 없음 선택 시 Validation 오류**
+- **문제**: "Invalid input: expected string, received null"
+- **원인**: TaskModal에서 goalId를 null로 보내지만 Zod schema가 string만 허용
+- **해결** (`components/dashboard/TaskModal.tsx:51`):
+  ```typescript
+  goalId: z.string().nullable().optional()
+  ```
+
+**3-2. 모달 스크롤 시 Select 드롭다운 투명도 문제**
+- **문제**: Select 드롭다운이 투명해서 뒷 텍스트와 중복
+- **원인**: `--popover` CSS 변수 미정의, Dialog와 z-index 충돌
+- **해결** (`components/ui/select.tsx:77`):
+  - z-index: 50 → 100으로 상승
+  - bg-popover → bg-background로 명시적 배경색
+  - shadow-md → shadow-lg로 강화
+
+**결과**:
+- ✅ 모달 스크롤 시 드롭다운이 깔끔하게 표시
+- ✅ Dialog 위에 Select가 정상 렌더링
+
+#### 4. 대시보드 루틴 위젯 추가
+**컨셉**: 설정에서 루틴 관리 + 대시보드에서 오늘의 루틴 확인
+
+**구현**:
+- **TodayRoutines 컴포넌트** (`components/dashboard/TodayRoutines.tsx`):
+  - 활성화된 루틴만 필터링 표시
+  - 우선순위, 시간, 반복 주기 정보
+  - 설정 페이지로 빠른 이동 버튼
+  - 루틴 없을 시 CTA 표시
+
+- **대시보드 통합** (`app/dashboard/page.tsx`):
+  - 오른쪽 컬럼에 배치 (FocusTimer와 FocusHistory 사이)
+  - 루틴 클릭 시 설정 페이지로 이동 (`/settings?tab=routines`)
+
+**결과**:
+- ✅ 오늘 해야 할 루틴을 한눈에 확인
+- ✅ 루틴과 일반 작업 분리 관리
+- ✅ 설정 페이지로 빠른 접근
+
+### 기술적 세부사항
+
+#### Database Migration
+```bash
+# Prisma DB Push (개발 환경)
+DATABASE_URL="..." npx prisma db push
+```
+
+**마이그레이션 내용**:
+- Task 테이블에 `deletedAt DateTime?` 컬럼 추가
+- `@@index([userId, deletedAt])` 인덱스 추가
+
+#### API 로직 패턴
+```typescript
+// Before: Hard Delete
+await prisma.task.delete({ where: { id } });
+
+// After: Soft Delete
+await prisma.task.update({
+  where: { id },
+  data: { deletedAt: new Date() }
+});
+
+// 조회 시 필터링
+where: {
+  userId,
+  deletedAt: null // 삭제되지 않은 것만
+}
+```
+
+### 통계
+**변경된 파일**: 10개
+- API: 3개 (tasks/route.ts, tasks/[id]/route.ts, tasks/today/route.ts)
+- Pages: 3개 (dashboard, reports, kanban)
+- Components: 3개 (TaskModal, TodayRoutines, select)
+- Schema: 1개 (prisma/schema.prisma)
+
+**코드 변경**:
+- 추가: 215줄
+- 삭제: 19줄
+- 순 증가: 196줄
+
+**커밋**:
+- Hash: `de842ec`
+- Message: "feat: 모바일 반응형 개선, 소프트 삭제 구현, 루틴 위젯 추가"
+
+### 영향
+- ✅ 모바일 사용성 대폭 개선
+- ✅ 데이터 손실 방지 (소프트 삭제)
+- ✅ 루틴 시스템 가시성 향상
+- ✅ UI 버그 해결로 사용자 경험 개선
+
+---
+
+**마지막 업데이트**: 2026-01-05
 **배포 URL**: https://manage-agent-app.vercel.app
 **GitHub**: https://github.com/sinn357/manage-agent-app
