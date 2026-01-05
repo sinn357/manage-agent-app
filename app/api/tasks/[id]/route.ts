@@ -22,6 +22,7 @@ export async function GET(
       where: {
         id,
         userId,
+        deletedAt: null, // 소프트 삭제되지 않은 것만
       },
       include: {
         Goal: {
@@ -84,6 +85,7 @@ export async function PATCH(
       where: {
         id,
         userId,
+        deletedAt: null, // 소프트 삭제되지 않은 것만
       },
     });
 
@@ -232,7 +234,7 @@ export async function PATCH(
   }
 }
 
-// DELETE /api/tasks/[id] - 작업 삭제
+// DELETE /api/tasks/[id] - 작업 소프트 삭제
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -253,6 +255,7 @@ export async function DELETE(
       where: {
         id,
         userId,
+        deletedAt: null, // 이미 삭제되지 않은 것만
       },
     });
 
@@ -263,9 +266,12 @@ export async function DELETE(
       );
     }
 
-    // 작업 삭제 (cascade로 포커스 세션은 taskId만 null로)
-    await prisma.task.delete({
+    // 소프트 삭제 (deletedAt 설정)
+    await prisma.task.update({
       where: { id },
+      data: {
+        deletedAt: new Date(),
+      },
     });
 
     return NextResponse.json({

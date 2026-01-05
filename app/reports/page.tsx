@@ -194,13 +194,13 @@ export default function ReportsPage() {
               <div className="p-2 rounded-xl bg-gradient-to-r from-primary to-violet">
                 <BarChart3 className="w-6 h-6 text-white" />
               </div>
-              <div>
+              <div className="hidden sm:block">
                 <h1 className="text-2xl font-bold gradient-text">리포트</h1>
                 <p className="text-sm text-foreground-secondary">생산성 분석 및 통계</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="secondary"
               size="sm"
@@ -208,7 +208,7 @@ export default function ReportsPage() {
               className="gap-2"
             >
               <Home className="w-4 h-4" />
-              대시보드
+              <span className="hidden sm:inline">대시보드</span>
             </Button>
             <Button
               variant="secondary"
@@ -217,7 +217,7 @@ export default function ReportsPage() {
               className="gap-2"
             >
               <Calendar className="w-4 h-4" />
-              캘린더
+              <span className="hidden sm:inline">캘린더</span>
             </Button>
             <Button
               variant="secondary"
@@ -226,7 +226,7 @@ export default function ReportsPage() {
               className="gap-2"
             >
               <LayoutGrid className="w-4 h-4" />
-              칸반
+              <span className="hidden sm:inline">칸반</span>
             </Button>
             <Button
               variant="secondary"
@@ -235,7 +235,7 @@ export default function ReportsPage() {
               className="gap-2"
             >
               <Settings className="w-4 h-4" />
-              설정
+              <span className="hidden sm:inline">설정</span>
             </Button>
             <Button
               variant="secondary"
@@ -244,7 +244,7 @@ export default function ReportsPage() {
               className="gap-2"
             >
               <LogOut className="w-4 h-4" />
-              로그아웃
+              <span className="hidden sm:inline">로그아웃</span>
             </Button>
           </div>
         </div>

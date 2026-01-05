@@ -48,7 +48,7 @@ const taskFormSchema = z.object({
     .regex(/^([01]\d|2[0-3]):([0-5]\d)$|^$/, '유효한 시간 형식이 아닙니다 (HH:MM)')
     .optional(),
   priority: z.enum(['low', 'mid', 'high']),
-  goalId: z.string().optional(),
+  goalId: z.string().nullable().optional(),
 })
 .refine((data) => {
   // 시작 시간이 있으면 종료 시간도 있어야 함

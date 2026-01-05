@@ -28,8 +28,10 @@ export async function GET(request: NextRequest) {
       status?: string;
       goalId?: string | null;
       priority?: string;
+      deletedAt?: null;
     } = {
       userId,
+      deletedAt: null, // 소프트 삭제되지 않은 것만
     };
 
     if (status) {

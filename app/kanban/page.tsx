@@ -152,7 +152,7 @@ export default function KanbanPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-surface to-background">
       {/* Header */}
       <header className="glass-card border-b border-border/50 sticky top-0 z-10 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
           <div
             onClick={() => router.push('/dashboard')}
             className="cursor-pointer hover:opacity-80 transition-opacity"
@@ -161,13 +161,13 @@ export default function KanbanPage() {
               <div className="p-2 rounded-xl bg-gradient-to-r from-violet to-purple">
                 <LayoutGrid className="w-6 h-6 text-white" />
               </div>
-              <div>
+              <div className="hidden sm:block">
                 <h1 className="text-2xl font-bold gradient-text">칸반 보드</h1>
                 <p className="text-sm text-foreground-secondary">작업 상태를 드래그하여 변경하세요</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="secondary"
               size="sm"
@@ -175,7 +175,7 @@ export default function KanbanPage() {
               className="gap-2"
             >
               <Home className="w-4 h-4" />
-              대시보드
+              <span className="hidden sm:inline">대시보드</span>
             </Button>
             <Button
               variant="secondary"
@@ -184,7 +184,7 @@ export default function KanbanPage() {
               className="gap-2"
             >
               <Calendar className="w-4 h-4" />
-              캘린더
+              <span className="hidden sm:inline">캘린더</span>
             </Button>
             <Button
               onClick={() => {
@@ -194,7 +194,7 @@ export default function KanbanPage() {
               className="gap-2"
             >
               <Plus className="w-4 h-4" />
-              새 작업
+              <span className="hidden sm:inline">새 작업</span>
             </Button>
           </div>
         </div>

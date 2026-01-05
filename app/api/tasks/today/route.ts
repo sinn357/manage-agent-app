@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
     // 필터 조건
     const where: {
       userId: string;
+      deletedAt?: null;
       OR?: Array<{
         scheduledDate?: {
           gte?: Date;
@@ -50,6 +51,7 @@ export async function GET(request: NextRequest) {
       };
     } = {
       userId,
+      deletedAt: null, // 소프트 삭제되지 않은 것만
     };
 
     if (includeUnscheduled) {

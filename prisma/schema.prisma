@@ -80,12 +80,14 @@ model Task {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
   completedAt      DateTime?
+  deletedAt        DateTime?      // 소프트 삭제
   FocusSession     FocusSession[]
   Goal          Goal?          @relation(fields: [goalId], references: [id])
   User          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([goalId])
   @@index([userId, status, scheduledDate])
+  @@index([userId, deletedAt])
 }
 
 model Routine {

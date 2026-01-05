@@ -14,6 +14,7 @@ import FocusTimer from '@/components/dashboard/FocusTimer';
 import FocusHistory from '@/components/dashboard/FocusHistory';
 import LifeTimeline from '@/components/dashboard/LifeTimeline';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
+import TodayRoutines from '@/components/dashboard/TodayRoutines';
 import { BarChart3, Calendar, Kanban, Settings, LogOut, Sparkles } from 'lucide-react';
 
 // 모달 컴포넌트는 필요할 때만 로드
@@ -344,12 +345,13 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* 오른쪽: FocusTimer + FocusHistory */}
+          {/* 오른쪽: FocusTimer + TodayRoutines + FocusHistory */}
           <div className="lg:col-span-1 space-y-6">
             <FocusTimer
               tasks={todayTasks}
               onSessionComplete={() => setFocusHistoryKey((prev) => prev + 1)}
             />
+            <TodayRoutines />
             <FocusHistory key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
           </div>
         </div>
