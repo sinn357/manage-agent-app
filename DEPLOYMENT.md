@@ -68,3 +68,15 @@ git push origin main
 ### 데이터베이스 연결 실패
 - DATABASE_URL 형식이 올바른지 확인
 - 데이터베이스 서버가 외부 접속을 허용하는지 확인
+
+---
+
+## ⏰ Vercel Cron 제한 (Hobby 플랜)
+
+- Hobby 플랜은 **하루 1회 초과 Cron 스케줄을 허용하지 않음**
+- `0 * * * *` 같은 매시 스케줄은 Import/연결 과정에서 차단될 수 있음
+
+**대안**
+- 하루 1회로 스케줄 낮추기
+- GitHub Actions/외부 스케줄러로 Cron 호출
+- Pro 플랜 업그레이드

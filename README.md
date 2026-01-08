@@ -16,6 +16,7 @@
 - **캘린더 뷰**: 월간/주간/일간 일정 시각화
 - **칸반 보드**: 드래그 앤 드롭으로 작업 상태 변경
 - **루틴 자동화**: 반복 루틴 설정 → 자동 작업 생성
+- **루틴 체크**: 오늘 루틴 완료 여부 체크
 
 ### ⏱️ Focus (실행)
 - **포모도로 타이머**: 25/50/90분 프리셋 + 커스텀 시간
@@ -29,6 +30,8 @@
   - 목표 달성률 그래프
   - 집중 시간 통계
   - 작업 상태 분포
+- **루틴 결과**: 성공/실패 집계
+- **작업 아카이브**: 성공/실패 아카이브 분리 및 복구
 - **패턴 분석**:
   - 시간대별 집중력 히트맵 (24h × 7일)
   - 요일별 생산성 분석
@@ -39,9 +42,10 @@
 ## 🛠️ 기술 스택
 
 ### Frontend
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript
 - **UI**: React 19, Tailwind CSS
+- **State**: TanStack Query
 - **Charts**: recharts
 - **Drag & Drop**: @dnd-kit
 - **Calendar**: react-big-calendar
@@ -115,6 +119,7 @@ manage-agent-app/
 │   │   ├── reports/        # 리포트 API
 │   │   ├── analytics/      # 분석 API
 │   │   └── routines/       # 루틴 API
+│   │       └── cron/        # 크론 작업
 │   ├── dashboard/          # 메인 대시보드
 │   ├── calendar/           # 캘린더 페이지
 │   ├── kanban/             # 칸반 보드
@@ -200,6 +205,21 @@ model Routine {
   recurrenceDays String?
   timeOfDay      String?
   active         Boolean  @default(true)
+}
+
+model RoutineCheck {
+  id        String   @id @default(cuid())
+  date      DateTime
+  routineId String
+  userId    String
+}
+
+model RoutineResult {
+  id        String   @id @default(cuid())
+  date      DateTime
+  status    String   // success | failed
+  routineId String
+  userId    String
 }
 ```
 
@@ -296,6 +316,6 @@ MIT License
 
 ---
 
-**마지막 업데이트**: 2025-11-15
+**마지막 업데이트**: 2026-01-09
 
 🤖 Built with [Claude Code](https://claude.ai/code)
