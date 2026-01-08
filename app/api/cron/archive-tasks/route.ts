@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-// POST /api/cron/archive-tasks - 24시간 지난 완료 작업을 자동 아카이브
+// POST /api/cron/archive-tasks - 12시간 지난 완료 작업을 자동 아카이브
 export async function POST(request: NextRequest) {
   try {
     // Vercel Cron 인증 (production only)
@@ -16,16 +16,16 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const twelveHoursAgo = new Date(now.getTime() - 12 * 60 * 60 * 1000);
 
     console.log('[Cron] Starting archive task job at', now.toISOString());
-    console.log('[Cron] Archiving tasks completed before', twentyFourHoursAgo.toISOString());
+    console.log('[Cron] Archiving tasks completed before', twelveHoursAgo.toISOString());
 
-    // 24시간 전에 완료된 작업 찾기
+    // 12시간 전에 완료된 작업 찾기
     const completedTasks = await prisma.task.findMany({
       where: {
         status: 'completed',
-        completedAt: { lte: twentyFourHoursAgo },
+        completedAt: { lte: twelveHoursAgo },
         deletedAt: null, // 삭제된 것은 제외
       },
       select: {

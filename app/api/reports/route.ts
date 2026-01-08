@@ -126,6 +126,25 @@ export async function GET(request: NextRequest) {
     const totalFocusTime = focusSessions.reduce((sum, session) => sum + session.actualTime, 0);
     const completedSessions = focusSessions.filter((s) => s.completed).length;
 
+    const routineResults = await prisma.routineResult.findMany({
+      where: {
+        userId: user.id,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        status: true,
+      },
+    });
+
+    const routineSuccess = routineResults.filter((r) => r.status === 'success').length;
+    const routineFailed = routineResults.filter((r) => r.status === 'failed').length;
+    const routineTotal = routineResults.length;
+    const routineSuccessRate =
+      routineTotal > 0 ? Math.round((routineSuccess / routineTotal) * 100) : 0;
+
     return NextResponse.json({
       success: true,
       data: {
@@ -148,6 +167,12 @@ export async function GET(request: NextRequest) {
           sessionsCount: focusSessions.length,
           completedSessions,
           dailyFocus: dailyFocusArray,
+        },
+        routines: {
+          total: routineTotal,
+          success: routineSuccess,
+          failed: routineFailed,
+          successRate: routineSuccessRate,
         },
       },
     });

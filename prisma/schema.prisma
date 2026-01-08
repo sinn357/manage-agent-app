@@ -105,6 +105,7 @@ model Routine {
   updatedAt      DateTime @updatedAt
   User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   RoutineCheck   RoutineCheck[]
+  RoutineResult  RoutineResult[]
 
   @@index([userId, active])
 }
@@ -112,6 +113,20 @@ model Routine {
 model RoutineCheck {
   id        String   @id @default(cuid())
   date      DateTime // 완료한 날짜 (YYYY-MM-DD 00:00:00)
+  routineId String
+  userId    String
+  createdAt DateTime @default(now())
+  Routine   Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([routineId, userId, date])
+  @@index([userId, date])
+}
+
+model RoutineResult {
+  id        String   @id @default(cuid())
+  date      DateTime // 완료 결과 날짜 (YYYY-MM-DD 00:00:00)
+  status    String   // success | failed
   routineId String
   userId    String
   createdAt DateTime @default(now())
@@ -137,6 +152,7 @@ model User {
   Task           Task[]
   Routine        Routine[]
   RoutineCheck   RoutineCheck[]
+  RoutineResult  RoutineResult[]
   LifeGoal       LifeGoal[]
 }
 

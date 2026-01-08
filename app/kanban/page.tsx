@@ -26,6 +26,7 @@ interface Task {
   title: string;
   description?: string | null;
   scheduledDate?: string | null;
+  completedAt?: string | null;
   priority: string;
   status: string;
   goalId?: string | null;
@@ -128,6 +129,41 @@ export default function KanbanPage() {
     }
   };
 
+  const handleTaskArchive = async (
+    taskId: string,
+    status: 'archived_success' | 'archived_failed'
+  ) => {
+    try {
+      const response = await fetch(`/api/tasks/${taskId}/archive`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const contentType = response.headers.get('content-type') || '';
+
+      if (!response.ok) {
+        throw new Error(`Failed to archive task (${response.status})`);
+      }
+      if (!contentType.includes('application/json')) {
+        throw new Error('Non-JSON response received');
+      }
+
+      const result = await response.json();
+      if (result.success) {
+        setTasks((prevTasks) =>
+          prevTasks.map((task) =>
+            task.id === taskId ? { ...task, status } : task
+          )
+        );
+      } else {
+        console.error('Failed to archive task:', result.error);
+      }
+    } catch (error) {
+      console.error('Error archiving task:', error);
+      fetchTasks();
+    }
+  };
+
   const handleTaskSaved = () => {
     console.log('handleTaskSaved called, refetching tasks...');
     fetchTasks();
@@ -212,6 +248,7 @@ export default function KanbanPage() {
             tasks={tasks}
             onTaskClick={handleTaskClick}
             onTaskStatusChange={handleTaskStatusChange}
+            onTaskArchive={handleTaskArchive}
           />
         )}
       </main>

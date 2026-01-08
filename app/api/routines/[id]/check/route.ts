@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUserId } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import { getSeoulStartOfDay } from '@/lib/date';
 
 // POST /api/routines/[id]/check - 루틴 완료 체크
 export async function POST(
@@ -33,8 +34,7 @@ export async function POST(
       );
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getSeoulStartOfDay();
 
     const existing = await prisma.routineCheck.findUnique({
       where: {
@@ -91,8 +91,7 @@ export async function DELETE(
       );
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getSeoulStartOfDay();
 
     const deleted = await prisma.routineCheck.deleteMany({
       where: {

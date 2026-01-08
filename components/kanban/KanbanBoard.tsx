@@ -22,6 +22,7 @@ interface Task {
   title: string;
   description?: string | null;
   scheduledDate?: string | null;
+  completedAt?: string | null;
   priority: string;
   status: string;
   goalId?: string | null;
@@ -35,6 +36,7 @@ interface KanbanBoardProps {
   tasks: Task[];
   onTaskClick: (task: Task) => void;
   onTaskStatusChange: (taskId: string, newStatus: string) => void;
+  onTaskArchive: (taskId: string, status: 'archived_success' | 'archived_failed') => void;
 }
 
 const COLUMNS = [
@@ -43,7 +45,12 @@ const COLUMNS = [
   { id: 'completed', title: '완료', color: 'bg-success/10', borderColor: 'border-success/30', textColor: 'text-success' },
 ];
 
-export default function KanbanBoard({ tasks, onTaskClick, onTaskStatusChange }: KanbanBoardProps) {
+export default function KanbanBoard({
+  tasks,
+  onTaskClick,
+  onTaskStatusChange,
+  onTaskArchive,
+}: KanbanBoardProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   // 모바일 터치 지원 추가
@@ -130,6 +137,7 @@ export default function KanbanBoard({ tasks, onTaskClick, onTaskStatusChange }: 
               textColor={column.textColor}
               tasks={columnTasks}
               onTaskClick={onTaskClick}
+              onTaskArchive={onTaskArchive}
             />
           );
         })}
@@ -138,7 +146,12 @@ export default function KanbanBoard({ tasks, onTaskClick, onTaskStatusChange }: 
       <DragOverlay>
         {activeTask ? (
           <div className="opacity-80">
-            <KanbanCard task={activeTask} onClick={() => {}} isDragging />
+            <KanbanCard
+              task={activeTask}
+              onClick={() => {}}
+              onArchive={onTaskArchive}
+              isDragging
+            />
           </div>
         ) : null}
       </DragOverlay>

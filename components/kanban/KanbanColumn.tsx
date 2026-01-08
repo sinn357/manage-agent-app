@@ -9,6 +9,7 @@ interface Task {
   title: string;
   description?: string | null;
   scheduledDate?: string | null;
+  completedAt?: string | null;
   priority: string;
   status: string;
   goalId?: string | null;
@@ -26,9 +27,19 @@ interface KanbanColumnProps {
   textColor?: string;
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  onTaskArchive: (taskId: string, status: 'archived_success' | 'archived_failed') => void;
 }
 
-export default function KanbanColumn({ id, title, color, borderColor, textColor, tasks, onTaskClick }: KanbanColumnProps) {
+export default function KanbanColumn({
+  id,
+  title,
+  color,
+  borderColor,
+  textColor,
+  tasks,
+  onTaskClick,
+  onTaskArchive,
+}: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({
     id: id,
   });
@@ -53,7 +64,12 @@ export default function KanbanColumn({ id, title, color, borderColor, textColor,
             </div>
           ) : (
             tasks.map((task) => (
-              <KanbanCard key={task.id} task={task} onClick={() => onTaskClick(task)} />
+              <KanbanCard
+                key={task.id}
+                task={task}
+                onClick={() => onTaskClick(task)}
+                onArchive={onTaskArchive}
+              />
             ))
           )}
         </SortableContext>

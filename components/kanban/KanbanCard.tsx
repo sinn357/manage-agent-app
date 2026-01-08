@@ -2,13 +2,14 @@
 
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { CalendarDays, GripVertical, Flag } from 'lucide-react';
+import { CalendarDays, GripVertical, Flag, Clock } from 'lucide-react';
 
 interface Task {
   id: string;
   title: string;
   description?: string | null;
   scheduledDate?: string | null;
+  completedAt?: string | null;
   priority: string;
   status: string;
   goalId?: string | null;
@@ -21,10 +22,16 @@ interface Task {
 interface KanbanCardProps {
   task: Task;
   onClick: () => void;
+  onArchive?: (taskId: string, status: 'archived_success' | 'archived_failed') => void;
   isDragging?: boolean;
 }
 
-export default function KanbanCard({ task, onClick, isDragging = false }: KanbanCardProps) {
+export default function KanbanCard({
+  task,
+  onClick,
+  onArchive,
+  isDragging = false,
+}: KanbanCardProps) {
   const {
     attributes,
     listeners,
@@ -56,6 +63,22 @@ export default function KanbanCard({ task, onClick, isDragging = false }: Kanban
     return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
   };
 
+  const formatElapsed = (dateString?: string | null) => {
+    if (!dateString) return null;
+    const completedDate = new Date(dateString);
+    const diffMs = Date.now() - completedDate.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMinutes < 1) return '방금 전';
+    if (diffHours < 1) return `${diffMinutes}분 경과`;
+    if (diffDays < 1) return `${diffHours}시간 경과`;
+    return `${diffDays}일 경과`;
+  };
+
+  const elapsedText = task.status === 'completed' ? formatElapsed(task.completedAt) : null;
+
   return (
     <div
       ref={setNodeRef}
@@ -79,6 +102,13 @@ export default function KanbanCard({ task, onClick, isDragging = false }: Kanban
 
       {/* 메타 정보 */}
       <div className="flex items-center gap-2 flex-wrap">
+        {elapsedText && (
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-success/10 rounded-lg text-xs font-medium text-success">
+            <Clock className="w-3 h-3" />
+            <span>완료 후 {elapsedText}</span>
+          </div>
+        )}
+
         {/* 목표 */}
         {task.Goal && (
           <div
@@ -109,6 +139,31 @@ export default function KanbanCard({ task, onClick, isDragging = false }: Kanban
           </div>
         )}
       </div>
+
+      {task.status === 'completed' && onArchive && (
+        <div className="mt-3 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onArchive(task.id, 'archived_success');
+            }}
+            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-success/10 text-success border border-success/20 hover:bg-success/20 transition-colors"
+          >
+            성공 아카이브
+          </button>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onArchive(task.id, 'archived_failed');
+            }}
+            className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-danger/10 text-danger border border-danger/20 hover:bg-danger/20 transition-colors"
+          >
+            실패 아카이브
+          </button>
+        </div>
+      )}
     </div>
   );
 }

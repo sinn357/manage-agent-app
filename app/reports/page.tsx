@@ -43,6 +43,11 @@ const ProductivityInsights = dynamic(() => import('@/components/reports/Producti
     <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-48 border border-border" />
   ),
 });
+const RoutineResults = dynamic(() => import('@/components/reports/RoutineResults'), {
+  loading: () => (
+    <div className="animate-pulse bg-surface/50 backdrop-blur-sm rounded-xl h-32 border border-border" />
+  ),
+});
 
 interface ReportData {
   period: {
@@ -75,6 +80,12 @@ interface ReportData {
       minutes: number;
       hours: number;
     }>;
+  };
+  routines: {
+    total: number;
+    success: number;
+    failed: number;
+    successRate: number;
   };
 }
 
@@ -313,6 +324,7 @@ export default function ReportsPage() {
           <div className="space-y-8">
             {/* Stats Overview */}
             <StatsOverview tasks={reportData.tasks} focus={reportData.focus} />
+            <RoutineResults routine={reportData.routines} />
 
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

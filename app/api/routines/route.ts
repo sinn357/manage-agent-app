@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getCurrentUser } from '@/lib/auth';
+import { getSeoulStartOfDay } from '@/lib/date';
 
 // GET: 모든 루틴 가져오기
 export async function GET(request: NextRequest) {
@@ -13,8 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('active') === 'true';
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getSeoulStartOfDay();
 
     const routines = await prisma.routine.findMany({
       where: {
