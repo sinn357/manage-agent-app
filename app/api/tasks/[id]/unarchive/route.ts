@@ -5,10 +5,11 @@ import prisma from '@/lib/prisma';
 // PATCH /api/tasks/[id]/unarchive - 아카이브 복구
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const userId = await getCurrentUserId();
+    const { id } = await params;
 
     if (!userId) {
       return NextResponse.json(
@@ -16,8 +17,6 @@ export async function PATCH(
         { status: 401 }
       );
     }
-
-    const { id } = params;
 
     // 작업 확인
     const task = await prisma.task.findUnique({
