@@ -23,7 +23,13 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Plus, CheckCircle2, Circle, ListTodo, ChevronDown, AlertCircle, Calendar as CalendarIcon, Flame } from 'lucide-react';
+import { GripVertical, Plus, CheckCircle2, Circle, ListTodo, ChevronDown, AlertCircle, Calendar as CalendarIcon, Flame, Play, MoreVertical } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Task {
   id: string;
@@ -46,6 +52,7 @@ interface Task {
 interface TaskListProps {
   onTaskClick?: (task: Task) => void;
   onAddClick?: () => void;
+  onStartFocus?: (task: Task, minutes: number | 'custom') => void;
 }
 
 // Sortable Task Item Component
@@ -53,10 +60,12 @@ function SortableTaskItem({
   task,
   onTaskClick,
   onToggleComplete,
+  onStartFocus,
 }: {
   task: Task;
   onTaskClick?: (task: Task) => void;
   onToggleComplete: (taskId: string, e: React.MouseEvent) => void;
+  onStartFocus?: (task: Task, minutes: number | 'custom') => void;
 }) {
   const {
     attributes,
@@ -81,7 +90,7 @@ function SortableTaskItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'flex items-start gap-3 p-3 rounded-xl border transition-all',
+        'group flex items-start gap-3 p-3 rounded-xl border transition-all',
         isCompleted
           ? 'bg-surface/50 border-border'
           : 'bg-background border-border hover:border-primary/50 hover:shadow-sm',
@@ -164,11 +173,51 @@ function SortableTaskItem({
           )}
         </div>
       </div>
+
+      {/* Start Focus Button */}
+      {!isCompleted && onStartFocus && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-shrink-0 gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Play className="w-4 h-4" />
+              시작
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartFocus(task, 10); }}>
+              10분
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartFocus(task, 20); }}>
+              20분
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartFocus(task, 30); }}>
+              30분
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartFocus(task, 40); }}>
+              40분
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartFocus(task, 50); }}>
+              50분
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartFocus(task, 60); }}>
+              60분
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onStartFocus(task, 'custom'); }} className="border-t">
+              자세히...
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }
 
-export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
+export default function TaskList({ onTaskClick, onAddClick, onStartFocus }: TaskListProps) {
   const [showOverdue, setShowOverdue] = useState(true);
   const [showUpcoming, setShowUpcoming] = useState(false);
 
@@ -365,6 +414,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
                           task={task}
                           onTaskClick={onTaskClick}
                           onToggleComplete={handleToggleComplete}
+                          onStartFocus={onStartFocus}
                         />
                       ))}
                     </div>
@@ -409,6 +459,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
                               task={task}
                               onTaskClick={onTaskClick}
                               onToggleComplete={handleToggleComplete}
+                              onStartFocus={onStartFocus}
                             />
                           ))}
                         </div>
@@ -455,6 +506,7 @@ export default function TaskList({ onTaskClick, onAddClick }: TaskListProps) {
                               task={task}
                               onTaskClick={onTaskClick}
                               onToggleComplete={handleToggleComplete}
+                              onStartFocus={onStartFocus}
                             />
                           ))}
                         </div>

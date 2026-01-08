@@ -31,6 +31,9 @@ export async function GET(request: NextRequest) {
           orderBy: { order: 'asc' },
         },
         Task: {
+          where: {
+            deletedAt: null,
+          },
           select: {
             id: true,
             status: true,

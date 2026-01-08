@@ -14,13 +14,14 @@ import {
 import toast from 'react-hot-toast';
 import RoutineList from '@/components/routines/RoutineList';
 import TrashList from '@/components/trash/TrashList';
+import ArchiveList from '@/components/archive/ArchiveList';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon, Home, Bell, RefreshCw, Save, Trash2 } from 'lucide-react';
+import { Settings as SettingsIcon, Home, Bell, RefreshCw, Save, Trash2, Archive } from 'lucide-react';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'notifications' | 'routines' | 'trash'>('notifications');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'routines' | 'trash' | 'archive'>('notifications');
   const [permission, setPermission] = useState<'granted' | 'denied' | 'default'>('default');
   const [settings, setSettings] = useState<NotificationSettings>(getNotificationSettings());
   const [saving, setSaving] = useState(false);
@@ -149,6 +150,17 @@ export default function SettingsPage() {
           >
             <Trash2 className="w-4 h-4" />
             휴지통
+          </button>
+          <button
+            onClick={() => setActiveTab('archive')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              activeTab === 'archive'
+                ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <Archive className="w-4 h-4" />
+            아카이브
           </button>
         </div>
 
@@ -311,6 +323,12 @@ export default function SettingsPage() {
         {activeTab === 'trash' && (
           <div>
             <TrashList />
+          </div>
+        )}
+
+        {activeTab === 'archive' && (
+          <div>
+            <ArchiveList />
           </div>
         )}
       </main>

@@ -2,12 +2,13 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useTheme } from 'next-themes';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
+import { useQueryClient } from '@tanstack/react-query';
 import GoalPanel from '@/components/dashboard/GoalPanel';
 import TaskList from '@/components/dashboard/TaskList';
 import FocusTimer from '@/components/dashboard/FocusTimer';
@@ -64,6 +65,7 @@ export default function DashboardPage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
   const { setTheme, theme } = useTheme();
+  const queryClient = useQueryClient();
 
   const [isGoalModalOpen, setIsGoalModalOpen] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
@@ -75,6 +77,8 @@ export default function DashboardPage() {
 
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
   const [focusHistoryKey, setFocusHistoryKey] = useState(0);
+  const [focusTaskTrigger, setFocusTaskTrigger] = useState<{ task: Task; minutes: number | 'custom' } | null>(null);
+  const focusTimerRef = useRef<HTMLDivElement>(null);
 
   const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
   const [lifeTimelineKey, setLifeTimelineKey] = useState(0);
@@ -163,11 +167,15 @@ export default function DashboardPage() {
   }, []);
 
   const handleGoalSuccess = useCallback(() => {
+    // React Query 캐시 무효화
+    queryClient.invalidateQueries({ queryKey: ['goals'] });
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+
     // GoalPanel을 리프레시하기 위해 key를 변경
     setGoalKey((prev) => prev + 1);
     // Task 목록도 리프레시 (목표 진행률 업데이트 때문에)
     setTaskKey((prev) => prev + 1);
-  }, []);
+  }, [queryClient]);
 
   const handleAddTask = useCallback(() => {
     setSelectedTask(null);
@@ -185,10 +193,24 @@ export default function DashboardPage() {
   }, []);
 
   const handleTaskSuccess = useCallback(() => {
+    // React Query 캐시 무효화
+    queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    queryClient.invalidateQueries({ queryKey: ['goals'] });
+
     // TaskList를 리프레시하기 위해 key를 변경
     setTaskKey((prev) => prev + 1);
     // 목표 진행률도 업데이트되므로 GoalPanel도 리프레시
     setGoalKey((prev) => prev + 1);
+  }, [queryClient]);
+
+  const handleStartFocus = useCallback((task: Task, minutes: number | 'custom') => {
+    // 포커스 타이머에 작업 및 시간 전달
+    setFocusTaskTrigger({ task, minutes });
+
+    // 포커스 타이머로 스크롤
+    setTimeout(() => {
+      focusTimerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   }, []);
 
   const handleProfileSettingsOpen = useCallback(() => {
@@ -342,15 +364,20 @@ export default function DashboardPage() {
               key={`task-${taskKey}`}
               onTaskClick={handleTaskClick}
               onAddClick={handleAddTask}
+              onStartFocus={handleStartFocus}
             />
           </div>
 
           {/* 오른쪽: FocusTimer + TodayRoutines + FocusHistory */}
           <div className="lg:col-span-1 space-y-6">
-            <FocusTimer
-              tasks={todayTasks}
-              onSessionComplete={() => setFocusHistoryKey((prev) => prev + 1)}
-            />
+            <div ref={focusTimerRef}>
+              <FocusTimer
+                tasks={todayTasks}
+                onSessionComplete={() => setFocusHistoryKey((prev) => prev + 1)}
+                taskTrigger={focusTaskTrigger}
+                onTaskTriggerConsumed={() => setFocusTaskTrigger(null)}
+              />
+            </div>
             <TodayRoutines />
             <FocusHistory key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
           </div>

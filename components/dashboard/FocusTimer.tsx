@@ -19,13 +19,15 @@ interface Task {
 interface FocusTimerProps {
   tasks?: Task[];
   onSessionComplete?: () => void;
+  taskTrigger?: { task: Task; minutes: number | 'custom' } | null;
+  onTaskTriggerConsumed?: () => void;
 }
 
 type TimerState = 'idle' | 'running' | 'paused';
 
 const QUICK_PRESETS = [5, 10, 25, 30, 45, 60];
 
-export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimerProps) {
+export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger, onTaskTriggerConsumed }: FocusTimerProps) {
   const [timerState, setTimerState] = useState<TimerState>('idle');
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [customMinutes, setCustomMinutes] = useState('');
@@ -82,10 +84,10 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           // startTimeRef와 elapsedRef 초기화
           if (session.timerState === 'running') {
             startTimeRef.current = Date.now();
-            elapsedRef.current = 0;
+            elapsedRef.current = (session.actualTime || 0) * 60; // DB에 저장된 actualTime(분)을 초로 변환
           } else {
             startTimeRef.current = 0;
-            elapsedRef.current = 0;
+            elapsedRef.current = (session.actualTime || 0) * 60; // paused 상태에서도 복구
           }
 
           if (actualTimeLeft === 0) {
@@ -103,6 +105,27 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
     loadActiveSession();
   }, []);
 
+  // Task Trigger 감지 (작업 시작 버튼에서 호출)
+  useEffect(() => {
+    if (taskTrigger && timerState === 'idle') {
+      const { task, minutes } = taskTrigger;
+
+      // 작업 선택
+      setSelectedTaskId(task.id);
+
+      // 시간 설정
+      if (minutes !== 'custom') {
+        setSelectedMinutes(minutes);
+        setTimeLeft(minutes * 60);
+        setCustomMinutes('');
+      }
+      // 'custom'인 경우 작업만 선택하고 사용자가 직접 입력하도록 함
+
+      // Trigger 소비
+      onTaskTriggerConsumed?.();
+    }
+  }, [taskTrigger, timerState, onTaskTriggerConsumed]);
+
   // 타이머가 끝났을 때
   useEffect(() => {
     if (timeLeft === 0 && timerState === 'running') {
@@ -119,11 +142,16 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
 
           // 5분 전 알림 (300초)
           if (newTime === 300 && !fiveMinuteNotifiedRef.current) {
-            const settings = getNotificationSettings();
-            if (settings.enabled && settings.focusReminder) {
-              notifyFocusAlmostComplete(5);
+            try {
+              const settings = getNotificationSettings();
+              if (settings.enabled && settings.focusReminder) {
+                notifyFocusAlmostComplete(5);
+                console.log('[FocusTimer] 5-minute reminder notification sent');
+              }
+              fiveMinuteNotifiedRef.current = true;
+            } catch (error) {
+              console.error('[FocusTimer] Reminder notification error:', error);
             }
-            fiveMinuteNotifiedRef.current = true;
           }
 
           if (newTime <= 0) {
@@ -216,6 +244,20 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
         startTimeRef.current = Date.now();
         elapsedRef.current = 0;
         fiveMinuteNotifiedRef.current = false;
+
+        // 작업 상태를 'in_progress'로 변경
+        if (selectedTaskId) {
+          try {
+            await fetch(`/api/tasks/${selectedTaskId}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: 'in_progress' }),
+            });
+            console.log('[FocusTimer] Task status changed to in_progress');
+          } catch (err) {
+            console.error('[FocusTimer] Failed to update task status:', err);
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to start focus session:', error);
@@ -227,7 +269,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       elapsedRef.current += Math.floor((Date.now() - startTimeRef.current) / 1000);
       setTimerState('paused');
 
-      // DB에 paused 상태 저장
+      // DB에 paused 상태 및 중간 actualTime 저장
       if (sessionId) {
         await fetch(`/api/focus-sessions/${sessionId}`, {
           method: 'PATCH',
@@ -235,6 +277,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
           body: JSON.stringify({
             timeLeft: timeLeftRef.current,
             timerState: 'paused',
+            actualTime: Math.floor(elapsedRef.current / 60), // 분 단위로 중간 저장
           }),
         });
       }
@@ -257,6 +300,8 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
   };
 
   const handleStop = async () => {
+    const currentTaskId = selectedTaskId;
+
     if (sessionId) {
       // 경과 시간 계산 (초 단위)
       let actualTimeSeconds = elapsedRef.current;
@@ -267,7 +312,7 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       // 비정상적으로 큰 값 방지 (최대 24시간)
       const maxSeconds = 24 * 60 * 60;
       if (actualTimeSeconds > maxSeconds) {
-        actualTimeSeconds = 0;
+        actualTimeSeconds = maxSeconds;
       }
 
       // 세션 중단으로 기록
@@ -282,6 +327,20 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       });
     }
 
+    // 작업 상태를 'todo'로 복귀
+    if (currentTaskId) {
+      try {
+        await fetch(`/api/tasks/${currentTaskId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'todo' }),
+        });
+        console.log('[FocusTimer] Task status reverted to todo');
+      } catch (err) {
+        console.error('[FocusTimer] Failed to revert task status:', err);
+      }
+    }
+
     // 리셋
     setTimerState('idle');
     setTimeLeft(selectedMinutes * 60);
@@ -293,6 +352,8 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
   };
 
   const handleComplete = async () => {
+    const currentTaskId = selectedTaskId;
+
     if (sessionId) {
       // 세션 완료로 기록
       await fetch(`/api/focus-sessions/${sessionId}`, {
@@ -306,9 +367,29 @@ export default function FocusTimer({ tasks = [], onSessionComplete }: FocusTimer
       });
 
       // 브라우저 알림 (설정 확인)
-      const settings = getNotificationSettings();
-      if (settings.enabled && settings.focusComplete) {
-        notifyFocusComplete(selectedMinutes * 60);
+      try {
+        const settings = getNotificationSettings();
+        console.log('[FocusTimer] Notification settings:', settings);
+        console.log('[FocusTimer] Notification permission:', typeof window !== 'undefined' ? Notification.permission : 'N/A');
+
+        if (settings.enabled && settings.focusComplete) {
+          notifyFocusComplete(selectedMinutes * 60);
+          console.log('[FocusTimer] Focus complete notification sent');
+        }
+      } catch (error) {
+        console.error('[FocusTimer] Notification error:', error);
+      }
+    }
+
+    // 작업 상태를 'completed'로 변경
+    if (currentTaskId) {
+      try {
+        await fetch(`/api/tasks/${currentTaskId}/complete`, {
+          method: 'PATCH',
+        });
+        console.log('[FocusTimer] Task status changed to completed');
+      } catch (err) {
+        console.error('[FocusTimer] Failed to complete task:', err);
       }
     }
 
