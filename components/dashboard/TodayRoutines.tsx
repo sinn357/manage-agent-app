@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { RefreshCw, Settings, Clock } from 'lucide-react';
+import { RefreshCw, Settings, Clock, CheckCircle2, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Routine {
@@ -15,6 +15,7 @@ interface Routine {
   duration: number | null;
   priority: string;
   active: boolean;
+  isCheckedToday?: boolean;
 }
 
 export default function TodayRoutines() {
@@ -30,16 +31,52 @@ export default function TodayRoutines() {
     setIsLoading(true);
     try {
       const response = await fetch('/api/routines');
+      const contentType = response.headers.get('content-type') || '';
+      if (!response.ok) {
+        throw new Error(`Failed to fetch routines (${response.status})`);
+      }
+      if (!contentType.includes('application/json')) {
+        throw new Error('Non-JSON response received');
+      }
       const data = await response.json();
       if (data.success) {
         // 활성화된 루틴만 필터링
-        const activeRoutines = data.routines.filter((r: Routine) => r.active);
+        const activeRoutines = data.routines
+          .filter((r: Routine) => r.active)
+          .map((r: Routine) => ({
+            ...r,
+            isCheckedToday: Boolean(r.isCheckedToday),
+          }));
         setRoutines(activeRoutines);
       }
     } catch (error) {
       console.error('Failed to fetch routines:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCheck = async (routineId: string, isChecked: boolean) => {
+    try {
+      const method = isChecked ? 'DELETE' : 'POST';
+      const response = await fetch(`/api/routines/${routineId}/check`, { method });
+      const contentType = response.headers.get('content-type') || '';
+
+      if (!response.ok) {
+        throw new Error(`Failed to toggle routine (${response.status})`);
+      }
+      if (!contentType.includes('application/json')) {
+        throw new Error('Non-JSON response received');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        fetchRoutines();
+      } else {
+        console.error('Failed to toggle routine check:', data.error);
+      }
+    } catch (error) {
+      console.error('Toggle routine check error:', error);
     }
   };
 
@@ -132,11 +169,31 @@ export default function TodayRoutines() {
           {routines.map((routine) => (
             <div
               key={routine.id}
-              className="p-4 bg-surface rounded-xl border border-border hover:shadow-md transition-all cursor-pointer"
-              onClick={() => router.push('/settings?tab=routines')}
+              className={`p-4 bg-surface rounded-xl border border-border hover:shadow-md transition-all ${
+                routine.isCheckedToday ? 'opacity-60' : ''
+              }`}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-3">
+                <button
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleCheck(routine.id, Boolean(routine.isCheckedToday));
+                  }}
+                  className="flex-shrink-0 mt-0.5 transition-all"
+                  aria-label={`${routine.title} ${
+                    routine.isCheckedToday ? '완료 취소' : '완료 처리'
+                  }`}
+                >
+                  {routine.isCheckedToday ? (
+                    <CheckCircle2 className="w-5 h-5 text-success" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-border hover:text-primary transition-colors" />
+                  )}
+                </button>
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={() => router.push('/settings?tab=routines')}
+                >
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="font-semibold text-foreground truncate">
                       {routine.title}

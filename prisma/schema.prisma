@@ -104,8 +104,22 @@ model Routine {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
   User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  RoutineCheck   RoutineCheck[]
 
   @@index([userId, active])
+}
+
+model RoutineCheck {
+  id        String   @id @default(cuid())
+  date      DateTime // 완료한 날짜 (YYYY-MM-DD 00:00:00)
+  routineId String
+  userId    String
+  createdAt DateTime @default(now())
+  Routine   Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([routineId, userId, date])
+  @@index([userId, date])
 }
 
 model User {
@@ -122,6 +136,7 @@ model User {
   Goal           Goal[]
   Task           Task[]
   Routine        Routine[]
+  RoutineCheck   RoutineCheck[]
   LifeGoal       LifeGoal[]
 }
 

@@ -13,15 +13,33 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get('active') === 'true';
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const routines = await prisma.routine.findMany({
       where: {
         userId: user.id,
         ...(activeOnly && { active: true }),
       },
+      include: {
+        RoutineCheck: {
+          where: {
+            date: today,
+          },
+          select: {
+            id: true,
+          },
+        },
+      },
       orderBy: [{ active: 'desc' }, { createdAt: 'desc' }],
     });
 
-    return NextResponse.json({ success: true, routines });
+    const routinesWithCheck = routines.map(({ RoutineCheck, ...routine }) => ({
+      ...routine,
+      isCheckedToday: RoutineCheck.length > 0,
+    }));
+
+    return NextResponse.json({ success: true, routines: routinesWithCheck });
   } catch (error) {
     console.error('Get routines error:', error);
     return NextResponse.json(
