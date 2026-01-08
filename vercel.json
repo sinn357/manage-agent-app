@@ -3,11 +3,7 @@
   "crons": [
     {
       "path": "/api/cron/archive-tasks",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/routine-results",
-      "schedule": "0 15 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
