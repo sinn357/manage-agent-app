@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
         Task: {
           where: {
             deletedAt: null,
+            status: { notIn: ['archived_success', 'archived_failed'] }, // 아카이브된 작업 제외
           },
           select: {
             id: true,

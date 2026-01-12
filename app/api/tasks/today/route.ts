@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
     const where: {
       userId: string;
       deletedAt?: null;
+      status?: { notIn: string[] };
       OR?: Array<{
         scheduledDate?: {
           gte?: Date;
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
     } = {
       userId,
       deletedAt: null, // 소프트 삭제되지 않은 것만
+      status: { notIn: ['archived_success', 'archived_failed'] }, // 아카이브된 작업 제외
     };
 
     if (includeUnscheduled) {

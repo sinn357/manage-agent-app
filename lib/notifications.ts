@@ -41,12 +41,14 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
  */
 export function showNotification(title: string, options?: NotificationOptions): Notification | null {
   if (typeof window === 'undefined' || !('Notification' in window)) {
-    console.warn('This browser does not support notifications');
+    console.warn('[Notification] This browser does not support notifications');
     return null;
   }
 
+  console.log('[Notification] Permission status:', Notification.permission);
+
   if (Notification.permission !== 'granted') {
-    console.warn('Notification permission not granted');
+    console.warn('[Notification] Permission not granted. Current status:', Notification.permission);
     return null;
   }
 
@@ -56,7 +58,20 @@ export function showNotification(title: string, options?: NotificationOptions): 
     ...options,
   };
 
-  return new Notification(title, defaultOptions);
+  console.log('[Notification] Creating notification:', title, defaultOptions);
+  const notification = new Notification(title, defaultOptions);
+
+  // 알림 이벤트 리스너
+  notification.onclick = () => {
+    console.log('[Notification] Clicked:', title);
+    window.focus();
+  };
+
+  notification.onerror = (error) => {
+    console.error('[Notification] Error:', error);
+  };
+
+  return notification;
 }
 
 /**

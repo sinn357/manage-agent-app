@@ -37,7 +37,8 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
   const [loading, setLoading] = useState(true);
 
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const startTimeRef = useRef<number>(0); // 절대 시작 시간
+  const targetEndTimeRef = useRef<number>(0); // 절대 종료 시간
   const elapsedRef = useRef<number>(0);
   const fiveMinuteNotifiedRef = useRef<boolean>(false);
   const saveIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -84,9 +85,11 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
           // startTimeRef와 elapsedRef 초기화
           if (session.timerState === 'running') {
             startTimeRef.current = Date.now();
+            targetEndTimeRef.current = Date.now() + (actualTimeLeft * 1000); // 절대 종료 시간
             elapsedRef.current = (session.actualTime || 0) * 60; // DB에 저장된 actualTime(분)을 초로 변환
           } else {
             startTimeRef.current = 0;
+            targetEndTimeRef.current = 0;
             elapsedRef.current = (session.actualTime || 0) * 60; // paused 상태에서도 복구
           }
 
@@ -133,32 +136,33 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
     }
   }, [timeLeft, timerState]);
 
-  // 타이머 틱
+  // 타이머 틱 (절대 시간 기준)
   useEffect(() => {
     if (timerState === 'running') {
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          const newTime = prev - 1;
+        const now = Date.now();
+        const remaining = Math.max(0, Math.floor((targetEndTimeRef.current - now) / 1000));
 
-          // 5분 전 알림 (300초)
-          if (newTime === 300 && !fiveMinuteNotifiedRef.current) {
-            try {
-              const settings = getNotificationSettings();
-              if (settings.enabled && settings.focusReminder) {
-                notifyFocusAlmostComplete(5);
-                console.log('[FocusTimer] 5-minute reminder notification sent');
-              }
-              fiveMinuteNotifiedRef.current = true;
-            } catch (error) {
-              console.error('[FocusTimer] Reminder notification error:', error);
+        setTimeLeft(remaining);
+
+        // 5분 전 알림 (300초)
+        if (remaining <= 300 && remaining > 295 && !fiveMinuteNotifiedRef.current) {
+          try {
+            const settings = getNotificationSettings();
+            if (settings.enabled && settings.focusReminder) {
+              notifyFocusAlmostComplete(5);
+              console.log('[FocusTimer] 5-minute reminder notification sent');
             }
+            fiveMinuteNotifiedRef.current = true;
+          } catch (error) {
+            console.error('[FocusTimer] Reminder notification error:', error);
           }
+        }
 
-          if (newTime <= 0) {
-            return 0;
-          }
-          return newTime;
-        });
+        if (remaining === 0) {
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+        }
       }, 1000);
 
       // 5초마다 DB에 저장
@@ -241,7 +245,9 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
       if (data.success) {
         setSessionId(data.session.id);
         setTimerState('running');
-        startTimeRef.current = Date.now();
+        const now = Date.now();
+        startTimeRef.current = now;
+        targetEndTimeRef.current = now + (selectedMinutes * 60 * 1000); // 절대 종료 시간
         elapsedRef.current = 0;
         fiveMinuteNotifiedRef.current = false;
 
@@ -266,7 +272,9 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
 
   const handlePause = async () => {
     if (timerState === 'running') {
-      elapsedRef.current += Math.floor((Date.now() - startTimeRef.current) / 1000);
+      // 실제 경과 시간 계산
+      const actualElapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      elapsedRef.current += actualElapsed;
       setTimerState('paused');
 
       // DB에 paused 상태 및 중간 actualTime 저장
@@ -282,7 +290,9 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
         });
       }
     } else if (timerState === 'paused') {
-      startTimeRef.current = Date.now();
+      const now = Date.now();
+      startTimeRef.current = now;
+      targetEndTimeRef.current = now + (timeLeftRef.current * 1000); // 남은 시간으로 새 종료 시간 설정
       setTimerState('running');
 
       // DB에 running 상태 저장
@@ -303,17 +313,11 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
     const currentTaskId = selectedTaskId;
 
     if (sessionId) {
-      // 경과 시간 계산 (초 단위)
-      let actualTimeSeconds = elapsedRef.current;
-      if (timerState === 'running' && startTimeRef.current > 0) {
-        actualTimeSeconds += Math.floor((Date.now() - startTimeRef.current) / 1000);
-      }
+      // 실제 진행 시간 계산 (설정 시간 - 남은 시간)
+      const totalSeconds = selectedMinutes * 60;
+      const actualTimeSeconds = totalSeconds - timeLeftRef.current;
 
-      // 비정상적으로 큰 값 방지 (최대 24시간)
-      const maxSeconds = 24 * 60 * 60;
-      if (actualTimeSeconds > maxSeconds) {
-        actualTimeSeconds = maxSeconds;
-      }
+      console.log('[FocusTimer] Stop - Total:', totalSeconds, 'Remaining:', timeLeftRef.current, 'Actual:', actualTimeSeconds);
 
       // 세션 중단으로 기록
       await fetch(`/api/focus-sessions/${sessionId}`, {

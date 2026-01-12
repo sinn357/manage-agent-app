@@ -25,13 +25,14 @@ export async function GET(request: NextRequest) {
     // 필터 조건 구성
     const where: {
       userId: string;
-      status?: string;
+      status?: string | { notIn: string[] };
       goalId?: string | null;
       priority?: string;
       deletedAt?: null;
     } = {
       userId,
       deletedAt: null, // 소프트 삭제되지 않은 것만
+      status: { notIn: ['archived_success', 'archived_failed'] }, // 아카이브된 작업 제외
     };
 
     if (status) {
