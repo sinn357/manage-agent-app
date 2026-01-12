@@ -291,3 +291,34 @@ body {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+/* === Sonner Toast Notifications === */
+[data-sonner-toaster] {
+  z-index: 9999 !important;
+}
+
+[data-sonner-toast] {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+[data-sonner-toast][data-styled="true"] {
+  padding: 16px !important;
+  gap: 12px !important;
+}
+
+/* Dark mode support */
+.dark [data-sonner-toast] {
+  background-color: var(--surface) !important;
+  border-color: var(--border) !important;
+  color: var(--foreground) !important;
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  [data-sonner-toaster] {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+}

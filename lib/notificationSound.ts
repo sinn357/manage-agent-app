@@ -36,14 +36,24 @@ function createBellSound(context: AudioContext): AudioBuffer {
  */
 export async function playNotificationSound(): Promise<void> {
   try {
+    console.log('[NotificationSound] Attempting to play sound...');
+
     // AudioContext 초기화 (한 번만)
     if (!audioContext) {
       audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      console.log('[NotificationSound] AudioContext created:', audioContext.state);
+    }
+
+    // iOS Safari: AudioContext resume 필요
+    if (audioContext.state === 'suspended') {
+      await audioContext.resume();
+      console.log('[NotificationSound] AudioContext resumed');
     }
 
     // 버퍼 생성 (한 번만)
     if (!audioBuffer) {
       audioBuffer = createBellSound(audioContext);
+      console.log('[NotificationSound] Audio buffer created');
     }
 
     // 소리 재생
@@ -58,6 +68,7 @@ export async function playNotificationSound(): Promise<void> {
     gainNode.connect(audioContext.destination);
 
     source.start(0);
+    console.log('[NotificationSound] Sound playing');
   } catch (error) {
     console.error('[NotificationSound] Failed to play sound:', error);
   }

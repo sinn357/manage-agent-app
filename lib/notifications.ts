@@ -77,10 +77,14 @@ function showHybridNotification(
 ) {
   const isTabActive = typeof document !== 'undefined' && document.visibilityState === 'visible';
 
+  console.log('[Notification] showHybridNotification called:', { title, isTabActive, isIOSSafari: isIOSSafari() });
+
   if (isTabActive) {
     // 탭 활성: 소리 + 토스트
     if (shouldPlaySound()) {
-      playNotificationSound();
+      playNotificationSound().catch((err) => {
+        console.error('[Notification] Sound playback failed:', err);
+      });
     }
 
     toast.success(title, {
@@ -119,7 +123,7 @@ function showHybridNotification(
         description: body,
         duration: options?.toastDuration || 5000,
       });
-      console.log('[Notification] Toast fallback (system not supported)');
+      console.log('[Notification] Toast fallback (system not supported, iOS Safari:', isIOSSafari(), ')');
     }
   }
 }
