@@ -8,10 +8,10 @@ import {
   requestNotificationPermission,
   getNotificationSettings,
   saveNotificationSettings,
-  showNotification,
   type NotificationSettings,
 } from '@/lib/notifications';
-import toast from 'react-hot-toast';
+import { playNotificationSound } from '@/lib/notificationSound';
+import { toast } from 'sonner';
 import RoutineList from '@/components/routines/RoutineList';
 import TrashList from '@/components/trash/TrashList';
 import ArchiveList from '@/components/archive/ArchiveList';
@@ -42,8 +42,9 @@ export default function SettingsPage() {
 
     if (result === 'granted') {
       toast.success('알림 권한이 허용되었습니다.');
-      showNotification('✅ 알림 테스트', {
-        body: '알림이 정상적으로 작동합니다!',
+      playNotificationSound();
+      toast.success('✅ 알림 테스트', {
+        description: '알림이 정상적으로 작동합니다!',
       });
     } else if (result === 'denied') {
       toast.error('알림 권한이 거부되었습니다. 브라우저 설정에서 변경할 수 있습니다.');
@@ -65,13 +66,12 @@ export default function SettingsPage() {
   };
 
   const handleTestNotification = () => {
-    if (permission !== 'granted') {
-      toast.error('알림 권한을 먼저 허용해주세요.');
-      return;
-    }
+    // 소리 재생
+    playNotificationSound();
 
-    showNotification('🔔 테스트 알림', {
-      body: '알림이 정상적으로 작동합니다!',
+    // 토스트 알림 표시
+    toast.success('🔔 테스트 알림', {
+      description: '알림이 정상적으로 작동합니다!',
     });
   };
 
