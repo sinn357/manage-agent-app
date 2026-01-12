@@ -10,6 +10,11 @@ import {
   saveNotificationSettings,
   type NotificationSettings,
 } from '@/lib/notifications';
+import {
+  getTaskNotificationSettings,
+  saveTaskNotificationSettings,
+  type TaskNotificationSettings,
+} from '@/lib/taskNotificationScheduler';
 import { playNotificationSound } from '@/lib/notificationSound';
 import { toast } from 'sonner';
 import RoutineList from '@/components/routines/RoutineList';
@@ -24,6 +29,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'notifications' | 'routines' | 'trash' | 'archive'>('notifications');
   const [permission, setPermission] = useState<'granted' | 'denied' | 'default'>('default');
   const [settings, setSettings] = useState<NotificationSettings>(getNotificationSettings());
+  const [taskSettings, setTaskSettings] = useState<TaskNotificationSettings>(getTaskNotificationSettings());
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -58,9 +64,17 @@ export default function SettingsPage() {
     }));
   };
 
+  const handleTaskSettingChange = (key: keyof TaskNotificationSettings, value: boolean | number) => {
+    setTaskSettings(prev => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
   const handleSave = () => {
     setSaving(true);
     saveNotificationSettings(settings);
+    saveTaskNotificationSettings(taskSettings);
     toast.success('설정이 저장되었습니다.');
     setTimeout(() => setSaving(false), 500);
   };
@@ -274,6 +288,73 @@ export default function SettingsPage() {
                 checked={settings.goalDue}
                 onChange={(e) => handleSettingChange('goalDue', e.target.checked)}
                 disabled={!settings.enabled}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              />
+            </label>
+          </div>
+
+          {/* 작업 시작 알림 */}
+          <div className="mb-6 pb-6 border-b">
+            <h3 className="text-gray-800 font-semibold mb-4">작업 시작 알림</h3>
+
+            <label className="flex items-center justify-between cursor-pointer mb-4">
+              <div>
+                <p className="text-gray-700">작업 시작 알림 활성화</p>
+                <p className="text-sm text-gray-500">작업 시작 시간에 알림을 받습니다</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={taskSettings.enabled}
+                onChange={(e) => handleTaskSettingChange('enabled', e.target.checked)}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+              />
+            </label>
+
+            <label className="flex items-center justify-between cursor-pointer mb-4">
+              <div>
+                <p className="text-gray-700">미리 알림</p>
+                <p className="text-sm text-gray-500">작업 시작 전에 미리 알림을 받습니다</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={taskSettings.preReminder}
+                onChange={(e) => handleTaskSettingChange('preReminder', e.target.checked)}
+                disabled={!taskSettings.enabled}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+              />
+            </label>
+
+            {taskSettings.preReminder && (
+              <div className="ml-4 pl-4 border-l-2 border-gray-200">
+                <label className="block">
+                  <p className="text-gray-700 font-medium mb-2">미리 알림 시간</p>
+                  <div className="flex items-center gap-4">
+                    <select
+                      value={taskSettings.preReminderMinutes}
+                      onChange={(e) => handleTaskSettingChange('preReminderMinutes', parseInt(e.target.value))}
+                      disabled={!taskSettings.enabled}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                      <option value={5}>5분 전</option>
+                      <option value={10}>10분 전</option>
+                      <option value={15}>15분 전</option>
+                      <option value={30}>30분 전</option>
+                    </select>
+                  </div>
+                </label>
+              </div>
+            )}
+
+            <label className="flex items-center justify-between cursor-pointer mt-4">
+              <div>
+                <p className="text-gray-700">알림 소리</p>
+                <p className="text-sm text-gray-500">알림 시 소리를 재생합니다</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={taskSettings.sound}
+                onChange={(e) => handleTaskSettingChange('sound', e.target.checked)}
+                disabled={!taskSettings.enabled}
                 className="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               />
             </label>

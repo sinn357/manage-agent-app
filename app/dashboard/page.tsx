@@ -17,6 +17,12 @@ import LifeTimeline from '@/components/dashboard/LifeTimeline';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import TodayRoutines from '@/components/dashboard/TodayRoutines';
 import { BarChart3, Calendar, Kanban, Settings, LogOut, Sparkles } from 'lucide-react';
+import {
+  scheduleMultipleTaskNotifications,
+  restoreSchedule,
+  setupVisibilityListener,
+  cancelAllTaskNotifications,
+} from '@/lib/taskNotificationScheduler';
 
 // 모달 컴포넌트는 필요할 때만 로드
 const GoalModal = dynamic(() => import('@/components/dashboard/GoalModal'), {
@@ -128,6 +134,28 @@ export default function DashboardPage() {
       fetchTodayTasks();
     }
   }, [isAuthenticated, taskKey]);
+
+  // 작업 시작 알림 스케줄러 초기화
+  useEffect(() => {
+    if (todayTasks.length > 0) {
+      console.log('[Dashboard] Setting up task notifications for', todayTasks.length, 'tasks');
+      scheduleMultipleTaskNotifications(todayTasks);
+
+      // Page Visibility Listener 설정
+      const cleanup = setupVisibilityListener(todayTasks);
+
+      return () => {
+        cleanup();
+      };
+    }
+  }, [todayTasks]);
+
+  // 컴포넌트 언마운트 시 모든 알림 취소
+  useEffect(() => {
+    return () => {
+      cancelAllTaskNotifications();
+    };
+  }, []);
 
   const fetchTodayTasks = async () => {
     try {
