@@ -49,6 +49,7 @@ const taskFormSchema = z.object({
     .optional(),
   priority: z.enum(['low', 'mid', 'high']),
   goalId: z.string().nullable().optional(),
+  weight: z.number().int().min(1, '최소 1').max(100, '최대 100').optional(),
 })
 .refine((data) => {
   // 시작 시간이 있으면 종료 시간도 있어야 함
@@ -87,6 +88,7 @@ interface Task {
   priority: string;
   status: string;
   goalId?: string | null;
+  weight?: number;
 }
 
 interface Goal {
@@ -143,6 +145,7 @@ export default function TaskModal({
       scheduledEndTime: '',
       priority: 'mid',
       goalId: '',
+      weight: 1,
     },
   });
 
@@ -166,6 +169,7 @@ export default function TaskModal({
           scheduledEndTime: task.scheduledEndTime || '',
           priority: task.priority as 'low' | 'mid' | 'high',
           goalId: task.goalId || '',
+          weight: task.weight || 1,
         });
       } else {
         // 생성 모드
@@ -177,6 +181,7 @@ export default function TaskModal({
           scheduledEndTime: '',
           priority: 'mid',
           goalId: '',
+          weight: 1,
         });
       }
 
@@ -218,6 +223,7 @@ export default function TaskModal({
           scheduledEndTime: values.scheduledEndTime || null,
           priority: values.priority,
           goalId: values.goalId || null,
+          weight: values.weight || 1,
         }),
       });
 
@@ -431,6 +437,33 @@ export default function TaskModal({
                 </FormItem>
               )}
             />
+
+            {/* 목표 기여도 (Weight) */}
+            {form.watch('goalId') && form.watch('goalId') !== 'none' && (
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>목표 기여도</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="1"
+                        max="100"
+                        placeholder="1-100 (기본값: 1)"
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 1)}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-foreground-secondary">
+                      이 작업이 목표 달성에 기여하는 정도 (1-100)
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* 에러 메시지 */}
             {error && (

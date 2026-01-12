@@ -38,6 +38,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             status: true,
+            weight: true,
           },
         },
         LifeGoal: {
@@ -60,21 +61,28 @@ export async function GET(request: NextRequest) {
       skip: offset,
     });
 
-    // 진행률 계산
+    // 진행률 계산 (weight 기반)
     const goalsWithProgress = goals.map((goal) => {
       const totalTasks = goal.Task.length;
       const completedTasks = goal.Task.filter((t) => t.status === 'completed').length;
+
+      // weight 기반 진행률
+      const totalWeight = goal.Task.reduce((sum, t) => sum + (t.weight || 1), 0);
+      const completedWeight = goal.Task
+        .filter((t) => t.status === 'completed')
+        .reduce((sum, t) => sum + (t.weight || 1), 0);
+
       const totalMilestones = goal.Milestone.length;
       const completedMilestones = goal.Milestone.filter((m) => m.completed).length;
 
       let progress = 0;
       if (totalTasks > 0 && totalMilestones > 0) {
         // 둘 다 있으면 가중 평균 (Task 70%, Milestone 30%)
-        const taskProgress = (completedTasks / totalTasks) * 100;
+        const taskProgress = totalWeight > 0 ? (completedWeight / totalWeight) * 100 : 0;
         const milestoneProgress = (completedMilestones / totalMilestones) * 100;
         progress = taskProgress * 0.7 + milestoneProgress * 0.3;
       } else if (totalTasks > 0) {
-        progress = (completedTasks / totalTasks) * 100;
+        progress = totalWeight > 0 ? (completedWeight / totalWeight) * 100 : 0;
       } else if (totalMilestones > 0) {
         progress = (completedMilestones / totalMilestones) * 100;
       }
@@ -87,6 +95,8 @@ export async function GET(request: NextRequest) {
           completedTasks,
           totalMilestones,
           completedMilestones,
+          totalWeight,
+          completedWeight,
         },
       };
     });

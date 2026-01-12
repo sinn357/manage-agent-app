@@ -2,20 +2,39 @@
 
 **문서 목적**: 현재 완료된 기능을 넘어 추가할 가치 있는 기능들의 우선순위별 로드맵
 
-**마지막 업데이트**: 2026-01-05
-**현재 상태**: Phase 3 완료 + 모바일/UX 개선 완료 + 휴지통 UI 완료 ✅
+**마지막 업데이트**: 2026-01-12
+**현재 상태**: Phase 3 완료 + Task Weight 기능 완료 + 하이브리드 알림 완료 ✅
+
+---
+
+## 🚨 최우선 작업 (미완료)
+
+### GitHub Actions 워크플로우 푸시
+**상태**: 로컬 커밋 완료, 푸시 실패 (권한 문제)
+**블로커**: GitHub 리포지토리 규칙이 `.github/workflows/` 푸시 차단
+
+**즉시 조치 필요:**
+1. https://github.com/sinn357/manage-agent-app/settings/rules 접속
+2. 워크플로우 규칙 비활성화 또는 예외 추가
+3. `git push` 재시도
+4. GitHub Secrets에 `CRON_SECRET` 추가
+
+**세부 사항**: `docs/2026-01-12_작업_완료_내역.md` 참조
 
 ---
 
 ## 📊 현재 완료 상태
 
-### ✅ 완료된 주요 기능 (2026-01-05 기준)
+### ✅ 완료된 주요 기능 (2026-01-12 기준)
 - **Phase 1-3**: MVP + 일정 관리 + 리포트 시스템
 - **Design System**: Gradient Elevation (Glassmorphism 2.0)
-- **Mobile Responsive**: 모바일 메뉴바 최적화
+- **Mobile Responsive**: 모바일 메뉴바 최적화 ✅ (2026-01-12)
 - **Soft Delete**: 작업 소프트 삭제 시스템
 - **Routine Widget**: 대시보드 루틴 위젯
 - **Trash Management UI**: 휴지통 UI (복구/영구 삭제) ✅
+- **Task Weight System**: 작업 가중치 기반 목표 진행률 ✅ (2026-01-12)
+- **Hybrid Notifications**: 탭 활성 시 소리+토스트, 탭 비활성 시 시스템 알림 ✅ (2026-01-12)
+- **Focus Timer Precision**: 100ms 정밀도, Page Visibility API ✅ (2026-01-12)
 
 ### 📦 기술 스택
 - **Frontend**: Next.js 15, React 19, Tailwind CSS

@@ -75,6 +75,7 @@ model Task {
   priority         String         @default("mid")
   status           String         @default("todo")
   order            Int            @default(0)
+  weight           Int            @default(1) // 목표 기여도 (1-100, 기본값 1)
   userId           String
   goalId           String?
   createdAt        DateTime       @default(now())
