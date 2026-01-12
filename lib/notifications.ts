@@ -52,9 +52,8 @@ export function showNotification(title: string, options?: NotificationOptions): 
     return null;
   }
 
+  // 기본 옵션 (icon/badge 제거 - 브라우저 기본 아이콘 사용)
   const defaultOptions: NotificationOptions = {
-    icon: '/icon.png',
-    badge: '/badge.png',
     ...options,
   };
 
