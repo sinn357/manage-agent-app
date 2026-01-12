@@ -23,7 +23,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Plus, CheckCircle2, Circle, ListTodo, ChevronDown, AlertCircle, Calendar as CalendarIcon, Flame, Play, MoreVertical } from 'lucide-react';
+import { GripVertical, Plus, CheckCircle2, Circle, ListTodo, ChevronDown, AlertCircle, Calendar as CalendarIcon, Flame, Play, MoreVertical, RefreshCw } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,6 +39,7 @@ interface Task {
   priority: string;
   status: string;
   goalId: string | null;
+  isFromRoutine?: boolean;
   Goal: {
     id: string;
     title: string;
@@ -145,6 +146,14 @@ function SortableTaskItem({
           >
             {getPriorityLabel(task.priority)}
           </span>
+
+          {/* Routine Badge */}
+          {task.isFromRoutine && (
+            <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-violet/10 text-violet border border-violet/30 font-medium">
+              <RefreshCw className="w-3 h-3" />
+              루틴
+            </span>
+          )}
 
           {/* Goal */}
           {task.Goal && (

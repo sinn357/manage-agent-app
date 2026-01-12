@@ -5,9 +5,23 @@ import { getCurrentUser } from '@/lib/auth';
 // POST: 루틴 기반 작업 자동 생성
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    // 크론잡에서 호출 시 CRON_SECRET 인증
+    const authHeader = request.headers.get('authorization');
+    const isCronJob = authHeader?.startsWith('Bearer ') &&
+                      authHeader.split(' ')[1] === process.env.CRON_SECRET;
+
+    let userId: string | null = null;
+
+    if (isCronJob) {
+      // 크론잡: 모든 사용자의 루틴 작업 생성
+      userId = null;
+    } else {
+      // 일반 요청: 현재 사용자만
+      const user = await getCurrentUser();
+      if (!user) {
+        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+      userId = user.id;
     }
 
     const body = await request.json();
@@ -20,7 +34,7 @@ export async function POST(request: NextRequest) {
     // 활성화된 루틴 가져오기
     const routines = await prisma.routine.findMany({
       where: {
-        userId: user.id,
+        ...(userId && { userId }), // userId가 있으면 필터링, 없으면 모든 사용자
         active: true,
       },
     });
@@ -62,11 +76,11 @@ export async function POST(request: NextRequest) {
         }
 
         if (shouldCreate) {
-          // 이미 같은 날짜에 같은 제목의 작업이 있는지 확인
+          // 이미 같은 날짜에 같은 루틴의 작업이 있는지 확인
           const existingTask = await prisma.task.findFirst({
             where: {
-              userId: user.id,
-              title: routine.title,
+              userId: routine.userId,
+              routineId: routine.id,
               scheduledDate: {
                 gte: new Date(currentDate.setHours(0, 0, 0, 0)),
                 lte: new Date(currentDate.setHours(23, 59, 59, 999)),
@@ -89,9 +103,12 @@ export async function POST(request: NextRequest) {
                 title: routine.title,
                 description: routine.description || `자동 생성된 루틴: ${routine.title}`,
                 scheduledDate: scheduledDateTime,
+                scheduledTime: routine.timeOfDay || '09:00',
                 priority: routine.priority,
                 status: 'todo',
-                userId: user.id,
+                isFromRoutine: true,
+                routineId: routine.id,
+                userId: routine.userId,
               },
             });
 
