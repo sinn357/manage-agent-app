@@ -16,7 +16,7 @@ import FocusHistory from '@/components/dashboard/FocusHistory';
 import LifeTimeline from '@/components/dashboard/LifeTimeline';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import TodayRoutines from '@/components/dashboard/TodayRoutines';
-import { BarChart3, Calendar, Kanban, Settings, LogOut, Sparkles } from 'lucide-react';
+import { BarChart3, Calendar, Kanban, Settings, LogOut, Sparkles, Search } from 'lucide-react';
 import {
   scheduleMultipleTaskNotifications,
   restoreSchedule,
@@ -34,6 +34,10 @@ const TaskModal = dynamic(() => import('@/components/dashboard/TaskModal'), {
 });
 
 const LifeGoalModal = dynamic(() => import('@/components/dashboard/LifeGoalModal'), {
+  ssr: false,
+});
+
+const SearchModal = dynamic(() => import('@/components/search/SearchModal'), {
   ssr: false,
 });
 
@@ -92,8 +96,18 @@ export default function DashboardPage() {
   const [isLifeGoalModalOpen, setIsLifeGoalModalOpen] = useState(false);
   const [selectedLifeGoal, setSelectedLifeGoal] = useState<any>(null);
 
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+
   // 키보드 단축키 설정
   useKeyboardShortcuts([
+    {
+      key: 'k',
+      ctrl: true,
+      description: '검색',
+      handler: () => {
+        setIsSearchModalOpen(true);
+      },
+    },
     {
       key: 'n',
       ctrl: true,
@@ -320,6 +334,16 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 size="sm"
+                onClick={() => setIsSearchModalOpen(true)}
+                className="gap-1 sm:gap-2 px-2 sm:px-3"
+                title="검색 (Ctrl+K)"
+              >
+                <Search className="w-4 h-4" />
+                <span className="hidden sm:inline">검색</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => router.push('/reports')}
                 className="gap-1 sm:gap-2 px-2 sm:px-3"
               >
@@ -441,6 +465,12 @@ export default function DashboardPage() {
         onClose={handleLifeGoalModalClose}
         onSuccess={handleLifeGoalSuccess}
         lifeGoal={selectedLifeGoal}
+      />
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
       />
     </div>
   );
