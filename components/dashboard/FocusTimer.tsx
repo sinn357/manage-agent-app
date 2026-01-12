@@ -136,34 +136,63 @@ export default function FocusTimer({ tasks = [], onSessionComplete, taskTrigger,
     }
   }, [timeLeft, timerState]);
 
-  // 타이머 틱 (절대 시간 기준)
+  // Page Visibility API: 탭이 다시 보일 때 시간 재동기화
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && timerState === 'running' && targetEndTimeRef.current > 0) {
+        // 탭이 다시 활성화될 때 정확한 시간 재계산
+        const now = Date.now();
+        const remaining = Math.max(0, Math.floor((targetEndTimeRef.current - now) / 1000));
+        setTimeLeft(remaining);
+        console.log('[FocusTimer] Visibility restored, synced time:', remaining);
+
+        if (remaining === 0) {
+          handleComplete();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [timerState]);
+
+  // 타이머 틱 (절대 시간 기준, 100ms마다 체크)
   useEffect(() => {
     if (timerState === 'running') {
+      let lastSecond = -1;
+
       intervalRef.current = setInterval(() => {
         const now = Date.now();
         const remaining = Math.max(0, Math.floor((targetEndTimeRef.current - now) / 1000));
 
-        setTimeLeft(remaining);
+        // 초가 바뀔 때만 상태 업데이트 (렌더링 최적화)
+        if (remaining !== lastSecond) {
+          lastSecond = remaining;
+          setTimeLeft(remaining);
 
-        // 5분 전 알림 (300초)
-        if (remaining <= 300 && remaining > 295 && !fiveMinuteNotifiedRef.current) {
-          try {
-            const settings = getNotificationSettings();
-            if (settings.enabled && settings.focusReminder) {
-              notifyFocusAlmostComplete(5);
-              console.log('[FocusTimer] 5-minute reminder notification sent');
+          // 5분 전 알림 (300초)
+          if (remaining === 300 && !fiveMinuteNotifiedRef.current) {
+            try {
+              const settings = getNotificationSettings();
+              if (settings.enabled && settings.focusReminder) {
+                notifyFocusAlmostComplete(5);
+                console.log('[FocusTimer] 5-minute reminder notification sent');
+              }
+              fiveMinuteNotifiedRef.current = true;
+            } catch (error) {
+              console.error('[FocusTimer] Reminder notification error:', error);
             }
-            fiveMinuteNotifiedRef.current = true;
-          } catch (error) {
-            console.error('[FocusTimer] Reminder notification error:', error);
+          }
+
+          if (remaining === 0) {
+            clearInterval(intervalRef.current!);
+            intervalRef.current = null;
           }
         }
-
-        if (remaining === 0) {
-          clearInterval(intervalRef.current!);
-          intervalRef.current = null;
-        }
-      }, 1000);
+      }, 100); // 100ms마다 체크
 
       // 5초마다 DB에 저장
       saveIntervalRef.current = setInterval(() => {
