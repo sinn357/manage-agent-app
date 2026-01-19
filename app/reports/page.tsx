@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { BarChart3, Home, Calendar, LayoutGrid, Settings, LogOut } from 'lucide-react';
+import { BarChart3, Home, Calendar, CalendarDays, LayoutGrid, Settings, LogOut } from 'lucide-react';
 
 // 차트 컴포넌트들은 lazy load (recharts 번들이 크기 때문)
 const StatsOverview = dynamic(() => import('@/components/reports/StatsOverview'), {
@@ -220,6 +220,15 @@ export default function ReportsPage() {
             >
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">대시보드</span>
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/weekly-review')}
+              className="gap-2"
+            >
+              <CalendarDays className="w-4 h-4" />
+              <span className="hidden sm:inline">주간리뷰</span>
             </Button>
             <Button
               variant="secondary"

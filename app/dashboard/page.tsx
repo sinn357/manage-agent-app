@@ -16,7 +16,7 @@ import FocusHistory from '@/components/dashboard/FocusHistory';
 import LifeTimeline from '@/components/dashboard/LifeTimeline';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import TodayRoutines from '@/components/dashboard/TodayRoutines';
-import { BarChart3, Calendar, Kanban, Settings, LogOut, Sparkles, Search } from 'lucide-react';
+import { BarChart3, Calendar, CalendarDays, Kanban, Settings, LogOut, Sparkles, Search } from 'lucide-react';
 import {
   scheduleMultipleTaskNotifications,
   restoreSchedule,
@@ -349,6 +349,15 @@ export default function DashboardPage() {
               >
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">리포트</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/weekly-review')}
+                className="gap-1 sm:gap-2 px-2 sm:px-3"
+              >
+                <CalendarDays className="w-4 h-4" />
+                <span className="hidden sm:inline">주간리뷰</span>
               </Button>
               <Button
                 variant="ghost"

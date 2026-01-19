@@ -21,7 +21,7 @@ import RoutineList from '@/components/routines/RoutineList';
 import TrashList from '@/components/trash/TrashList';
 import ArchiveList from '@/components/archive/ArchiveList';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon, Home, Bell, RefreshCw, Save, Trash2, Archive } from 'lucide-react';
+import { Settings as SettingsIcon, Home, CalendarDays, BarChart3, Bell, RefreshCw, Save, Trash2, Archive } from 'lucide-react';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -116,15 +116,35 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => router.push('/dashboard')}
-            className="gap-2"
-          >
-            <Home className="w-4 h-4" />
-            대시보드
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/dashboard')}
+              className="gap-2"
+            >
+              <Home className="w-4 h-4" />
+              대시보드
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/weekly-review')}
+              className="gap-2"
+            >
+              <CalendarDays className="w-4 h-4" />
+              주간리뷰
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/reports')}
+              className="gap-2"
+            >
+              <BarChart3 className="w-4 h-4" />
+              리포트
+            </Button>
+          </div>
         </div>
       </header>
 

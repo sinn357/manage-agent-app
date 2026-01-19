@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { LayoutGrid, Home, Calendar, Plus } from 'lucide-react';
+import { LayoutGrid, Home, Calendar, CalendarDays, BarChart3, Plus } from 'lucide-react';
 
 // KanbanBoard는 드래그앤드롭 라이브러리(@dnd-kit)를 포함하므로 lazy load
 const KanbanBoard = dynamic(() => import('@/components/kanban/KanbanBoard'), {
@@ -212,6 +212,24 @@ export default function KanbanPage() {
             >
               <Home className="w-4 h-4" />
               <span className="hidden sm:inline">대시보드</span>
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/weekly-review')}
+              className="gap-2"
+            >
+              <CalendarDays className="w-4 h-4" />
+              <span className="hidden sm:inline">주간리뷰</span>
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/reports')}
+              className="gap-2"
+            >
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">리포트</span>
             </Button>
             <Button
               variant="secondary"

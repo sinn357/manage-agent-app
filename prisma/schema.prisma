@@ -160,6 +160,7 @@ model User {
   RoutineCheck   RoutineCheck[]
   RoutineResult  RoutineResult[]
   LifeGoal       LifeGoal[]
+  WeeklyReview   WeeklyReview[]
 }
 
 model LifeGoal {
@@ -178,4 +179,26 @@ model LifeGoal {
   Goal        Goal[]
 
   @@index([userId, active])
+}
+
+model WeeklyReview {
+  id              String   @id @default(cuid())
+  weekStart       DateTime // 주 시작일 (월요일 00:00:00)
+  weekEnd         DateTime // 주 종료일 (일요일 23:59:59)
+  completedTasks  Int      @default(0)
+  totalTasks      Int      @default(0)
+  completionRate  Float    @default(0)
+  focusMinutes    Int      @default(0) // 총 집중 시간 (분)
+  wins            String?  // 이번 주 잘한 점 (JSON array)
+  challenges      String?  // 이번 주 어려웠던 점 (JSON array)
+  insights        String?  // 인사이트/교훈
+  nextWeekPlan    String?  // 다음 주 계획 (JSON array)
+  mood            Int?     // 주간 기분 점수 (1-5)
+  userId          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([userId, weekStart])
 }

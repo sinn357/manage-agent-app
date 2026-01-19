@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Home, Plus } from 'lucide-react';
+import { CalendarDays, Home, Plus, BarChart3 } from 'lucide-react';
 
 // CalendarView는 react-big-calendar를 포함하므로 lazy load
 const CalendarView = dynamic(() => import('@/components/calendar/CalendarView'), {
@@ -151,6 +151,24 @@ export default function CalendarPage() {
             >
               <Home className="w-4 h-4" />
               대시보드
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/weekly-review')}
+              className="gap-2"
+            >
+              <CalendarDays className="w-4 h-4" />
+              주간리뷰
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => router.push('/reports')}
+              className="gap-2"
+            >
+              <BarChart3 className="w-4 h-4" />
+              리포트
             </Button>
             <Button
               onClick={() => {
