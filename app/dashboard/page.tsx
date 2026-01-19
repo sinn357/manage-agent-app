@@ -9,13 +9,14 @@ import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useQueryClient } from '@tanstack/react-query';
-import GoalPanel from '@/components/dashboard/GoalPanel';
 import TaskList from '@/components/dashboard/TaskList';
 import FocusTimer from '@/components/dashboard/FocusTimer';
 import FocusHistory from '@/components/dashboard/FocusHistory';
-import LifeTimeline from '@/components/dashboard/LifeTimeline';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import TodayRoutines from '@/components/dashboard/TodayRoutines';
+import LifeTimelineCompact from '@/components/dashboard/LifeTimelineCompact';
+import LifeGoalsCompact from '@/components/dashboard/LifeGoalsCompact';
+import GoalPanelCompact from '@/components/dashboard/GoalPanelCompact';
 import { BarChart3, Calendar, CalendarDays, Kanban, Settings, LogOut, Sparkles, Search } from 'lucide-react';
 import {
   scheduleMultipleTaskNotifications,
@@ -403,23 +404,25 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* 왼쪽: LifeTimeline + Goals */}
-          <div className="lg:col-span-1 space-y-6">
-            <LifeTimeline
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* 왼쪽: LifeTimeline + LifeGoals + Goals (콤팩트) */}
+          <div className="lg:col-span-1 space-y-3">
+            <LifeTimelineCompact
               key={`life-${lifeTimelineKey}`}
               onSettingsClick={handleProfileSettingsOpen}
+            />
+            <LifeGoalsCompact
               onLifeGoalClick={handleLifeGoalClick}
               onAddLifeGoalClick={handleAddLifeGoal}
             />
-            <GoalPanel
+            <GoalPanelCompact
               key={`goal-${goalKey}`}
               onGoalClick={handleGoalClick}
               onAddClick={handleAddGoal}
             />
           </div>
 
-          {/* 가운데: TaskList */}
+          {/* 가운데: TaskList (확장) */}
           <div className="lg:col-span-2">
             <TaskList
               key={`task-${taskKey}`}
@@ -430,7 +433,7 @@ export default function DashboardPage() {
           </div>
 
           {/* 오른쪽: FocusTimer + TodayRoutines + FocusHistory */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-3">
             <div ref={focusTimerRef}>
               <FocusTimer
                 tasks={todayTasks}
