@@ -2,19 +2,7 @@
 
 import { Play, Clock, CheckCircle2, Circle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface Habit {
-  id: string;
-  title: string;
-  description: string | null;
-  icon: string | null;
-  color: string;
-  recurrenceType: string;
-  recurrenceDays: string | null;
-  timeOfDay: string | null;
-  defaultDuration: number | null;
-  isCheckedToday?: boolean;
-}
+import type { Habit } from '@/types/habit';
 
 interface HabitItemProps {
   habit: Habit;

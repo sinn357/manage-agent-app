@@ -14,6 +14,7 @@ import FocusTimerCompact from '@/components/dashboard/FocusTimerCompact';
 import FocusHistoryCompact from '@/components/dashboard/FocusHistoryCompact';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import HabitsCompact from '@/components/dashboard/HabitsCompact';
+import type { Habit } from '@/types/habit';
 import LifeTimelineCompact from '@/components/dashboard/LifeTimelineCompact';
 import LifeGoalsCompact from '@/components/dashboard/LifeGoalsCompact';
 import GoalPanelCompact from '@/components/dashboard/GoalPanelCompact';
@@ -72,12 +73,7 @@ interface Task {
   } | null;
 }
 
-interface HabitTrigger {
-  id: string;
-  title: string;
-  icon?: string | null;
-  defaultDuration?: number | null;
-}
+type HabitTrigger = Pick<Habit, 'id' | 'title' | 'icon' | 'defaultDuration'>;
 
 export default function DashboardPage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();

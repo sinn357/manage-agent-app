@@ -5,20 +5,7 @@ import { Settings, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import HabitItem from './HabitItem';
 import HabitsDetailModal from './HabitsDetailModal';
-
-interface Habit {
-  id: string;
-  title: string;
-  description: string | null;
-  icon: string | null;
-  color: string;
-  recurrenceType: string;
-  recurrenceDays: string | null;
-  timeOfDay: string | null;
-  defaultDuration: number | null;
-  active: boolean;
-  isCheckedToday?: boolean;
-}
+import type { Habit } from '@/types/habit';
 
 interface HabitsOverview {
   totalHabits: number;
