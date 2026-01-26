@@ -17,7 +17,7 @@ import {
 } from '@/lib/taskNotificationScheduler';
 import { playNotificationSound } from '@/lib/notificationSound';
 import { toast } from 'sonner';
-import RoutineList from '@/components/routines/RoutineList';
+import HabitsTab from '@/app/settings/HabitsTab';
 import TrashList from '@/components/trash/TrashList';
 import ArchiveList from '@/components/archive/ArchiveList';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ import { Settings as SettingsIcon, Home, CalendarDays, BarChart3, Bell, RefreshC
 export default function SettingsPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'notifications' | 'routines' | 'trash' | 'archive'>('notifications');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'habits' | 'trash' | 'archive'>('notifications');
   const [permission, setPermission] = useState<'granted' | 'denied' | 'default'>('default');
   const [settings, setSettings] = useState<NotificationSettings>(getNotificationSettings());
   const [taskSettings, setTaskSettings] = useState<TaskNotificationSettings>(getTaskNotificationSettings());
@@ -112,7 +112,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold gradient-text">설정</h1>
-                <p className="text-sm text-foreground-secondary">알림, 루틴 및 환경 설정을 관리하세요</p>
+                <p className="text-sm text-foreground-secondary">알림, 습관 및 환경 설정을 관리하세요</p>
               </div>
             </div>
           </div>
@@ -164,15 +164,15 @@ export default function SettingsPage() {
             알림 설정
           </button>
           <button
-            onClick={() => setActiveTab('routines')}
+            onClick={() => setActiveTab('habits')}
             className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
-              activeTab === 'routines'
+              activeTab === 'habits'
                 ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
                 : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
             }`}
           >
             <RefreshCw className="w-4 h-4" />
-            루틴 관리
+            습관 관리
           </button>
           <button
             onClick={() => setActiveTab('trash')}
@@ -415,11 +415,7 @@ export default function SettingsPage() {
           </div>
         )}
 
-        {activeTab === 'routines' && (
-          <div>
-            <RoutineList />
-          </div>
-        )}
+        {activeTab === 'habits' && <HabitsTab />}
 
         {activeTab === 'trash' && (
           <div>
