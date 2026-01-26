@@ -69,6 +69,13 @@ export async function PATCH(
             title: true,
           },
         },
+        Habit: {
+          select: {
+            id: true,
+            title: true,
+            icon: true,
+          },
+        },
       },
     });
 

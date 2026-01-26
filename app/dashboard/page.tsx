@@ -13,7 +13,7 @@ import TaskList from '@/components/dashboard/TaskList';
 import FocusTimerCompact from '@/components/dashboard/FocusTimerCompact';
 import FocusHistoryCompact from '@/components/dashboard/FocusHistoryCompact';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
-import TodayRoutines from '@/components/dashboard/TodayRoutines';
+import HabitsCompact from '@/components/dashboard/HabitsCompact';
 import LifeTimelineCompact from '@/components/dashboard/LifeTimelineCompact';
 import LifeGoalsCompact from '@/components/dashboard/LifeGoalsCompact';
 import GoalPanelCompact from '@/components/dashboard/GoalPanelCompact';
@@ -72,6 +72,13 @@ interface Task {
   } | null;
 }
 
+interface HabitTrigger {
+  id: string;
+  title: string;
+  icon?: string | null;
+  defaultDuration?: number | null;
+}
+
 export default function DashboardPage() {
   const { user, isLoading, isAuthenticated, logout } = useAuth();
   const router = useRouter();
@@ -89,6 +96,7 @@ export default function DashboardPage() {
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
   const [focusHistoryKey, setFocusHistoryKey] = useState(0);
   const [focusTaskTrigger, setFocusTaskTrigger] = useState<{ task: Task; minutes: number | 'custom' } | null>(null);
+  const [focusHabitTrigger, setFocusHabitTrigger] = useState<{ habit: HabitTrigger; minutes: number | 'custom' } | null>(null);
   const focusTimerRef = useRef<HTMLDivElement>(null);
 
   const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
@@ -251,6 +259,13 @@ export default function DashboardPage() {
     setFocusTaskTrigger({ task, minutes });
 
     // 포커스 타이머로 스크롤
+    setTimeout(() => {
+      focusTimerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+  }, []);
+
+  const handleStartHabitFocus = useCallback((habit: HabitTrigger, minutes: number | 'custom') => {
+    setFocusHabitTrigger({ habit, minutes });
     setTimeout(() => {
       focusTimerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
@@ -440,9 +455,11 @@ export default function DashboardPage() {
                 onSessionComplete={() => setFocusHistoryKey((prev) => prev + 1)}
                 taskTrigger={focusTaskTrigger}
                 onTaskTriggerConsumed={() => setFocusTaskTrigger(null)}
+                habitTrigger={focusHabitTrigger}
+                onHabitTriggerConsumed={() => setFocusHabitTrigger(null)}
               />
             </div>
-            <TodayRoutines />
+            <HabitsCompact onStartFocus={handleStartHabitFocus} />
             <FocusHistoryCompact key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
           </div>
         </div>

@@ -19,12 +19,15 @@ model FocusSession {
   timerState    String?   // "running", "paused", "idle"
   lastUpdatedAt DateTime? // 마지막 업데이트 시간
   taskId        String?
+  habitId       String?
   userId        String
   createdAt     DateTime  @default(now())
   Task          Task?     @relation(fields: [taskId], references: [id])
+  Habit         Habit?    @relation(fields: [habitId], references: [id], onDelete: SetNull)
   User          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([taskId])
+  @@index([habitId])
   @@index([userId, startedAt])
   @@index([userId, timerState])
 }
@@ -143,6 +146,45 @@ model RoutineResult {
   @@index([userId, date])
 }
 
+model Habit {
+  id             String   @id @default(cuid())
+  title          String
+  description    String?
+  icon           String?
+  color          String   @default("#3B82F6")
+  recurrenceType String   @default("daily") // daily, weekly
+  recurrenceDays String?  // JSON array: "[1,2,3,4,5]" for days of week
+  defaultDuration Int?    // minutes
+  timeOfDay       String? // "09:00" format
+  active         Boolean  @default(true)
+  order          Int      @default(0)
+  userId         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  HabitCheck     HabitCheck[]
+  FocusSession   FocusSession[]
+
+  @@index([userId, active])
+  @@index([userId, order])
+}
+
+model HabitCheck {
+  id        String   @id @default(cuid())
+  date      DateTime // 완료한 날짜 (YYYY-MM-DD 00:00:00)
+  completed Boolean  @default(true)
+  note      String?
+  habitId   String
+  userId    String
+  createdAt DateTime @default(now())
+  Habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, userId, date])
+  @@index([userId, date])
+  @@index([habitId, date])
+}
+
 model User {
   id             String         @id @default(cuid())
   email          String         @unique
@@ -159,6 +201,8 @@ model User {
   Routine        Routine[]
   RoutineCheck   RoutineCheck[]
   RoutineResult  RoutineResult[]
+  Habit          Habit[]
+  HabitCheck     HabitCheck[]
   LifeGoal       LifeGoal[]
   WeeklyReview   WeeklyReview[]
 }

@@ -15,11 +15,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { duration, taskId } = body;
+    const { duration, taskId, habitId } = body;
 
     if (!duration || duration < 1) {
       return NextResponse.json(
         { success: false, error: 'Invalid duration' },
+        { status: 400 }
+      );
+    }
+
+    if (taskId && habitId) {
+      return NextResponse.json(
+        { success: false, error: 'Cannot link both task and habit' },
         { status: 400 }
       );
     }
@@ -41,6 +48,22 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (habitId) {
+      const habit = await prisma.habit.findFirst({
+        where: {
+          id: habitId,
+          userId,
+        },
+      });
+
+      if (!habit) {
+        return NextResponse.json(
+          { success: false, error: 'Habit not found' },
+          { status: 404 }
+        );
+      }
+    }
+
     // 세션 생성
     const session = await prisma.focusSession.create({
       data: {
@@ -54,6 +77,7 @@ export async function POST(request: NextRequest) {
         lastUpdatedAt: new Date(),
         userId,
         taskId: taskId || null,
+        habitId: habitId || null,
       },
     });
 
@@ -114,6 +138,13 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             title: true,
+          },
+        },
+        Habit: {
+          select: {
+            id: true,
+            title: true,
+            icon: true,
           },
         },
       },

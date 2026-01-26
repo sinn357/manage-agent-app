@@ -16,11 +16,20 @@ interface Task {
   title: string;
 }
 
+interface Habit {
+  id: string;
+  title: string;
+  icon?: string | null;
+}
+
 interface FocusTimerCompactProps {
   tasks?: Task[];
+  habits?: Habit[];
   onSessionComplete?: () => void;
   taskTrigger?: { task: Task; minutes: number | 'custom' } | null;
   onTaskTriggerConsumed?: () => void;
+  habitTrigger?: { habit: Habit; minutes: number | 'custom' } | null;
+  onHabitTriggerConsumed?: () => void;
 }
 
 type TimerState = 'idle' | 'running' | 'paused';
@@ -29,14 +38,19 @@ const QUICK_PRESETS = [25, 50];
 
 export default function FocusTimerCompact({
   tasks = [],
+  habits = [],
   onSessionComplete,
   taskTrigger,
   onTaskTriggerConsumed,
+  habitTrigger,
+  onHabitTriggerConsumed,
 }: FocusTimerCompactProps) {
   const [timerState, setTimerState] = useState<TimerState>('idle');
   const [selectedMinutes, setSelectedMinutes] = useState(25);
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [selectedTaskId, setSelectedTaskId] = useState<string>('');
+  const [selectedHabitId, setSelectedHabitId] = useState<string>('');
+  const [selectedHabitSnapshot, setSelectedHabitSnapshot] = useState<Habit | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -67,6 +81,10 @@ export default function FocusTimerCompact({
           setSessionId(session.id);
           setSelectedMinutes(session.duration);
           setSelectedTaskId(session.taskId || '');
+          setSelectedHabitId(session.habitId || '');
+          if (session.Habit) {
+            setSelectedHabitSnapshot(session.Habit);
+          }
 
           const lastUpdated = session.lastUpdatedAt
             ? new Date(session.lastUpdatedAt).getTime()
@@ -112,6 +130,7 @@ export default function FocusTimerCompact({
     if (taskTrigger && timerState === 'idle') {
       const { task, minutes } = taskTrigger;
       setSelectedTaskId(task.id);
+      setSelectedHabitId('');
       if (minutes !== 'custom') {
         setSelectedMinutes(minutes);
         setTimeLeft(minutes * 60);
@@ -121,6 +140,33 @@ export default function FocusTimerCompact({
       onTaskTriggerConsumed?.();
     }
   }, [taskTrigger, timerState, onTaskTriggerConsumed]);
+
+  // Habit Trigger 감지
+  useEffect(() => {
+    if (habitTrigger && timerState === 'idle') {
+      const { habit, minutes } = habitTrigger;
+      setSelectedHabitId(habit.id);
+      setSelectedHabitSnapshot(habit);
+      setSelectedTaskId('');
+      if (minutes !== 'custom') {
+        setSelectedMinutes(minutes);
+        setTimeLeft(minutes * 60);
+      }
+      setIsDetailOpen(true);
+      onHabitTriggerConsumed?.();
+    }
+  }, [habitTrigger, timerState, onHabitTriggerConsumed]);
+
+  useEffect(() => {
+    if (!selectedHabitId) {
+      setSelectedHabitSnapshot(null);
+      return;
+    }
+    const found = habits.find((habit) => habit.id === selectedHabitId);
+    if (found) {
+      setSelectedHabitSnapshot(found);
+    }
+  }, [habits, selectedHabitId]);
 
   // 타이머 완료 감지
   useEffect(() => {
@@ -223,7 +269,7 @@ export default function FocusTimerCompact({
       const response = await fetch('/api/focus-sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ duration: minutes, taskId: null }),
+        body: JSON.stringify({ duration: minutes, taskId: null, habitId: null }),
       });
 
       const data = await response.json();
@@ -314,6 +360,8 @@ export default function FocusTimerCompact({
     setTimeLeft(selectedMinutes * 60);
     setSessionId(null);
     elapsedRef.current = 0;
+    setSelectedHabitId('');
+    setSelectedHabitSnapshot(null);
     onSessionComplete?.();
   };
 
@@ -354,6 +402,8 @@ export default function FocusTimerCompact({
     setSessionId(null);
     elapsedRef.current = 0;
     fiveMinuteNotifiedRef.current = false;
+    setSelectedHabitId('');
+    setSelectedHabitSnapshot(null);
     onSessionComplete?.();
   };
 
@@ -367,6 +417,10 @@ export default function FocusTimerCompact({
 
   // 현재 선택된 작업 찾기
   const selectedTask = tasks.find((t) => t.id === selectedTaskId);
+  const selectedHabit =
+    (selectedHabitSnapshot && selectedHabitSnapshot.id === selectedHabitId
+      ? selectedHabitSnapshot
+      : null) || habits.find((h) => h.id === selectedHabitId);
 
   if (loading) {
     return (
@@ -443,6 +497,11 @@ export default function FocusTimerCompact({
                 📌 {selectedTask.title}
               </div>
             )}
+            {selectedHabit && !selectedTask && (
+              <div className="text-xs text-foreground-secondary truncate text-center px-2 py-1 bg-surface rounded-lg">
+                {selectedHabit.icon || '✅'} {selectedHabit.title}
+              </div>
+            )}
 
             {/* Progress bar */}
             <div className="w-full h-1.5 bg-surface rounded-full overflow-hidden">
@@ -503,6 +562,7 @@ export default function FocusTimerCompact({
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
         tasks={tasks}
+        habits={habits}
         onSessionComplete={onSessionComplete}
         // 현재 상태 전달
         currentState={{
@@ -510,6 +570,7 @@ export default function FocusTimerCompact({
           selectedMinutes,
           timeLeft,
           selectedTaskId,
+          selectedHabitId,
           sessionId,
         }}
         onStateChange={(newState) => {
@@ -517,6 +578,7 @@ export default function FocusTimerCompact({
           if (newState.selectedMinutes !== undefined) setSelectedMinutes(newState.selectedMinutes);
           if (newState.timeLeft !== undefined) setTimeLeft(newState.timeLeft);
           if (newState.selectedTaskId !== undefined) setSelectedTaskId(newState.selectedTaskId);
+          if (newState.selectedHabitId !== undefined) setSelectedHabitId(newState.selectedHabitId);
           if (newState.sessionId !== undefined) setSessionId(newState.sessionId);
           if (newState.startTime !== undefined) startTimeRef.current = newState.startTime;
           if (newState.targetEndTime !== undefined) targetEndTimeRef.current = newState.targetEndTime;

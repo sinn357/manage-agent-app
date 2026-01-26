@@ -1,14 +1,28 @@
 # 다음 세션 가이드 - Manage Agent App
 
-> **작업**: Medium Priority 또는 Quick Wins
+> **작업**: 습관 시스템 구현 (Phase 1)
 > **날짜**: 2026-01-26 이후
-> **이전 세션**: 포커스 타이머/히스토리 콤팩트화 완료
+> **이전 세션**: 포커스 콤팩트화 + 습관/반복작업 설계 완료
 
 ---
 
 ## 이전 세션 완료 내역
 
-### 2026-01-26 완료
+### 2026-01-26 완료 (2)
+
+#### 습관 시스템 & 반복 작업 설계
+**배경**: 기존 "루틴" 시스템이 두 가지 다른 목적을 혼재
+
+**결정사항**:
+- 기존 루틴 → **습관(Habit)**으로 리브랜딩
+- 습관: 독립적 체크 + 스트릭 트래킹 + 포커스 타이머 연동
+- 반복 작업: Task 시스템 확장, 작업 생성 시 반복 설정
+
+**설계 문서**: `docs/HABIT_RECURRING_TASK_DESIGN.md`
+
+---
+
+### 2026-01-26 완료 (1)
 
 #### 포커스 타이머 & 히스토리 콤팩트화
 **문제**: FocusTimer와 FocusHistory가 오른쪽 사이드바에서 많은 공간 차지
@@ -81,49 +95,64 @@ Before:                          After:
 
 ---
 
-## 추천 작업 옵션
+## 다음 작업: 습관 시스템 구현
+
+> **설계 문서**: `docs/HABIT_RECURRING_TASK_DESIGN.md` 필독
+
+### Phase 1: 습관 시스템 구축 (6-8h) ⭐ 최우선
+
+#### 1-1. Prisma 스키마 수정
+- `Habit` 모델 생성
+- `HabitCheck` 모델 생성
+- `FocusSession`에 `habitId` 추가
+
+#### 1-2. 습관 API 구현
+- `/api/habits` (GET, POST)
+- `/api/habits/[id]` (PATCH, DELETE)
+- `/api/habits/[id]/check` (POST, DELETE)
+- `/api/habits/[id]/stats` (GET)
+- `/api/habits/stats` (GET)
+
+#### 1-3. UI 컴포넌트 구현
+- `HabitsCompact.tsx` (대시보드 콤팩트)
+- `HabitsDetailModal.tsx` (상세 모달)
+- `HabitItem.tsx` (개별 습관)
+
+#### 1-4. 대시보드 통합
+- `TodayRoutines` → `HabitsCompact`로 교체
+- 포커스 타이머에 습관 연동 추가
+
+---
+
+### Phase 2: 기존 루틴 마이그레이션 (2-3h)
+
+- `Routine` → `Habit` 데이터 이전
+- `RoutineCheck` → `HabitCheck` 이전
+- `TodayRoutines.tsx` 제거
+
+---
+
+### Phase 3: 반복 작업 (4-6h)
+
+- `Task`에 반복 필드 추가
+- 작업 생성 모달에 반복 설정 UI
+- 완료 시 다음 작업 자동 생성
+
+---
+
+### Phase 4: 통계 연동 (3-4h)
+
+- 리포트에 습관 통계 추가
+- 주간 리뷰에 습관 데이터 추가
+
+---
+
+## 기타 작업 옵션
 
 ### Option 1: Medium Priority
 
-#### A. 습관 트래커 (8-10h)
-**개념**: 루틴과 별개로 일일 체크 습관 (물 마시기, 운동 등)
-
-**구현 범위**:
-- Habit, HabitCheck 모델
-- 습관 CRUD API
-- 습관 체크 인터페이스
-- 스트릭(연속 달성) 계산
-- 캘린더에 체크 마크 표시
-- 습관 통계 (달성률, 최장 스트릭)
-
-**데이터 모델**:
-```prisma
-model Habit {
-  id          String   @id @default(cuid())
-  title       String
-  icon        String?
-  color       String   @default("#3B82F6")
-  targetDays  String   // JSON: [0,1,2,3,4,5,6]
-  userId      String
-  createdAt   DateTime @default(now())
-  User        User     @relation(fields: [userId], references: [id])
-  Checks      HabitCheck[]
-}
-
-model HabitCheck {
-  id        String   @id @default(cuid())
-  date      DateTime
-  habitId   String
-  userId    String
-  createdAt DateTime @default(now())
-  Habit     Habit    @relation(fields: [habitId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
-
-  @@unique([habitId, userId, date])
-}
-```
-
----
+#### A. 습관 시스템 (위 Phase 1-4)
+**→ 위 내용 참조**
 
 #### B. 데이터 백업/내보내기 (4-6h)
 **구현 범위**:
@@ -198,13 +227,16 @@ const shortcuts = [
 
 ## 작업 선택 가이드
 
-### 빠른 가치 제공 (1일):
+### 최우선 (2-3일):
+1. **습관 시스템 Phase 1** (6-8h) ← 다음 작업
+2. 습관 시스템 Phase 2-4 (9-13h)
+
+### 빠른 가치 제공:
 1. 빈 상태 디자인 (3-4h)
 2. 키보드 단축키 가이드 (3-4h)
 
-### 장기적 가치 (2-3일):
-1. 습관 트래커 (8-10h)
-2. 데이터 백업/내보내기 (4-6h)
+### 장기적 가치:
+1. 데이터 백업/내보내기 (4-6h)
 
 ---
 
@@ -222,6 +254,7 @@ components/dashboard/
 └── FocusHistoryDetailModal.tsx  # 포커스 히스토리 상세 모달
 
 docs/
+├── HABIT_RECURRING_TASK_DESIGN.md  # 습관/반복작업 설계 문서 ⭐
 ├── 2026-01-26_Focus_Compact_Implementation.md
 └── NEXT_SESSION.md (이 파일)
 ```
@@ -245,6 +278,7 @@ app/
 
 ## 참고 문서
 
+- `docs/HABIT_RECURRING_TASK_DESIGN.md` - **습관/반복작업 설계 (필독)** ⭐
 - `docs/2026-01-26_Focus_Compact_Implementation.md` - 포커스 콤팩트화 구현 내역
 - `docs/2026-01-19_Weekly_Review_Implementation.md` - 주간 리뷰 구현 내역
 - `docs/2026-01-12_Session_Complete.md` - 이전 세션 완료 내역
@@ -254,4 +288,4 @@ app/
 
 **마지막 업데이트**: 2026-01-26
 **담당**: Claude Opus 4.5
-**다음 작업 추천**: Option 2-A (빈 상태 디자인) 또는 Option 1-A (습관 트래커)
+**다음 작업**: 습관 시스템 Phase 1 구현

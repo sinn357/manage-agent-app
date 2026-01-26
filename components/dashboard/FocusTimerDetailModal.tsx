@@ -15,11 +15,18 @@ interface Task {
   title: string;
 }
 
+interface Habit {
+  id: string;
+  title: string;
+  icon?: string | null;
+}
+
 interface TimerStateData {
   timerState: 'idle' | 'running' | 'paused';
   selectedMinutes: number;
   timeLeft: number;
   selectedTaskId: string;
+  selectedHabitId: string;
   sessionId: string | null;
 }
 
@@ -27,6 +34,7 @@ interface FocusTimerDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   tasks: Task[];
+  habits: Habit[];
   onSessionComplete?: () => void;
   currentState: TimerStateData;
   onStateChange: (newState: Partial<TimerStateData & {
@@ -47,14 +55,19 @@ export default function FocusTimerDetailModal({
   currentState,
   onStateChange,
 }: FocusTimerDetailModalProps) {
-  const { timerState, selectedMinutes, timeLeft, selectedTaskId, sessionId } = currentState;
+  const { timerState, selectedMinutes, timeLeft, selectedTaskId, selectedHabitId, sessionId } = currentState;
   const [customMinutes, setCustomMinutes] = useState(selectedMinutes.toString());
   const [localSelectedTaskId, setLocalSelectedTaskId] = useState(selectedTaskId);
+  const [localSelectedHabitId, setLocalSelectedHabitId] = useState(selectedHabitId);
 
   // selectedTaskId가 변경되면 로컬 상태 동기화
   useEffect(() => {
     setLocalSelectedTaskId(selectedTaskId);
   }, [selectedTaskId]);
+
+  useEffect(() => {
+    setLocalSelectedHabitId(selectedHabitId);
+  }, [selectedHabitId]);
 
   useEffect(() => {
     setCustomMinutes(selectedMinutes.toString());
@@ -85,6 +98,7 @@ export default function FocusTimerDetailModal({
         body: JSON.stringify({
           duration: selectedMinutes,
           taskId: localSelectedTaskId || null,
+          habitId: localSelectedHabitId || null,
         }),
       });
 
@@ -96,6 +110,7 @@ export default function FocusTimerDetailModal({
           sessionId: data.session.id,
           timerState: 'running',
           selectedTaskId: localSelectedTaskId,
+          selectedHabitId: localSelectedHabitId,
           startTime: now,
           targetEndTime: now + selectedMinutes * 60 * 1000,
           elapsed: 0,
@@ -190,6 +205,7 @@ export default function FocusTimerDetailModal({
       timeLeft: selectedMinutes * 60,
       sessionId: null,
       elapsed: 0,
+      selectedHabitId: '',
     });
     onSessionComplete?.();
   };
@@ -230,6 +246,7 @@ export default function FocusTimerDetailModal({
       sessionId: null,
       elapsed: 0,
       fiveMinuteNotified: false,
+      selectedHabitId: '',
     });
     onSessionComplete?.();
   };
@@ -343,20 +360,51 @@ export default function FocusTimerDetailModal({
 
               {/* 작업 선택 */}
               {tasks.length > 0 && (
+              <div>
+                <label htmlFor="task-select-modal" className="block text-sm font-medium text-foreground mb-2">
+                  작업 연결 (선택)
+                </label>
+                <select
+                  id="task-select-modal"
+                  value={localSelectedTaskId}
+                  onChange={(e) => {
+                    setLocalSelectedTaskId(e.target.value);
+                    if (e.target.value) {
+                      setLocalSelectedHabitId('');
+                    }
+                  }}
+                  className="w-full px-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                >
+                  <option value="">작업 없음</option>
+                  {tasks.map((task) => (
+                    <option key={task.id} value={task.id}>
+                        {task.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {habits.length > 0 && (
                 <div>
-                  <label htmlFor="task-select-modal" className="block text-sm font-medium text-foreground mb-2">
-                    작업 연결 (선택)
+                  <label htmlFor="habit-select-modal" className="block text-sm font-medium text-foreground mb-2">
+                    습관 연결 (선택)
                   </label>
                   <select
-                    id="task-select-modal"
-                    value={localSelectedTaskId}
-                    onChange={(e) => setLocalSelectedTaskId(e.target.value)}
+                    id="habit-select-modal"
+                    value={localSelectedHabitId}
+                    onChange={(e) => {
+                      setLocalSelectedHabitId(e.target.value);
+                      if (e.target.value) {
+                        setLocalSelectedTaskId('');
+                      }
+                    }}
                     className="w-full px-4 py-2.5 text-sm border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                   >
-                    <option value="">작업 없음</option>
-                    {tasks.map((task) => (
-                      <option key={task.id} value={task.id}>
-                        {task.title}
+                    <option value="">습관 없음</option>
+                    {habits.map((habit) => (
+                      <option key={habit.id} value={habit.id}>
+                        {habit.icon || '✅'} {habit.title}
                       </option>
                     ))}
                   </select>
