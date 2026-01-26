@@ -1,12 +1,51 @@
 # 다음 세션 가이드 - Manage Agent App
 
 > **작업**: Medium Priority 또는 Quick Wins
-> **날짜**: 2026-01-19 이후
-> **이전 세션**: 대시보드 콤팩트 레이아웃 + 주간 리뷰 페이지 완료
+> **날짜**: 2026-01-26 이후
+> **이전 세션**: 포커스 타이머/히스토리 콤팩트화 완료
 
 ---
 
 ## 이전 세션 완료 내역
+
+### 2026-01-26 완료
+
+#### 포커스 타이머 & 히스토리 콤팩트화
+**문제**: FocusTimer와 FocusHistory가 오른쪽 사이드바에서 많은 공간 차지
+
+**해결**: 왼쪽 사이드바와 동일한 콤팩트 + 상세 모달 패턴 적용
+
+**새로 생성된 파일**:
+- `components/dashboard/FocusTimerCompact.tsx`
+- `components/dashboard/FocusTimerDetailModal.tsx`
+- `components/dashboard/FocusHistoryCompact.tsx`
+- `components/dashboard/FocusHistoryDetailModal.tsx`
+
+**레이아웃 변화**:
+```
+Before:                          After:
+┌────────────────────────┐       ┌────────────────────────┐
+│ FocusTimer (전체)      │       │ FocusTimerCompact      │
+│ - 프리셋 6개           │  →    │ - 빠른 시작 25/50분    │
+│ - 커스텀 입력          │       │ - 실행중: 타이머만     │
+│ (높이 ~400px)          │       │ (높이 ~150px, -60%)    │
+├────────────────────────┤       ├────────────────────────┤
+│ FocusHistory (전체)    │       │ FocusHistoryCompact    │
+│ - 통계 4개             │  →    │ - 오늘 요약만          │
+│ - 세션 목록 10개       │       │ - 전체 통계 1줄        │
+│ (높이 ~350px)          │       │ (높이 ~100px, -70%)    │
+└────────────────────────┘       └────────────────────────┘
+```
+
+**특징**:
+- idle: 빠른 시작 버튼 (25분/50분)
+- running: 타이머 + 프로그레스바 + 제어 버튼
+- 상세 설정은 모달에서 진행
+- 오른쪽 사이드바 높이 약 50-60% 감소
+
+**참고**: `docs/2026-01-26_Focus_Compact_Implementation.md`
+
+---
 
 ### 2026-01-19 완료
 
@@ -17,11 +56,7 @@
 - 모든 페이지 헤더에 주간리뷰 메뉴 추가
 - **커밋**: `508a170`
 
-#### 2. 대시보드 콤팩트 레이아웃 리디자인
-**문제**: TaskList가 핵심 기능인데 사이드 섹션들이 큰 공간 차지
-
-**해결**: 콤팩트 컴포넌트 + 상세 모달 패턴 적용
-
+#### 2. 대시보드 콤팩트 레이아웃 리디자인 (왼쪽 사이드바)
 **새로 생성된 파일**:
 - `components/dashboard/LifeTimelineCompact.tsx`
 - `components/dashboard/LifeTimelineDetailModal.tsx`
@@ -29,19 +64,6 @@
 - `components/dashboard/LifeGoalsDetailModal.tsx`
 - `components/dashboard/GoalPanelCompact.tsx`
 - `components/dashboard/GoalPanelDetailModal.tsx`
-
-**레이아웃 변화**:
-```
-Before:                          After:
-┌────────┬──────────┬────────┐   ┌────────┬──────────┬────────┐
-│Life    │          │Focus   │   │Life[→] │          │Focus   │
-│Timeline│ TaskList │Timer   │   │Goals[→]│ TaskList │Timer   │
-│(200px) │          │        │   │Goal[→] │ (확장!)  │        │
-│Goals   │          │Routines│   │(300px) │          │Routines│
-│(300px) │          │History │   │ 총     │          │History │
-└────────┴──────────┴────────┘   └────────┴──────────┴────────┘
-  ~500px                            ~300px (-40%)
-```
 
 **특징**:
 - 각 섹션에 `[→]` 버튼 → 클릭 시 상세 모달
@@ -119,13 +141,10 @@ model HabitCheck {
 
 ---
 
-#### C. 포커스 타이머 & 히스토리 콤팩트화 (3-4h) ⭐ 신규
-**현재**: FocusTimer와 FocusHistory가 오른쪽 사이드바에서 많은 공간 차지
-
-**개선**:
-- FocusTimer 콤팩트 모드 (프리셋 숨김, 실행 중엔 타이머만)
-- FocusHistory 기본 접힌 상태 (오늘 요약만)
-- 클릭하면 상세 모달
+#### C. 포커스 타이머 & 히스토리 콤팩트화 ✅ 완료 (2026-01-26)
+- FocusTimerCompact + FocusTimerDetailModal
+- FocusHistoryCompact + FocusHistoryDetailModal
+- 오른쪽 사이드바 높이 50-60% 감소
 
 ---
 
@@ -180,8 +199,8 @@ const shortcuts = [
 ## 작업 선택 가이드
 
 ### 빠른 가치 제공 (1일):
-1. 포커스 타이머 콤팩트화 (3-4h) ← TaskList 공간 추가 확보
-2. 빈 상태 디자인 (3-4h)
+1. 빈 상태 디자인 (3-4h)
+2. 키보드 단축키 가이드 (3-4h)
 
 ### 장기적 가치 (2-3일):
 1. 습관 트래커 (8-10h)
@@ -194,7 +213,20 @@ const shortcuts = [
 ### 프로젝트 루트
 - `/Users/woocheolshin/Documents/Vibecoding/projects/manage-agent-app`
 
-### 새로 추가된 파일 (2026-01-19)
+### 새로 추가된 파일 (2026-01-26)
+```
+components/dashboard/
+├── FocusTimerCompact.tsx        # 포커스 타이머 콤팩트
+├── FocusTimerDetailModal.tsx    # 포커스 타이머 상세 모달
+├── FocusHistoryCompact.tsx      # 포커스 히스토리 콤팩트
+└── FocusHistoryDetailModal.tsx  # 포커스 히스토리 상세 모달
+
+docs/
+├── 2026-01-26_Focus_Compact_Implementation.md
+└── NEXT_SESSION.md (이 파일)
+```
+
+### 이전 추가 파일 (2026-01-19)
 ```
 components/dashboard/
 ├── LifeTimelineCompact.tsx      # Life Timeline 콤팩트
@@ -207,22 +239,19 @@ components/dashboard/
 app/
 ├── weekly-review/page.tsx       # 주간 리뷰 페이지
 └── api/weekly-reviews/route.ts  # 주간 리뷰 API
-
-docs/
-├── 2026-01-19_Weekly_Review_Implementation.md
-└── NEXT_SESSION.md (이 파일)
 ```
 
 ---
 
 ## 참고 문서
 
+- `docs/2026-01-26_Focus_Compact_Implementation.md` - 포커스 콤팩트화 구현 내역
 - `docs/2026-01-19_Weekly_Review_Implementation.md` - 주간 리뷰 구현 내역
 - `docs/2026-01-12_Session_Complete.md` - 이전 세션 완료 내역
 - `docs/NEXT_FEATURES.md` - 전체 기능 로드맵
 
 ---
 
-**마지막 업데이트**: 2026-01-19
+**마지막 업데이트**: 2026-01-26
 **담당**: Claude Opus 4.5
-**다음 작업 추천**: Option 1-C (포커스 콤팩트화) 또는 Option 2-A (빈 상태 디자인)
+**다음 작업 추천**: Option 2-A (빈 상태 디자인) 또는 Option 1-A (습관 트래커)

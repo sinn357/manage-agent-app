@@ -10,8 +10,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useQueryClient } from '@tanstack/react-query';
 import TaskList from '@/components/dashboard/TaskList';
-import FocusTimer from '@/components/dashboard/FocusTimer';
-import FocusHistory from '@/components/dashboard/FocusHistory';
+import FocusTimerCompact from '@/components/dashboard/FocusTimerCompact';
+import FocusHistoryCompact from '@/components/dashboard/FocusHistoryCompact';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import TodayRoutines from '@/components/dashboard/TodayRoutines';
 import LifeTimelineCompact from '@/components/dashboard/LifeTimelineCompact';
@@ -432,10 +432,10 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* 오른쪽: FocusTimer + TodayRoutines + FocusHistory */}
+          {/* 오른쪽: FocusTimer + TodayRoutines + FocusHistory (콤팩트) */}
           <div className="lg:col-span-1 space-y-3">
             <div ref={focusTimerRef}>
-              <FocusTimer
+              <FocusTimerCompact
                 tasks={todayTasks}
                 onSessionComplete={() => setFocusHistoryKey((prev) => prev + 1)}
                 taskTrigger={focusTaskTrigger}
@@ -443,7 +443,7 @@ export default function DashboardPage() {
               />
             </div>
             <TodayRoutines />
-            <FocusHistory key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
+            <FocusHistoryCompact key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
           </div>
         </div>
       </main>
