@@ -51,6 +51,7 @@ export default function FocusTimerDetailModal({
   isOpen,
   onClose,
   tasks,
+  habits,
   onSessionComplete,
   currentState,
   onStateChange,
