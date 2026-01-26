@@ -212,7 +212,7 @@ export default function HabitsDetailModal({
                   onStartFocus={onStartFocus}
                   onEdit={openEditForm}
                 />
-                <div className="absolute right-4 top-4 flex gap-2">
+                <div className="flex justify-end gap-2 mt-2">
                   <Button
                     size="sm"
                     variant="ghost"
