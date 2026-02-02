@@ -10,6 +10,7 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { useKeyboardShortcuts } from '@/lib/hooks/useKeyboardShortcuts';
 import { useQueryClient } from '@tanstack/react-query';
 import TaskList from '@/components/dashboard/TaskList';
+import NLTaskInput from '@/components/dashboard/NLTaskInput';
 import FocusTimerCompact from '@/components/dashboard/FocusTimerCompact';
 import FocusHistoryCompact from '@/components/dashboard/FocusHistoryCompact';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
@@ -435,6 +436,7 @@ export default function DashboardPage() {
 
           {/* 가운데: TaskList (확장) */}
           <div className="lg:col-span-2">
+            <NLTaskInput onTaskCreated={handleTaskSuccess} />
             <TaskList
               key={`task-${taskKey}`}
               onTaskClick={handleTaskClick}
