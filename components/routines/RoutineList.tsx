@@ -22,7 +22,6 @@ export default function RoutineList() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoutine, setSelectedRoutine] = useState<Routine | null>(null);
-  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     fetchRoutines();
@@ -99,29 +98,6 @@ export default function RoutineList() {
     }
   };
 
-  const handleGenerateTasks = async () => {
-    setIsGenerating(true);
-    try {
-      const response = await fetch('/api/routines/generate-tasks', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ days: 7 }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        toast.success(`${data.tasksCreated}개의 작업이 생성되었습니다!`);
-      } else {
-        toast.error(data.error || '작업 생성 실패');
-      }
-    } catch (error) {
-      console.error('Generate tasks error:', error);
-      toast.error('작업 생성에 실패했습니다');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
   const getRecurrenceText = (routine: Routine) => {
     if (routine.recurrenceType === 'daily') return '매일';
     if (routine.recurrenceType === 'monthly') return '매월';
@@ -155,21 +131,12 @@ export default function RoutineList() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-gray-900">루틴 관리</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={handleGenerateTasks}
-            disabled={isGenerating || routines.filter((r) => r.active).length === 0}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-          >
-            {isGenerating ? '생성 중...' : '📅 7일치 작업 생성'}
-          </button>
-          <button
-            onClick={handleAdd}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            + 루틴 추가
-          </button>
-        </div>
+        <button
+          onClick={handleAdd}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+        >
+          + 루틴 추가
+        </button>
       </div>
 
       {routines.length === 0 ? (
