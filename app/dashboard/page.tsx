@@ -12,7 +12,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import TaskList from '@/components/dashboard/TaskList';
 import NLTaskInput from '@/components/dashboard/NLTaskInput';
 import FocusTimerCompact from '@/components/dashboard/FocusTimerCompact';
-import FocusHistoryCompact from '@/components/dashboard/FocusHistoryCompact';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import HabitsCompact from '@/components/dashboard/HabitsCompact';
 import type { Habit } from '@/types/habit';
@@ -91,7 +90,6 @@ export default function DashboardPage() {
   const [taskKey, setTaskKey] = useState(0);
 
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
-  const [focusHistoryKey, setFocusHistoryKey] = useState(0);
   const [focusTaskTrigger, setFocusTaskTrigger] = useState<{ task: Task; minutes: number | 'custom' } | null>(null);
   const [focusHabitTrigger, setFocusHabitTrigger] = useState<{ habit: HabitTrigger; minutes: number | 'custom' } | null>(null);
   const focusTimerRef = useRef<HTMLDivElement>(null);
@@ -127,7 +125,7 @@ export default function DashboardPage() {
       key: 'n',
       ctrl: true,
       shift: true,
-      description: '새 목표 추가',
+      description: '새 세부 목표 추가',
       handler: () => {
         setSelectedGoal(null);
         setIsGoalModalOpen(true);
@@ -450,7 +448,7 @@ export default function DashboardPage() {
             <div ref={focusTimerRef}>
               <FocusTimerCompact
                 tasks={todayTasks}
-                onSessionComplete={() => setFocusHistoryKey((prev) => prev + 1)}
+                onSessionComplete={() => {}}
                 taskTrigger={focusTaskTrigger}
                 onTaskTriggerConsumed={() => setFocusTaskTrigger(null)}
                 habitTrigger={focusHabitTrigger}
@@ -458,7 +456,6 @@ export default function DashboardPage() {
               />
             </div>
             <HabitsCompact onStartFocus={handleStartHabitFocus} />
-            <FocusHistoryCompact key={`focus-${focusHistoryKey}`} refreshKey={focusHistoryKey} />
           </div>
         </div>
       </main>

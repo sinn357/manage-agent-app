@@ -75,7 +75,7 @@ export default function LifeGoalsCompact({ onLifeGoalClick, onAddLifeGoalClick }
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-foreground text-sm">인생 목표</span>
+            <span className="font-semibold text-foreground text-sm">핵심 목표</span>
           </div>
           <Button
             variant="ghost"
@@ -89,7 +89,7 @@ export default function LifeGoalsCompact({ onLifeGoalClick, onAddLifeGoalClick }
 
         {lifeGoals.length === 0 ? (
           <div className="text-center py-3">
-            <p className="text-xs text-foreground-secondary mb-2">인생목표를 설정하세요</p>
+            <p className="text-xs text-foreground-secondary mb-2">핵심 목표를 설정하세요</p>
             {onAddLifeGoalClick && (
               <Button
                 onClick={onAddLifeGoalClick}

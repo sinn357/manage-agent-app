@@ -249,7 +249,7 @@ export default function GoalPanelDetailModal({
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               <Target className="w-5 h-5 text-primary" />
-              목표
+              세부 목표
             </DialogTitle>
             {onAddClick && (
               <Button onClick={onAddClick} size="sm" className="gap-1.5">
@@ -264,7 +264,7 @@ export default function GoalPanelDetailModal({
           {/* 요약 통계 */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-primary/10 rounded-xl p-3 text-center">
-              <div className="text-xs text-foreground-secondary mb-1">전체 목표</div>
+              <div className="text-xs text-foreground-secondary mb-1">전체 세부 목표</div>
               <div className="text-lg font-bold text-primary">{goals.length}개</div>
             </div>
             <div className="bg-violet/10 rounded-xl p-3 text-center">
@@ -321,11 +321,11 @@ export default function GoalPanelDetailModal({
                 <Target className="w-8 h-8 text-foreground-tertiary" />
               </div>
               <p className="text-foreground-secondary text-sm mb-4">
-                {filter ? '해당 인생목표에 연결된 목표가 없습니다' : '아직 목표가 없습니다'}
+                {filter ? '해당 핵심 목표에 연결된 세부 목표가 없습니다' : '아직 세부 목표가 없습니다'}
               </p>
               {onAddClick && !filter && (
                 <Button onClick={onAddClick} variant="outline">
-                  첫 목표를 추가해보세요
+                  첫 세부 목표를 추가해보세요
                 </Button>
               )}
             </div>

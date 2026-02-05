@@ -65,7 +65,7 @@ export default function GoalPanelCompact({ onGoalClick, onAddClick }: GoalPanelC
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-primary" />
-            <span className="font-semibold text-foreground text-sm">목표</span>
+            <span className="font-semibold text-foreground text-sm">세부 목표</span>
             <span className="text-xs text-foreground-secondary">({goals.length})</span>
           </div>
           <Button
@@ -80,7 +80,7 @@ export default function GoalPanelCompact({ onGoalClick, onAddClick }: GoalPanelC
 
         {goals.length === 0 ? (
           <div className="text-center py-3">
-            <p className="text-xs text-foreground-secondary mb-2">목표를 설정하세요</p>
+            <p className="text-xs text-foreground-secondary mb-2">세부 목표를 설정하세요</p>
             {onAddClick && (
               <Button
                 onClick={onAddClick}

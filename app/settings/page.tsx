@@ -21,16 +21,22 @@ import HabitsTab from '@/app/settings/HabitsTab';
 import TrashList from '@/components/trash/TrashList';
 import ArchiveList from '@/components/archive/ArchiveList';
 import { Button } from '@/components/ui/button';
-import { Settings as SettingsIcon, Home, CalendarDays, BarChart3, Bell, RefreshCw, Save, Trash2, Archive } from 'lucide-react';
+import { Settings as SettingsIcon, Home, CalendarDays, BarChart3, Bell, RefreshCw, Save, Trash2, Archive, History, Clock, CheckCircle2, AlertCircle, Timer } from 'lucide-react';
+import { formatDuration, formatRelativeTime } from '@/lib/utils';
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'notifications' | 'habits' | 'trash' | 'archive'>('notifications');
+  const [activeTab, setActiveTab] = useState<'notifications' | 'habits' | 'focus' | 'trash' | 'archive'>('notifications');
   const [permission, setPermission] = useState<'granted' | 'denied' | 'default'>('default');
   const [settings, setSettings] = useState<NotificationSettings>(getNotificationSettings());
   const [taskSettings, setTaskSettings] = useState<TaskNotificationSettings>(getTaskNotificationSettings());
   const [saving, setSaving] = useState(false);
+
+  // 포커스 히스토리 state
+  const [focusSessions, setFocusSessions] = useState<any[]>([]);
+  const [focusStats, setFocusStats] = useState({ total: 0, completed: 0, interrupted: 0, totalMinutes: 0 });
+  const [focusLoading, setFocusLoading] = useState(false);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -41,6 +47,42 @@ export default function SettingsPage() {
   useEffect(() => {
     setPermission(getNotificationPermission());
   }, []);
+
+  // 포커스 탭 활성화 시 세션 데이터 로드
+  useEffect(() => {
+    if (activeTab === 'focus') {
+      fetchFocusSessions();
+    }
+  }, [activeTab]);
+
+  const fetchFocusSessions = async () => {
+    try {
+      setFocusLoading(true);
+      const response = await fetch('/api/focus-sessions?limit=50');
+      const data = await response.json();
+      if (data.success) {
+        setFocusSessions(data.sessions);
+        setFocusStats(data.stats);
+      }
+    } catch (err) {
+      console.error('Fetch focus sessions error:', err);
+    } finally {
+      setFocusLoading(false);
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    if (!confirm('이 세션을 삭제하시겠습니까?')) return;
+    try {
+      const response = await fetch(`/api/focus-sessions?id=${sessionId}`, { method: 'DELETE' });
+      const data = await response.json();
+      if (data.success) {
+        fetchFocusSessions();
+      }
+    } catch (err) {
+      console.error('Delete session error:', err);
+    }
+  };
 
   const handleRequestPermission = async () => {
     const result = await requestNotificationPermission();
@@ -175,6 +217,17 @@ export default function SettingsPage() {
             습관 관리
           </button>
           <button
+            onClick={() => setActiveTab('focus')}
+            className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
+              activeTab === 'focus'
+                ? 'bg-gradient-to-r from-primary to-violet text-white shadow-md'
+                : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <History className="w-4 h-4" />
+            포커스
+          </button>
+          <button
             onClick={() => setActiveTab('trash')}
             className={`px-6 py-2.5 rounded-lg text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
               activeTab === 'trash'
@@ -300,8 +353,8 @@ export default function SettingsPage() {
 
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <p className="text-gray-700">목표 마감일 알림</p>
-                <p className="text-sm text-gray-500">목표 마감일이 임박하면 알림을 받습니다</p>
+                <p className="text-gray-700">세부 목표 마감일 알림</p>
+                <p className="text-sm text-gray-500">세부 목표 마감일이 임박하면 알림을 받습니다</p>
               </div>
               <input
                 type="checkbox"
@@ -412,6 +465,137 @@ export default function SettingsPage() {
                 {saving ? '저장 중...' : '설정 저장'}
               </Button>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'focus' && (
+          <div className="space-y-6">
+            {focusLoading ? (
+              <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+                <div className="animate-pulse space-y-4">
+                  <div className="h-6 bg-surface rounded w-32"></div>
+                  <div className="grid grid-cols-4 gap-3">
+                    {[1,2,3,4].map(i => <div key={i} className="h-20 bg-surface rounded-xl"></div>)}
+                  </div>
+                  <div className="space-y-2">
+                    {[1,2,3].map(i => <div key={i} className="h-16 bg-surface rounded-xl"></div>)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* 통계 카드 */}
+                <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+                  <h2 className="text-lg font-bold gradient-text mb-6">포커스 통계</h2>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-primary/10 rounded-xl p-4 text-center">
+                      <div className="flex items-center justify-center gap-1 text-foreground-secondary mb-1">
+                        <Timer className="w-3.5 h-3.5" />
+                        <span className="text-xs">전체 세션</span>
+                      </div>
+                      <div className="text-2xl font-bold text-primary">{focusStats.total}</div>
+                    </div>
+                    <div className="bg-success/10 rounded-xl p-4 text-center">
+                      <div className="flex items-center justify-center gap-1 text-foreground-secondary mb-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span className="text-xs">완료</span>
+                      </div>
+                      <div className="text-2xl font-bold text-success">{focusStats.completed}</div>
+                    </div>
+                    <div className="bg-warning/10 rounded-xl p-4 text-center">
+                      <div className="flex items-center justify-center gap-1 text-foreground-secondary mb-1">
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        <span className="text-xs">중단</span>
+                      </div>
+                      <div className="text-2xl font-bold text-warning">{focusStats.interrupted}</div>
+                    </div>
+                    <div className="bg-violet/10 rounded-xl p-4 text-center">
+                      <div className="flex items-center justify-center gap-1 text-foreground-secondary mb-1">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span className="text-xs">총 시간</span>
+                      </div>
+                      <div className="text-2xl font-bold text-violet">{formatDuration(focusStats.totalMinutes)}</div>
+                    </div>
+                  </div>
+
+                  {/* 완료율 */}
+                  {focusStats.total > 0 && (
+                    <div className="mt-6 bg-surface rounded-xl p-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-medium text-foreground">완료율</span>
+                        <span className="text-sm font-bold text-primary">
+                          {Math.round((focusStats.completed / focusStats.total) * 100)}%
+                        </span>
+                      </div>
+                      <div className="w-full h-2.5 bg-background rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-primary to-violet transition-all duration-500 rounded-full"
+                          style={{ width: `${Math.round((focusStats.completed / focusStats.total) * 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 세션 목록 */}
+                <div className="glass-card rounded-xl shadow-lg border border-border p-6 floating-card">
+                  <h2 className="text-lg font-bold gradient-text mb-6">세션 히스토리</h2>
+                  {focusSessions.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
+                        <History className="w-8 h-8 text-foreground-tertiary" />
+                      </div>
+                      <p className="text-foreground-secondary text-sm">아직 세션이 없습니다</p>
+                      <p className="text-foreground-tertiary text-xs mt-1">포커스 타이머를 시작해보세요</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {focusSessions.map((session: any) => (
+                        <div
+                          key={session.id}
+                          className="flex items-start justify-between p-3 rounded-xl border border-border hover:bg-surface transition-all group"
+                        >
+                          <div className="flex-1 min-w-0">
+                            {session.task ? (
+                              <div className="font-medium text-foreground text-sm truncate mb-1">
+                                {session.task.title}
+                              </div>
+                            ) : (
+                              <div className="font-medium text-foreground-secondary text-sm mb-1">
+                                일반 포커스
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 text-xs text-foreground-tertiary">
+                              <span>{formatRelativeTime(session.createdAt)}</span>
+                              <span>·</span>
+                              <span>{formatDuration(session.actualTime)} / {formatDuration(session.duration)}</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                            {session.completed && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-success/10 text-success">완료</span>
+                            )}
+                            {session.interrupted && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-warning/10 text-warning">중단</span>
+                            )}
+                            {!session.completed && !session.interrupted && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-primary/10 text-primary">진행중</span>
+                            )}
+                            <button
+                              onClick={() => handleDeleteSession(session.id)}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 text-danger hover:bg-danger/10 rounded-lg transition-all"
+                              title="삭제"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 

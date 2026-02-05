@@ -225,7 +225,7 @@ export default function LifeTimeline({ onSettingsClick, onLifeGoalClick, onAddLi
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-base font-semibold text-foreground flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            나의 인생목표
+            나의 핵심 목표
           </h3>
           {onAddLifeGoalClick && (
             <Button
@@ -251,14 +251,14 @@ export default function LifeTimeline({ onSettingsClick, onLifeGoalClick, onAddLi
             <div className="w-16 h-16 rounded-full bg-surface flex items-center justify-center mx-auto mb-4">
               <Sparkles className="w-8 h-8 text-foreground-tertiary" />
             </div>
-            <p className="text-foreground-secondary text-sm mb-3">아직 인생목표가 없습니다</p>
+            <p className="text-foreground-secondary text-sm mb-3">아직 핵심 목표가 없습니다</p>
             {onAddLifeGoalClick && (
               <Button
                 onClick={onAddLifeGoalClick}
                 variant="outline"
                 size="sm"
               >
-                첫 인생목표를 추가해보세요
+                첫 핵심 목표를 추가해보세요
               </Button>
             )}
           </div>

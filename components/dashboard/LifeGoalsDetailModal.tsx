@@ -49,7 +49,7 @@ export default function LifeGoalsDetailModal({
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              인생 목표
+              핵심 목표
             </DialogTitle>
             {onAddClick && (
               <Button onClick={onAddClick} size="sm" className="gap-1.5">
@@ -64,7 +64,7 @@ export default function LifeGoalsDetailModal({
           {/* 요약 통계 */}
           <div className="grid grid-cols-3 gap-3">
             <div className="bg-primary/10 rounded-xl p-3 text-center">
-              <div className="text-xs text-foreground-secondary mb-1">인생목표</div>
+              <div className="text-xs text-foreground-secondary mb-1">핵심 목표</div>
               <div className="text-lg font-bold text-primary">{lifeGoals.length}개</div>
             </div>
             <div className="bg-violet/10 rounded-xl p-3 text-center">
@@ -84,11 +84,11 @@ export default function LifeGoalsDetailModal({
                 <Sparkles className="w-8 h-8 text-foreground-tertiary" />
               </div>
               <p className="text-foreground-secondary text-sm mb-4">
-                아직 인생목표가 없습니다
+                아직 핵심 목표가 없습니다
               </p>
               {onAddClick && (
                 <Button onClick={onAddClick} variant="outline">
-                  첫 인생목표를 추가해보세요
+                  첫 핵심 목표를 추가해보세요
                 </Button>
               )}
             </div>

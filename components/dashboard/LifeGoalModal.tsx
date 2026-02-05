@@ -50,8 +50,8 @@ const PRESET_CATEGORIES = [
 // LifeGoal 형식 스키마
 const lifeGoalFormSchema = z.object({
   title: z.string()
-    .min(1, '인생목표 제목을 입력하세요')
-    .max(100, '인생목표 제목은 100자 이하여야 합니다'),
+    .min(1, '핵심 목표 제목을 입력하세요')
+    .max(100, '핵심 목표 제목은 100자 이하여야 합니다'),
   description: z.string()
     .max(500, '설명은 500자 이하여야 합니다')
     .optional(),
@@ -155,7 +155,7 @@ export default function LifeGoalModal({
         onSuccess();
         onClose();
       } else {
-        setError(result.error || '인생목표 저장에 실패했습니다');
+        setError(result.error || '핵심 목표 저장에 실패했습니다');
       }
     } catch (err) {
       console.error('Submit error:', err);
@@ -167,7 +167,7 @@ export default function LifeGoalModal({
 
   const handleDelete = async () => {
     if (!lifeGoal?.id) return;
-    if (!confirm('정말 이 인생목표를 삭제하시겠습니까?')) return;
+    if (!confirm('정말 이 핵심 목표를 삭제하시겠습니까?')) return;
 
     try {
       setLoading(true);
@@ -183,7 +183,7 @@ export default function LifeGoalModal({
         onSuccess();
         onClose();
       } else {
-        setError(result.error || '인생목표 삭제에 실패했습니다');
+        setError(result.error || '핵심 목표 삭제에 실패했습니다');
       }
     } catch (err) {
       console.error('Delete error:', err);
@@ -198,10 +198,10 @@ export default function LifeGoalModal({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {lifeGoal ? '인생목표 수정' : '새 인생목표 추가'}
+            {lifeGoal ? '핵심 목표 수정' : '새 핵심 목표 추가'}
           </DialogTitle>
           <DialogDescription>
-            당신의 인생에서 중요한 목표를 설정하세요
+            중요한 핵심 목표를 설정하세요
           </DialogDescription>
         </DialogHeader>
 
@@ -213,7 +213,7 @@ export default function LifeGoalModal({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>인생목표 제목 *</FormLabel>
+                  <FormLabel>핵심 목표 제목 *</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="예: 건강하고 활기찬 삶"
@@ -234,7 +234,7 @@ export default function LifeGoalModal({
                   <FormLabel>설명</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="이 인생목표가 나에게 왜 중요한가요?"
+                      placeholder="이 핵심 목표가 나에게 왜 중요한가요?"
                       className="resize-none"
                       rows={3}
                       {...field}

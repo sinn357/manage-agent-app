@@ -222,9 +222,9 @@ export default function GoalModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{goal?.id ? '목표 수정' : '새 목표'}</DialogTitle>
+          <DialogTitle>{goal?.id ? '세부 목표 수정' : '새 세부 목표'}</DialogTitle>
           <DialogDescription>
-            {goal?.id ? '목표 정보를 수정하세요' : '새로운 목표를 생성하세요'}
+            {goal?.id ? '세부 목표 정보를 수정하세요' : '새로운 세부 목표를 생성하세요'}
           </DialogDescription>
         </DialogHeader>
 
@@ -274,7 +274,7 @@ export default function GoalModal({
                 name="lifeGoalId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>인생목표 연결 (선택)</FormLabel>
+                    <FormLabel>핵심 목표 연결 (선택)</FormLabel>
                     <FormControl>
                       <select
                         {...field}
