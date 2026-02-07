@@ -49,6 +49,7 @@ export function AIRecommendWidget({
   const queryClient = useQueryClient();
   const [showFeedback, setShowFeedback] = useState(false);
   const [selectedFeedback, setSelectedFeedback] = useState<string>('');
+  const [selectedAlternativeId, setSelectedAlternativeId] = useState<string>('');
 
   // 추천 조회
   const { data, isLoading, error } = useQuery<RecommendResponse>({
@@ -93,23 +94,28 @@ export function AIRecommendWidget({
 
   // 작업 선택 핸들러
   const handleSelectTask = (taskId: string, isRecommended: boolean) => {
-    if (data?.decisionLogId) {
-      if (!isRecommended) {
-        // AI 추천과 다른 선택 → 피드백 요청
-        setShowFeedback(true);
-      } else {
-        // AI 추천 수락
-        feedbackMutation.mutate({
-          decisionLogId: data.decisionLogId,
-          userChoice: taskId,
-        });
-      }
+    if (!isRecommended) {
+      // AI 추천과 다른 선택 → 피드백 요청
+      const fallbackAlt = data?.alternatives[0]?.taskId || '';
+      setSelectedAlternativeId(taskId || fallbackAlt);
+      setShowFeedback(true);
+      return;
     }
+
+    if (data?.decisionLogId) {
+      // AI 추천 수락
+      feedbackMutation.mutate({
+        decisionLogId: data.decisionLogId,
+        userChoice: taskId,
+      });
+    }
+
     onTaskSelect?.(taskId);
   };
 
   // 피드백 제출
   const handleFeedbackSubmit = (chosenTaskId: string) => {
+    if (!chosenTaskId) return;
     if (data?.decisionLogId) {
       feedbackMutation.mutate({
         decisionLogId: data.decisionLogId,
@@ -168,6 +174,7 @@ export function AIRecommendWidget({
         </div>
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => setShowFeedback(false)}
             className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
@@ -175,9 +182,11 @@ export function AIRecommendWidget({
           </button>
           <button
             onClick={() => {
-              const chosenId = data.alternatives[0]?.taskId;
+              const chosenId = selectedAlternativeId || data.alternatives[0]?.taskId;
               if (chosenId) handleFeedbackSubmit(chosenId);
             }}
+            type="button"
+            disabled={!selectedAlternativeId && !data.alternatives[0]?.taskId}
             className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             저장
@@ -221,12 +230,14 @@ export function AIRecommendWidget({
       {/* 액션 버튼 */}
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={() => handleSelectTask(data.recommended.taskId, true)}
           className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
         >
           시작하기
         </button>
         <button
+          type="button"
           onClick={() =>
             handleSelectTask(data.alternatives[0]?.taskId || '', false)
           }

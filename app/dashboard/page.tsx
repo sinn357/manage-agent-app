@@ -441,8 +441,11 @@ export default function DashboardPage() {
               <AIRecommendWidget
                 taskIds={todayTasks.map((t) => t.id)}
                 onTaskSelect={(taskId) => {
-                  // 선택된 작업으로 스크롤 또는 포커스 타이머 연결
-                  console.log('Selected task:', taskId);
+                  // 선택된 작업으로 포커스 타이머 연결
+                  const selected = todayTasks.find((t) => t.id === taskId);
+                  if (selected) {
+                    handleStartFocus(selected, 30);
+                  }
                 }}
               />
             )}
