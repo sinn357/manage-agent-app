@@ -88,6 +88,8 @@ export function AIRecommendWidget({
     },
     onSuccess: () => {
       setShowFeedback(false);
+      setSelectedFeedback('');
+      setSelectedAlternativeId('');
       queryClient.invalidateQueries({ queryKey: ['ai-recommend'] });
     },
   });
@@ -116,6 +118,7 @@ export function AIRecommendWidget({
   // 피드백 제출
   const handleFeedbackSubmit = (chosenTaskId: string) => {
     if (!chosenTaskId) return;
+    onTaskSelect?.(chosenTaskId);
     if (data?.decisionLogId) {
       feedbackMutation.mutate({
         decisionLogId: data.decisionLogId,
@@ -175,7 +178,16 @@ export function AIRecommendWidget({
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => setShowFeedback(false)}
+            onClick={() => {
+              const chosenId =
+                selectedAlternativeId || data.alternatives[0]?.taskId;
+              if (chosenId) {
+                onTaskSelect?.(chosenId);
+              }
+              setShowFeedback(false);
+              setSelectedFeedback('');
+              setSelectedAlternativeId('');
+            }}
             className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
           >
             건너뛰기
