@@ -17,7 +17,7 @@ export interface NLParseResponse {
 export interface NLParseError {
   success: false;
   error: string;
-  code: 'RATE_LIMIT' | 'QUOTA_EXCEEDED' | 'PARSE_ERROR' | 'INVALID_INPUT';
+  code: 'RATE_LIMIT' | 'QUOTA_EXCEEDED' | 'PARSE_ERROR' | 'INVALID_INPUT' | 'CONFIG_ERROR';
 }
 
 export type NLParseResult = NLParseResponse | NLParseError;

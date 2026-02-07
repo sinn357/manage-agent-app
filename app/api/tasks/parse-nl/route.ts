@@ -5,6 +5,13 @@ import { NLParseResult } from '@/types/nlTask';
 
 export async function POST(request: Request): Promise<NextResponse<NLParseResult>> {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'AI 기능 설정이 필요합니다 (OPENAI_API_KEY)', code: 'CONFIG_ERROR' },
+        { status: 503 }
+      );
+    }
+
     // 인증 확인
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -14,7 +21,16 @@ export async function POST(request: Request): Promise<NextResponse<NLParseResult
       );
     }
 
-    const body = await request.json();
+    let body: { input?: unknown };
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid JSON format', code: 'INVALID_INPUT' },
+        { status: 400 }
+      );
+    }
+
     const { input } = body;
 
     if (!input || typeof input !== 'string' || !input.trim()) {
@@ -36,6 +52,14 @@ export async function POST(request: Request): Promise<NextResponse<NLParseResult
 
     // OpenAI API 에러 처리
     if (error instanceof Error) {
+      const status = (error as { status?: number }).status;
+      if (status === 401) {
+        return NextResponse.json(
+          { success: false, error: 'AI 인증 설정을 확인해주세요', code: 'CONFIG_ERROR' },
+          { status: 503 }
+        );
+      }
+
       if (error.message.includes('rate_limit') || error.message.includes('Rate limit')) {
         return NextResponse.json(
           { success: false, error: '잠시 후 다시 시도해주세요', code: 'RATE_LIMIT' },

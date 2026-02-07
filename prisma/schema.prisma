@@ -79,6 +79,7 @@ model Task {
   status           String         @default("todo")
   order            Int            @default(0)
   weight           Int            @default(1) // 목표 기여도 (1-100, 기본값 1)
+  estimatedMinutes Int?           // 예상 소요 시간 (분)
   isFromRoutine    Boolean        @default(false) // 루틴에서 자동 생성된 작업
   routineId        String?        // 연결된 루틴 ID
   userId           String
@@ -205,6 +206,7 @@ model User {
   HabitCheck     HabitCheck[]
   LifeGoal       LifeGoal[]
   WeeklyReview   WeeklyReview[]
+  AIDecisionLog  AIDecisionLog[]
 }
 
 model LifeGoal {
@@ -245,4 +247,30 @@ model WeeklyReview {
 
   @@unique([userId, weekStart])
   @@index([userId, weekStart])
+}
+
+model AIDecisionLog {
+  id            String   @id @default(cuid())
+
+  // 비교 대상
+  taskAId       String
+  taskBId       String
+
+  // AI 결정
+  recommendedId String   // 추천된 작업 ID
+  reasons       String   // JSON: ["이유1", "이유2", ...]
+  confidence    Float    // 0.0 ~ 1.0
+
+  // 사용자 반응
+  userChoice    String?  // 사용자 실제 선택 ID
+  userOverride  Boolean  @default(false)
+  userFeedback  String?  // 선택적 피드백
+
+  // 관계
+  userId        String
+  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

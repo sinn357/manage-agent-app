@@ -34,6 +34,16 @@ export default function NLTaskInput({ onTaskCreated }: NLTaskInputProps) {
     }
   }, [parsedTask]);
 
+  const buildFallbackTask = (rawInput: string): ParsedTask => ({
+    title: rawInput.trim(),
+    description: null,
+    scheduledDate: null,
+    scheduledTime: null,
+    scheduledEndTime: null,
+    priority: 'mid',
+    confidence: 0.2,
+  });
+
   const handleParse = async () => {
     if (!input.trim()) return;
 
@@ -48,16 +58,31 @@ export default function NLTaskInput({ onTaskCreated }: NLTaskInputProps) {
         body: JSON.stringify({ input: input.trim() }),
       });
 
+      const contentType = response.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
+
+      if (!isJson) {
+        const text = await response.text();
+        const message = text || `요청에 실패했습니다 (${response.status})`;
+        toast.error(message);
+        setParsedTask(buildFallbackTask(input));
+        return;
+      }
+
       const result: NLParseResult = await response.json();
 
-      if (result.success) {
+      if (response.ok && result.success) {
         setParsedTask(result.parsed);
-      } else {
-        toast.error(result.error);
+        return;
       }
+
+      const errorMessage = result.success ? '파싱에 실패했습니다' : result.error;
+      toast.error(`${errorMessage} (수동 입력으로 전환)`);
+      setParsedTask(buildFallbackTask(input));
     } catch (error) {
       console.error('Parse error:', error);
-      toast.error('파싱에 실패했습니다');
+      toast.error('파싱에 실패했습니다 (수동 입력으로 전환)');
+      setParsedTask(buildFallbackTask(input));
     } finally {
       setIsLoading(false);
     }

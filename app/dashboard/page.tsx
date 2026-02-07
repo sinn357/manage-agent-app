@@ -14,6 +14,7 @@ import NLTaskInput from '@/components/dashboard/NLTaskInput';
 import FocusTimerCompact from '@/components/dashboard/FocusTimerCompact';
 import ProfileSettingsModal from '@/components/dashboard/ProfileSettingsModal';
 import HabitsCompact from '@/components/dashboard/HabitsCompact';
+import { AIRecommendWidget } from '@/components/ai/AIRecommendWidget';
 import type { Habit } from '@/types/habit';
 import LifeTimelineCompact from '@/components/dashboard/LifeTimelineCompact';
 import LifeGoalsCompact from '@/components/dashboard/LifeGoalsCompact';
@@ -435,6 +436,16 @@ export default function DashboardPage() {
           {/* 가운데: TaskList (확장) */}
           <div className="lg:col-span-2">
             <NLTaskInput onTaskCreated={handleTaskSuccess} />
+            {/* AI 추천 위젯 - 오늘 할 일이 2개 이상일 때만 표시 */}
+            {todayTasks && todayTasks.length >= 2 && (
+              <AIRecommendWidget
+                taskIds={todayTasks.map((t) => t.id)}
+                onTaskSelect={(taskId) => {
+                  // 선택된 작업으로 스크롤 또는 포커스 타이머 연결
+                  console.log('Selected task:', taskId);
+                }}
+              />
+            )}
             <TaskList
               key={`task-${taskKey}`}
               onTaskClick={handleTaskClick}

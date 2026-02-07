@@ -1,5 +1,6 @@
 import { openai } from './openai';
 import { ParsedTask } from '@/types/nlTask';
+import { safeParseJson } from '@/lib/validateJson';
 
 function getKoreanDayName(dayIndex: number): string {
   const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
@@ -120,6 +121,10 @@ export async function parseNaturalLanguage(input: string): Promise<ParsedTask> {
     throw new Error('AI 응답이 비어있습니다');
   }
 
-  const parsed = JSON.parse(content);
-  return validateAndNormalize(parsed);
+  const parsed = safeParseJson(content);
+  if (!parsed.ok) {
+    throw new Error('AI 응답이 JSON이 아닙니다');
+  }
+
+  return validateAndNormalize(parsed.data);
 }

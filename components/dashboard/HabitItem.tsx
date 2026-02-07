@@ -80,20 +80,34 @@ export default function HabitItem({ habit, onToggleCheck, onStartFocus, onEdit }
           )}
         </div>
 
-        {habit.defaultDuration && onStartFocus && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={(event) => {
-              event.stopPropagation();
-              onStartFocus(habit, habit.defaultDuration || 'custom');
-            }}
-            className="gap-1"
-          >
-            <Play className="w-3.5 h-3.5" />
-            집중
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {habit.isCheckedToday && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={(event) => {
+                event.stopPropagation();
+                onToggleCheck(habit.id, true);
+              }}
+            >
+              해제
+            </Button>
+          )}
+          {habit.defaultDuration && onStartFocus && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={(event) => {
+                event.stopPropagation();
+                onStartFocus(habit, habit.defaultDuration || 'custom');
+              }}
+              className="gap-1"
+            >
+              <Play className="w-3.5 h-3.5" />
+              집중
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

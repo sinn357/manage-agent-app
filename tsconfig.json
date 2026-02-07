@@ -25,6 +25,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@ai-core/*": [
+        "../../ai-core/*"
       ]
     }
   },
@@ -33,7 +36,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "../../ai-core/**/*.ts"
   ],
   "exclude": [
     "node_modules"

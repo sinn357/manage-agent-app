@@ -1,7 +1,7 @@
 # 습관 시스템 & 반복 작업 설계 문서
 
 > **작성일**: 2026-01-26
-> **상태**: 설계 완료, 구현 대기
+> **상태**: Phase 1 구현 완료, Phase 2 준비
 > **담당**: Claude Opus 4.5
 
 ---
@@ -851,6 +851,26 @@ prisma/schema.prisma                   → Habit, HabitCheck 추가
 
 ---
 
-**문서 버전**: 1.0
-**최종 업데이트**: 2026-01-26
-**다음 단계**: Phase 1 구현 시작
+---
+
+## 10. 구현 진행 상황
+
+### Phase 1 완료 (2026-02-??)
+- Habit/HabitCheck 모델 + FocusSession.habitId 추가 완료
+- Habit API CRUD/체크/통계 구현 완료
+- 대시보드 HabitsCompact/Detail/HabitItem 적용 완료
+- 포커스 타이머 습관 연동 완료
+- 설정 > 습관 관리 탭 + 폼/통계/캘린더 구현 완료
+
+### Phase 1 미완료/확인 필요
+- `prisma db push` 실행 여부 확인 필요
+- Phase 1 테스트 체크리스트 실행 필요
+
+### Phase 2 예정
+- 루틴 → 습관 마이그레이션 스크립트 작성/실행
+- RoutineCheck → HabitCheck 이전
+- TodayRoutines 제거, /api/routines 폐기 또는 리다이렉트
+
+**문서 버전**: 1.1
+**최종 업데이트**: 2026-02-?? (Codex)
+**다음 단계**: Phase 2 마이그레이션
